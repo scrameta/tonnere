@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "DualDSub")(type "KiCad")(uri "${KIPRJMOD}/DualDSub.pretty")(options "")(descr ""))
+)

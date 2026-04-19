@@ -1,0 +1,26 @@
+module_pad,module_signal,gpio,net,function,notes
+3,EN,,/ESP32/ESP.EN,EN (chip enable/reset),Pull-up (R99); also on J18 ESP PGM header
+4,SENSOR_VP/IO36,IO36,/ESP32/ESP.SGPI0,GPIO from STM32,Input-only; <- STM32 PG8
+5,SENSOR_VN/IO39,IO39,/ESP32/ESP.SGPI1,GPIO from STM32,Input-only; <- STM32 PG9
+6,IO34,IO34,/ESP32/ESP.SGPI2,GPIO from STM32,Input-only; <- STM32 PG10
+7,IO35,IO35,/AtariInterfaces/SIO.MOTOR,Atari SIO,Also to FPGA U30; ext pull-up +5V (R30)
+8,IO32,IO32,/AtariInterfaces/SIO.INTERRUPT,Atari SIO,Also to FPGA U30; ext pull-up +5V (RN3)
+9,IO33,IO33,/AtariInterfaces/SIO.COMMAND,Atari SIO,Also to FPGA U30; ext pull-up +5V (RN3)
+10,IO25,IO25,/AtariInterfaces/SIO.DATA_IN,Atari SIO,Also to FPGA U30; ext pull-up +5V (RN4)
+11,IO26,IO26,/Audio/ESPAUD.SIO,Audio/control,Audio SIO; via bus switch U31
+12,IO27,IO27,/AtariInterfaces/SIO.PROCEED,Atari SIO,Also to FPGA U30; ext pull-up +5V (RN3)
+13,IO14,IO14,/ESP32/ESPJTAG.TMS,JTAG (GPIO matrix),Optional
+14,IO12,IO12,/ESP32/ESPJTAG.TDI,JTAG (GPIO matrix),Optional
+16,IO13,IO13,/ESP32/ESPJTAG.TCK,JTAG (GPIO matrix),Optional
+23,IO15,IO15,/ESP32/ESPJTAG.TDO,JTAG (GPIO matrix),Optional
+24,IO2,IO2,/ESP32/ESP.SGPIO,GPIO to STM32,-> STM32 PA9
+25,IO0,IO0,/ESP32/ESP.BOOT,BOOT strap (GPIO0),Low=bootloader; also STM32 PG6 and J18 header
+26,IO4,IO4,/AtariInterfaces/SIO.CLOCK_OUT,Atari SIO,Also to FPGA U30; ext pull-up +5V (RN4)
+29,IO5,IO5,/ESP32/ESP.CS,SPI to FPGA (U30),CS active low; pull-up to +3V3 (R94)
+30,IO18,IO18,/ESP32/ESP.SCK,SPI to FPGA (U30),Direct to FPGA U30
+31,IO19,IO19,/ESP32/ESP.MISO,SPI to FPGA (U30),Direct to FPGA U30
+33,IO21,IO21,/AtariInterfaces/SIO.CLOCK_IN,Atari SIO,Also to FPGA U30; ext pull-up +5V (RN4)
+34,RXD0,RXD0,/ESP32/UART1.TX,UART to STM32,STM32 USART6 RX (PC7); also on J18 header
+35,TXD0,TXD0,/ESP32/UART1.RX,UART to STM32,STM32 USART6 TX (PC6); also on J18 header
+36,IO22,IO22,/AtariInterfaces/SIO.DATA_OUT,Atari SIO,Also to FPGA U30; ext pull-up +5V (RN4)
+37,IO23,IO23,/ESP32/ESP.MOSI,SPI to FPGA (U30),Direct to FPGA U30

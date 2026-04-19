@@ -1,0 +1,46 @@
+Validation summary for updated pin mappings
+
+Netlist: tonnere.net
+
+Updated FPGA mapping rows: 283
+
+Checks passed:
+
+- CSV rows match filtered U30 netlist pins one-for-one
+
+- QSF assignments count matches CSV and each ball/net/port matches
+
+- VHD entity ports cover every CSV port name/index
+
+
+Key U30 changes detected vs previous U29 mapping:
+
+- A12: Net-(U29J-CLK7) -> Net-(U30J-CLK8)
+- D1: /FPGA/SPI.MISO -> /FPGA/SPI.MOSI
+- G21: Net-(U29J-CLK4) -> Net-(U30J-CLK4)
+- G22: Net-(U29J-CLK5) -> Net-(U30J-CLK5)
+- K1: /FPGA/SPI.MOSI -> /FPGA/SPI.MISO
+- N16: [new] -> /FPGA/SDRAM1.A9
+- N17: /FPGA/SDRAM1.CLK -> /FPGA/SDRAM1.A11
+- P15: /FPGA/SDRAM1.A11 -> [removed/unconnected]
+- P16: /FPGA/SDRAM1.A9 -> [removed/unconnected]
+- R15: [new] -> /FPGA/SRAM2.A16
+- R16: /FPGA/SRAM2.A16 -> /FPGA/SDRAM1.CLK
+- T1: Net-(U29J-CLK3) -> Net-(U30J-CLK3)
+- T2: Net-(U29J-CLK2) -> Net-(U30J-CLK2)
+- T7: [new] -> /FPGA/SRAM1.D1
+- T8: [new] -> /FPGA/SRAM1.W_N
+- T21: Net-(U29J-CLK6) -> Net-(U30J-CLK6)
+- T22: Net-(U29J-CLK7) -> [removed/unconnected]
+- U1: /FPGA/HDMI.CKN -> [removed/unconnected]
+- U2: /FPGA/HDMI.CKP -> [removed/unconnected]
+- V4: /FPGA/SRAM1.UB_N -> /FPGA/SRAM1.A4
+- V5: /FPGA/SRAM1.D1 -> /FPGA/SRAM1.UB_N
+- W6: /FPGA/SRAM1.D5 -> /FPGA/SRAM1.CE_N
+- Y4: /FPGA/SRAM1.A2 -> /FPGA/SRAM1.A1
+- Y6: /FPGA/SRAM1.D7 -> /FPGA/SRAM1.D5
+- Y7: /FPGA/SRAM1.W_N -> /FPGA/SRAM1.D7
+- AA3: /FPGA/SRAM1.A1 -> /FPGA/HDMI.CKP
+- AA4: /FPGA/SRAM1.CE_N -> /FPGA/SRAM1.A2
+- AB3: /FPGA/SRAM1.A4 -> /FPGA/HDMI.CKN
+- AB11: Net-(U29J-CLK14) -> Net-(U30J-CLK14)

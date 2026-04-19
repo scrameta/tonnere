@@ -1,0 +1,9 @@
+(version 2)
+(rule track_to_edge_clearance
+    (constraint edge_clearance  (min 0.10mm))
+    (condition "A.Type == 'Track'")
+)
+(rule "BGA neckdown"
+  (constraint track_width (min 0.1016mm) (opt 0.1016mm) (max 0.1016mm))
+  (constraint clearance   (min 0.09mm) (opt 0.1016mm))
+  (condition "A.intersectsCourtyard('U30') && A.NetName != '+1V2' && A.NetName != '+2V5"))

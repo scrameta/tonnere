@@ -1,0 +1,284 @@
+group,net_name,port_suggested,fpga_ball,pinfunction,pintype,direction,connects_to
+FPGA,/FPGA/FPGA.IRQ,FPGA_IRQ,A3,IO,bidirectional,out,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/FPGA.GPIO4,FPGA_GPIO[4],A4,IO,bidirectional,inout,Edge conn via U29
+FPGA,/FPGA/FSMC.A8,FSMC_A[8],A5,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A11,FSMC_A[11],A6,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D6,FSMC_D[6],A7,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D9,FSMC_D[9],A8,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D12,FSMC_D[12],A9,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D15,FSMC_D[15],A10,IO,bidirectional,inout,STM32 U19 (direct)
+Misc,Net-(U30J-CLK8),CLK27_A12,A12,CLK8,input,in,Si5351 Y5 via R98
+FPGA,/FPGA/FSMC.A12,FSMC_A[12],A13,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A15,FSMC_A[15],A14,IO,bidirectional,in,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A3,PBI_A[3],A15,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A9,PBI_A[9],A16,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A13,PBI_A[13],A17,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.D0,PBI_D[0],A18,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/PBI.D3,PBI_D[3],A19,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/PBI.D6,PBI_D[6],A20,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/FPGA.GPIO1,FPGA_GPIO[1],B3,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/FPGA.GPIO3,FPGA_GPIO[3],B4,IO,bidirectional,inout,Edge conn via U29
+FPGA,/FPGA/FSMC.A7,FSMC_A[7],B5,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A10,FSMC_A[10],B6,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D5,FSMC_D[5],B7,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D8,FSMC_D[8],B8,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D11,FSMC_D[11],B9,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D14,FSMC_D[14],B10,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A13,FSMC_A[13],B13,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A14,FSMC_A[14],B14,IO,bidirectional,in,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A1,PBI_A[1],B15,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A10,PBI_A[10],B16,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A14,PBI_A[14],B17,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.D1,PBI_D[1],B18,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/PBI.D4,PBI_D[4],B19,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/PBI.D7,PBI_D[7],B20,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/PBI.PHI2,PBI_PHI[2],B21,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.EXTSEL,PBI_EXTSEL,B22,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/FPGA.GPIO0,FPGA_GPIO[0],C3,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/FPGA.GPIO2,FPGA_GPIO[2],C4,IO,bidirectional,inout,Edge conn via U29
+FPGA,/FPGA/FSMC.A9,FSMC_A[9],C6,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D4,FSMC_D[4],C7,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D7,FSMC_D[7],C8,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D13,FSMC_D[13],C10,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D1,FSMC_D[1],C13,IO,bidirectional,inout,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A0,PBI_A[0],C15,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A15,PBI_A[15],C17,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.D5,PBI_D[5],C19,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/PBI.HALT,PBI_HALT,C20,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.MPD,PBI_MPD,C21,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.EXTENB,PBI_EXTENB,C22,IO,bidirectional,inout,Edge conn via U33
+FPGA,/FPGA/SPI.MOSI,SPI_MOSI,D1,"DATA1,ASDO",bidirectional,,Config pins (dedicated)
+Audio,/Audio/FPGAAUD.BCK,FPGAAUD_BCK,D2,DIFFIO_L8p,bidirectional,out,PCM5102A DAC U17
+FPGA,/FPGA/FSMC.A4,FSMC_A[4],D6,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A1,FSMC_A[1],D7,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.NBL0,FSMC_NBL[0],D10,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.NWE,FSMC_NWE,D13,IO,bidirectional,in,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A4,PBI_A[4],D15,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A12,PBI_A[12],D17,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.D2,PBI_D[2],D19,IO,bidirectional,inout,Edge conn via U29/U33
+AtariInterfaces,/AtariInterfaces/PBI.CAS,PBI_CAS,D20,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.RD4,PBI_RD[4],D21,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.S4_N,PBI_S4_N,D22,IO,bidirectional,inout,Edge conn via U33
+FPGA,/FPGA/VDAC.R,VDAC_R,E1,DIFFIO_L10n,bidirectional,out,THS7316 video buffer U21
+FPGA,/FPGA/SPI.CS2,SPI_CS[2],E2,"FLASH_nCE,nCSO",bidirectional,,Config pins (dedicated)
+FPGA,/FPGA/FSMC.A6,FSMC_A[6],E5,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A5,FSMC_A[5],E6,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A2,FSMC_A[2],E7,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D10,FSMC_D[10],E9,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.NBL1,FSMC_NBL[1],E10,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A18,FSMC_A[18],E11,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D0,FSMC_D[0],E12,IO,bidirectional,inout,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.NOE,FSMC_NOE,E13,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D2,FSMC_D[2],E14,IO,bidirectional,inout,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A5,PBI_A[5],E15,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A7,PBI_A[7],E16,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.RDY,PBI_RDY,E21,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/SIO.DATA_IN,SIO_DATA_IN,E22,IO,bidirectional,inout,Edge conn via U31 + ESP32
+FPGA,/FPGA/FSMC.A3,FSMC_A[3],F7,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A22,FSMC_A[22],F8,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A20,FSMC_A[20],F9,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A19,FSMC_A[19],F10,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A17,FSMC_A[17],F11,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.NWAIT,FSMC_NWAIT,F13,IO,bidirectional,out,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.D3,FSMC_D[3],F14,IO,bidirectional,inout,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A8,PBI_A[8],F15,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.A6,PBI_A[6],F16,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.RW_N,PBI_RW_N,F17,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.IRQ,PBI_IRQ,F19,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/SIO.COMMAND,SIO_COMMAND,F20,IO,bidirectional,inout,Edge conn via U31 + ESP32
+AtariInterfaces,/AtariInterfaces/SIO.CLOCK_IN,SIO_CLOCK_IN,F21,IO,bidirectional,inout,Edge conn via U31 + ESP32
+AtariInterfaces,/AtariInterfaces/SIO.CLOCK_OUT,SIO_CLOCK_OUT,F22,IO,bidirectional,inout,Edge conn via U31 + ESP32
+FPGA,/FPGA/VDAC.G,VDAC_G,G2,CLK0,bidirectional,out,THS7316 video buffer U21
+Audio,/Audio/FPGAAUD.LR,FPGAAUD_LR,G5,IO,bidirectional,out,PCM5102A DAC U17
+FPGA,/FPGA/FSMC.A0,FSMC_A[0],G8,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A21,FSMC_A[21],G9,IO,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FSMC.A16,FSMC_A[16],G11,IO,bidirectional,in,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A11,PBI_A[11],G16,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.RST,PBI_RST,G17,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.D1XX,PBI_D1XX,G18,IO,bidirectional,inout,Edge conn via U29/U33
+Misc,Net-(U30J-CLK4),PLL2[0],G21,CLK4,input,in,Si5351 via series R
+Misc,Net-(U30J-CLK5),PLL2[1],G22,CLK5,input,in,Si5351 via series R
+FPGA,/FPGA/FSMC.NE1,FSMC_NE[1],H11,IO,bidirectional,in,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/PBI.A2,PBI_A[2],H14,IO,bidirectional,inout,Edge conn via U29
+AtariInterfaces,/AtariInterfaces/PBI.RD5,PBI_RD[5],H16,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.REF,PBI_REF,H17,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.RAS,PBI_RAS,H18,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/PBI.CCTL,PBI_CCTL,H19,IO,bidirectional,inout,Edge conn via U33
+AtariInterfaces,/AtariInterfaces/SIO.MOTOR,SIO_MOTOR,H20,IO,bidirectional,inout,Edge conn via U31 + ESP32
+ESP32,/ESP32/ESP.CS,ESP_CS,H21,IO,bidirectional,out,ESP32 U34 (direct)
+ESP32,/ESP32/ESP.MISO,ESP_MISO,H22,IO,bidirectional,in,ESP32 U34 (direct)
+FPGA,/FPGA/VDAC.B,VDAC_B,J3,IO,bidirectional,out,THS7316 video buffer U21
+Audio,/Audio/FPGAAUD.DATA,FPGAAUD_DATA,J4,IO,bidirectional,out,PCM5102A DAC U17
+AtariInterfaces,/AtariInterfaces/PBI.S5_N,PBI_S5_N,J17,IO,bidirectional,inout,Edge conn via U33
+ESP32,/ESP32/ESP.SCK,ESP_SCK,J18,IO,bidirectional,out,ESP32 U34 (direct)
+ESP32,/ESP32/ESP.MOSI,ESP_MOSI,J21,IO,bidirectional,out,ESP32 U34 (direct)
+AtariInterfaces,/AtariInterfaces/SIO.INTERRUPT,SIO_INTERRUPT,J22,IO,bidirectional,inout,Edge conn via U31 + ESP32
+FPGA,/FPGA/SPI.MISO,SPI_MISO,K1,DATA0,bidirectional,,Config pins (dedicated)
+FPGA,/FPGA/SPI.SCK,SPI_SCK,K2,DCLK,bidirectional,,Config pins (dedicated)
+FPGA,/FPGA/FPGA.CONFIG_N,FPGA_CONFIG_N,K5,nCONFIG,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/FPGA.STATUS_N,FPGA_STATUS_N,K6,nSTATUS,bidirectional,out,STM32 U19 (direct)
+AtariInterfaces,/AtariInterfaces/SIO.PROCEED,SIO_PROCEED,K17,IO,bidirectional,inout,Edge conn via U31 + ESP32
+AtariInterfaces,/AtariInterfaces/SIO.DATA_OUT,SIO_DATA_OUT,K18,IO,bidirectional,inout,Edge conn via U31 + ESP32
+FPGA,/FPGA/SDRAM1.DQ15,SDRAM1_DQ[15],K19,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ13,SDRAM1_DQ[13],K21,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ14,SDRAM1_DQ[14],K22,IO,bidirectional,inout,SDRAM U35 (direct)
+AtariInterfaces,/AtariInterfaces/JOY2.TRIG2,JOY2_TRIG[2],L6,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY2.DIR12,JOY2_DIR[12],L7,IO,bidirectional,inout,Edge conn via U27/U31
+FPGA,/FPGA/FPGA.PS_N,FPGA_PS_N,L18,MSEL1,bidirectional,in,STM32 U19 (direct)
+FPGA,/FPGA/SDRAM1.DQ12,SDRAM1_DQ[12],L21,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ11,SDRAM1_DQ[11],L22,IO,bidirectional,inout,SDRAM U35 (direct)
+AtariInterfaces,/AtariInterfaces/JOY2.DIR13,JOY2_DIR[13],M1,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY2.DIR14,JOY2_DIR[14],M2,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY2.DIR15,JOY2_DIR[15],M3,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY2.DIR10,JOY2_DIR[10],M4,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY2.DIR9,JOY2_DIR[9],M5,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY.TRIG1,JOY_TRIG[1],M6,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY2.DIR11,JOY2_DIR[11],M7,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY2.TRIG3,JOY2_TRIG[3],M8,IO,bidirectional,inout,Edge conn via U27/U31
+FPGA,/FPGA/FPGA.CONF_DONE,FPGA_CONF_DONE,M18,CONF_DONE,bidirectional,out,STM32 U19 (direct)
+FPGA,/FPGA/SDRAM1.UDQM,SDRAM1_UDQM,M19,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ10,SDRAM1_DQ[10],M20,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ9,SDRAM1_DQ[9],M21,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ8,SDRAM1_DQ[8],M22,IO,bidirectional,inout,SDRAM U35 (direct)
+AtariInterfaces,/AtariInterfaces/JOY.DIR6,JOY_DIR[6],N1,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY.DIR4,JOY_DIR[4],N2,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY2.DIR8,JOY2_DIR[8],N5,IO,bidirectional,inout,Edge conn via U27/U31
+AtariInterfaces,/AtariInterfaces/JOY.TRIG0,JOY_TRIG[0],N6,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY.DIR5,JOY_DIR[5],N8,IO,bidirectional,inout,Edge conn via U27
+FPGA,/FPGA/SDRAM1.A9,SDRAM1_A[9],N16,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A11,SDRAM1_A[11],N17,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.CKE,SDRAM1_CKE,N18,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A12,SDRAM1_A[12],N19,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ0,SDRAM1_DQ[0],N20,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ1,SDRAM1_DQ[1],N21,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ2,SDRAM1_DQ[2],N22,IO,bidirectional,inout,SDRAM U35 (direct)
+AtariInterfaces,/AtariInterfaces/JOY.DIR1,JOY_DIR[1],P1,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY.DIR2,JOY_DIR[2],P2,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY.DIR0,JOY_DIR[0],P3,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY.DIR3,JOY_DIR[3],P4,IO,bidirectional,inout,Edge conn via U27
+AtariInterfaces,/AtariInterfaces/JOY.DIR7,JOY_DIR[7],P7,IO,bidirectional,inout,Edge conn via U27
+FPGA,/FPGA/SDRAM1.A8,SDRAM1_A[8],P17,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ3,SDRAM1_DQ[3],P20,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ4,SDRAM1_DQ[4],P21,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ5,SDRAM1_DQ[5],P22,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/VDAC.VSYNC,VDAC_VSYNC,R1,IO,bidirectional,out,THS7316 video buffer U21
+FPGA,/FPGA/VDAC.HSYNC,VDAC_HSYNC,R2,IO,bidirectional,out,THS7316 video buffer U21
+AtariInterfaces,/AtariInterfaces/CONSOL.SELECT,CONSOL_SELECT,R5,IO,bidirectional,inout,Edge conn via U31
+AtariInterfaces,/AtariInterfaces/CONSOL.OPTION,CONSOL_OPTION,R6,IO,bidirectional,inout,Edge conn via U31
+AtariInterfaces,/AtariInterfaces/CONSOL.RESET,CONSOL_RESET,R7,IO,bidirectional,inout,Edge conn via U31
+FPGA,/FPGA/SRAM2.A16,SRAM2_A[16],R15,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SDRAM1.CLK,SDRAM1_CLK,R16,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A7,SDRAM1_A[7],R17,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A5,SDRAM1_A[5],R18,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A6,SDRAM1_A[6],R19,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ6,SDRAM1_DQ[6],R20,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.DQ7,SDRAM1_DQ[7],R21,IO,bidirectional,inout,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.LDQM,SDRAM1_LDQM,R22,IO,bidirectional,out,SDRAM U35 (direct)
+Misc,Net-(U30J-CLK3),PLL1[0],T1,CLK3,input,in,Si5351 via series R
+Misc,Net-(U30J-CLK2),PLL1[1],T2,CLK2,input,in,Si5351 via series R
+AtariInterfaces,/AtariInterfaces/CONSOL.START,CONSOL_START,T3,IO,bidirectional,inout,Edge conn via U31
+FPGA,/FPGA/SRAM1.OE_N,SRAM1_OE_N,T4,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A0,SRAM1_A[0],T5,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D1,SRAM1_D[1],T7,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.W_N,SRAM1_W_N,T8,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A6,SRAM1_A[6],T9,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A14,SRAM1_A[14],T11,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM2.LB_N,SRAM2_LB_N,T12,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D0,SRAM2_D[0],T14,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D3,SRAM2_D[3],T15,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A15,SRAM2_A[15],T16,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SDRAM1.A4,SDRAM1_A[4],T17,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.WE_N,SDRAM1_WE_N,T18,IO,bidirectional,out,SDRAM U35 (direct)
+Misc,Net-(U30J-CLK6),PLL2[2],T21,CLK6,input,in,Si5351 via series R
+FPGA,/FPGA/SRAM1.D3,SRAM1_D[3],U7,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D9,SRAM1_D[9],U8,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A17,SRAM1_A[17],U9,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A7,SRAM1_A[7],U10,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D14,SRAM1_D[14],U11,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM2.A5,SRAM2_A[5],U12,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A6,SRAM2_A[6],U13,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D1,SRAM2_D[1],U14,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A17,SRAM2_A[17],U15,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A14,SRAM2_A[14],U16,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A20,SRAM2_A[20],U17,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SDRAM1.CAS_N,SDRAM1_CAS_N,U19,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.RAS_N,SDRAM1_RAS_N,U20,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.BA0,SDRAM1_BA[0],U21,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.CS_N,SDRAM1_CS_N,U22,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/HDMI.D0N,HDMI_D0N,V1,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/HDMI.D0P,HDMI_D0P,V2,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/SRAM1.D11,SRAM1_D[11],V3,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A4,SRAM1_A[4],V4,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.UB_N,SRAM1_UB_N,V5,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D2,SRAM1_D[2],V6,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.LB_N,SRAM1_LB_N,V7,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D10,SRAM1_D[10],V8,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A12,SRAM1_A[12],V9,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A16,SRAM1_A[16],V10,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D12,SRAM1_D[12],V11,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM2.D11,SRAM2_D[11],V12,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A0,SRAM2_A[0],V13,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D2,SRAM2_D[2],V14,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A7,SRAM2_A[7],V15,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D5,SRAM2_D[5],V16,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SDRAM1.BA1,SDRAM1_BA[1],V21,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A10,SDRAM1_A[10],V22,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/HDMI.D1N,HDMI_D1N,W1,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/HDMI.D1P,HDMI_D1P,W2,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/SRAM1.CE_N,SRAM1_CE_N,W6,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D8,SRAM1_D[8],W7,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A5,SRAM1_A[5],W8,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A15,SRAM1_A[15],W10,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM2.CE_N,SRAM2_CE_N,W13,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A3,SRAM2_A[3],W14,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A2,SRAM2_A[2],W15,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A11,SRAM2_A[11],W17,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SDRAM1.A3,SDRAM1_A[3],W19,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A0,SDRAM1_A[0],W20,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A1,SDRAM1_A[1],W21,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/SDRAM1.A2,SDRAM1_A[2],W22,IO,bidirectional,out,SDRAM U35 (direct)
+FPGA,/FPGA/HDMI.D2N,HDMI_D2N,Y1,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/HDMI.D2P,HDMI_D2P,Y2,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/SRAM1.A3,SRAM1_A[3],Y3,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A1,SRAM1_A[1],Y4,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D5,SRAM1_D[5],Y6,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D7,SRAM1_D[7],Y7,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A10,SRAM1_A[10],Y8,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A18,SRAM1_A[18],Y10,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM2.D8,SRAM2_D[8],Y13,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A13,SRAM2_A[13],Y17,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A18,SRAM2_A[18],Y21,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D12,SRAM2_D[12],Y22,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/HDMI.CKP,HDMI_CKP,AA3,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/SRAM1.A2,SRAM1_A[2],AA4,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D4,SRAM1_D[4],AA5,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A20,SRAM1_A[20],AA7,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A13,SRAM1_A[13],AA8,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A8,SRAM1_A[8],AA9,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D15,SRAM1_D[15],AA10,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM2.D9,SRAM2_D[9],AA12,CLK13,input,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.OE_N,SRAM2_OE_N,AA13,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A1,SRAM2_A[1],AA14,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D4,SRAM2_D[4],AA15,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D7,SRAM2_D[7],AA16,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A10,SRAM2_A[10],AA18,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A9,SRAM2_A[9],AA19,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A8,SRAM2_A[8],AA20,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D13,SRAM2_D[13],AA21,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D14,SRAM2_D[14],AA22,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/HDMI.CKN,HDMI_CKN,AB3,IO,bidirectional,out,HDMI connector via RN1/RN2
+FPGA,/FPGA/SRAM1.D0,SRAM1_D[0],AB4,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D6,SRAM1_D[6],AB5,IO,bidirectional,inout,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A11,SRAM1_A[11],AB7,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A9,SRAM1_A[9],AB8,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.A19,SRAM1_A[19],AB9,IO,bidirectional,out,SRAM U28 (direct)
+FPGA,/FPGA/SRAM1.D13,SRAM1_D[13],AB10,IO,bidirectional,inout,SRAM U28 (direct)
+Misc,Net-(U30J-CLK14),PLL1[2],AB11,CLK14,input,in,Si5351 via series R
+FPGA,/FPGA/SRAM2.D10,SRAM2_D[10],AB12,CLK12,input,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.UB_N,SRAM2_UB_N,AB13,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A4,SRAM2_A[4],AB14,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D6,SRAM2_D[6],AB15,IO,bidirectional,inout,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.W_N,SRAM2_W_N,AB16,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A12,SRAM2_A[12],AB18,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.A19,SRAM2_A[19],AB19,IO,bidirectional,out,SRAM U32 (direct)
+FPGA,/FPGA/SRAM2.D15,SRAM2_D[15],AB20,IO,bidirectional,inout,SRAM U32 (direct)

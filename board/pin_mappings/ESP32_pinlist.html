@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset='utf-8'><title>ESP32 Pinlist</title>
+<style>body{font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:1100px;margin:24px auto;padding:0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 8px;font-size:13px;vertical-align:top}th{background:#f5f5f5}</style>
+</head><body>
+<h1>ESP32 module (U34: ESP32‑WROVER‑E) pin usage summary and pinlist</h1>
+<p>Derived from the KiCad netlist (<code>tonnere.net</code>). ESP32 has a flexible GPIO matrix (most peripherals can be routed to many pins),
+so this is primarily a <i>wiring</i> pinlist: which module pads / GPIOs are used and what they connect to.</p>
+
+<h2>Functional grouping (wiring view)</h2>
+<ul>
+<li><b>Atari SIO</b>: 8 signals</li><li><b>JTAG (GPIO matrix)</b>: 4 signals</li><li><b>SPI bus to STM32/logic</b>: 4 signals</li><li><b>UART to STM32</b>: 2 signals</li><li><b>Audio/control</b>: 1 signal</li><li><b>BOOT/STRAP (GPIO0)</b>: 1 signal</li><li><b>EN (chip enable/reset)</b>: 1 signal</li><li><b>ESP.SGPI0</b>: 1 signal</li><li><b>ESP.SGPI1</b>: 1 signal</li><li><b>ESP.SGPI2</b>: 1 signal</li><li><b>ESP.SGPIO</b>: 1 signal</li>
+</ul>
+
+<h2>Pinlist (ESP-IDF / schematic friendly)</h2>
+<table><thead><tr><th>Module pad</th><th>ESP32 signal</th><th>GPIO</th><th>Function (wiring)</th><th>Net</th><th>Notes</th></tr></thead><tbody><tr><td>3</td><td>EN</td><td></td><td>EN (chip enable/reset)</td><td>/ESP32/ESP.EN</td><td>Input, pull-up</td></tr>
+<tr><td>4</td><td>SENSOR_VP/IO36</td><td>IO36</td><td>ESP.SGPI0</td><td>/ESP32/ESP.SGPI0</td><td>Input-only on ESP pins</td></tr>
+<tr><td>5</td><td>SENSOR_VN/IO39</td><td>IO39</td><td>ESP.SGPI1</td><td>/ESP32/ESP.SGPI1</td><td>Input-only on ESP pins</td></tr>
+<tr><td>6</td><td>IO34</td><td>IO34</td><td>ESP.SGPI2</td><td>/ESP32/ESP.SGPI2</td><td>Input-only on ESP pins</td></tr>
+<tr><td>7</td><td>IO35</td><td>IO35</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.MOTOR</td><td>GPIO matrix</td></tr>
+<tr><td>8</td><td>IO32</td><td>IO32</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.INTERRUPT</td><td>GPIO matrix</td></tr>
+<tr><td>9</td><td>IO33</td><td>IO33</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.COMMAND</td><td>GPIO matrix</td></tr>
+<tr><td>10</td><td>IO25</td><td>IO25</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.DATA_IN</td><td>GPIO matrix</td></tr>
+<tr><td>11</td><td>IO26</td><td>IO26</td><td>Audio/control</td><td>/Audio/ESPAUD.SIO</td><td>GPIO matrix</td></tr>
+<tr><td>12</td><td>IO27</td><td>IO27</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.PROCEED</td><td>GPIO matrix</td></tr>
+<tr><td>13</td><td>IO14</td><td>IO14</td><td>JTAG (GPIO matrix)</td><td>/ESP32/ESPJTAG.TMS</td><td>Optional</td></tr>
+<tr><td>14</td><td>IO12</td><td>IO12</td><td>JTAG (GPIO matrix)</td><td>/ESP32/ESPJTAG.TDI</td><td>Optional</td></tr>
+<tr><td>16</td><td>IO13</td><td>IO13</td><td>JTAG (GPIO matrix)</td><td>/ESP32/ESPJTAG.TCK</td><td>Optional</td></tr>
+<tr><td>23</td><td>IO15</td><td>IO15</td><td>JTAG (GPIO matrix)</td><td>/ESP32/ESPJTAG.TDO</td><td>Optional</td></tr>
+<tr><td>24</td><td>IO2</td><td>IO2</td><td>ESP.SGPIO</td><td>/ESP32/ESP.SGPIO</td><td>GPIO</td></tr>
+<tr><td>25</td><td>IO0</td><td>IO0</td><td>BOOT/STRAP (GPIO0)</td><td>/ESP32/ESP.BOOT</td><td>Strap: low to bootloader</td></tr>
+<tr><td>26</td><td>IO4</td><td>IO4</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.CLOCK_OUT</td><td>GPIO matrix</td></tr>
+<tr><td>29</td><td>IO5</td><td>IO5</td><td>SPI bus to STM32/logic</td><td>/ESP32/ESP.CS</td><td>GPIO matrix (SPI host/device)</td></tr>
+<tr><td>30</td><td>IO18</td><td>IO18</td><td>SPI bus to STM32/logic</td><td>/ESP32/ESP.SCK</td><td>GPIO matrix (SPI host/device)</td></tr>
+<tr><td>31</td><td>IO19</td><td>IO19</td><td>SPI bus to STM32/logic</td><td>/ESP32/ESP.MISO</td><td>GPIO matrix (SPI host/device)</td></tr>
+<tr><td>33</td><td>IO21</td><td>IO21</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.CLOCK_IN</td><td>GPIO matrix</td></tr>
+<tr><td>34</td><td>RXD0</td><td>RXD0</td><td>UART to STM32</td><td>/ESP32/UART1.TX</td><td>Connected to STM32 USART6</td></tr>
+<tr><td>35</td><td>TXD0</td><td>TXD0</td><td>UART to STM32</td><td>/ESP32/UART1.RX</td><td>Connected to STM32 USART6</td></tr>
+<tr><td>36</td><td>IO22</td><td>IO22</td><td>Atari SIO</td><td>/AtariInterfaces/SIO.DATA_OUT</td><td>GPIO matrix</td></tr>
+<tr><td>37</td><td>IO23</td><td>IO23</td><td>SPI bus to STM32/logic</td><td>/ESP32/ESP.MOSI</td><td>GPIO matrix (SPI host/device)</td></tr></tbody></table>
+</body></html>

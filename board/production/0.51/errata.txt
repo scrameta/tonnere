@@ -1,0 +1,11 @@
+Power:
+Power switch connects 5V to GND when off!
+USB DFU:
+STM PB5 MOSI messes up DFU:
+i) Free PA7 by moving the ADC input to PB0.
+ii) Free PB5 by moving SPI from PB5 to PA7.
+iii) Potentially we need pull downs on PB5, PA10, PB11 (or gnd them). To be tested if it 'just works' or not.
+iv) U32 D9/D10 are on input only FPGA pins! So we lose 1MB of SRAM without patching it. AA12/AB12. Spare pins for respin: T10, R14, T13. Bodge: Use A20 (unused) from both SRA chips for D9/D10.
+v) G2 (DAC G) is also on an input only pin. Move to F1? Bodge: Use FPGA GPIO on bus switch side (+ cut trace)
+vi) DAC is a bit noisy with only one pin per channel and sigma delta. Add a capacitor at a minimum, though most likely use a second pin at a lower level (part R2R and part pattern based or sigma delta - TBD).
+  
