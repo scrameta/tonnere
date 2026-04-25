@@ -430,6 +430,7 @@ set_global_assignment -name USE_SIGNALTAP_FILE video.stp
 
 
 
+set_global_assignment -name VHDL_FILE io_square_test.vhdl
 set_global_assignment -name VHDL_FILE audio_sine_sweep.vhdl
 set_global_assignment -name VHDL_FILE hdmi.vhd
 set_global_assignment -name VHDL_FILE encoder.vhd

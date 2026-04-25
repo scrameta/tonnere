@@ -249,6 +249,8 @@ architecture vhdl of tonnere is
 	
 	signal AUDIO_L_PCM_SIGNED : signed(15 downto 0);
 	signal AUDIO_R_PCM_SIGNED : signed(15 downto 0);
+	
+	signal test_pbi_toggle_reg : std_logic_vector(41 downto 0);
 
 	signal ddio_out : std_logic_vector(7 downto 0);
 begin
@@ -484,25 +486,37 @@ audio_testr : entity work.audio_sine_sweep
     SRAM2_UB_N      <= 'Z';
 
     -- PBI (Parallel Bus Interface)
-    PBI_A           <= (others=>'Z');
-    PBI_D           <= (others=>'Z');
-    PBI_PHI2        <= 'Z';
-    PBI_RW_N        <= 'Z';
-    PBI_RD          <= (others=>'Z');
-    PBI_HALT        <= 'Z';
-    PBI_IRQ         <= 'Z';
-    PBI_RST         <= 'Z';
-    PBI_RDY         <= 'Z';
-    PBI_REF         <= 'Z';
-    PBI_RAS         <= 'Z';
-    PBI_CAS         <= 'Z';
-    PBI_MPD         <= 'Z';
-    PBI_S4_N        <= 'Z';
-    PBI_S5_N        <= 'Z';
-    PBI_CCTL        <= 'Z';
-    PBI_D1XX        <= 'Z';
-    PBI_EXTENB      <= 'Z';
-    PBI_EXTSEL      <= 'Z';
+	 pbi_test : entity work.io_square_test
+    generic map(
+        G_CLK_HZ        => 27_000_000,
+        G_NUM_PINS      => 42,
+        G_BASE_FREQ_HZ  => 100_000,
+        G_STEP_FREQ_HZ  => 1000
+    )
+    port map (
+        clk     => CLK27_A12,
+        rst     => not(AUD_RESET_N),
+        io_out  => test_pbi_toggle_reg
+    );
+    PBI_A           <= test_pbi_toggle_reg(15 downto 0);
+    PBI_D           <= test_pbi_toggle_reg(23 downto 16);
+    PBI_PHI2        <= test_pbi_toggle_reg(24);
+    PBI_RW_N        <= test_pbi_toggle_reg(25);
+    PBI_RD          <= test_pbi_toggle_reg(27 downto 26);
+    PBI_HALT        <= test_pbi_toggle_reg(28);
+    PBI_IRQ         <= test_pbi_toggle_reg(29);
+    PBI_RST         <= test_pbi_toggle_reg(30);
+    PBI_RDY         <= test_pbi_toggle_reg(31);
+    PBI_REF         <= test_pbi_toggle_reg(32);
+    PBI_RAS         <= test_pbi_toggle_reg(33);
+    PBI_CAS         <= test_pbi_toggle_reg(34);
+    PBI_MPD         <= test_pbi_toggle_reg(35);
+    PBI_S4_N        <= test_pbi_toggle_reg(36);
+    PBI_S5_N        <= test_pbi_toggle_reg(37);
+    PBI_CCTL        <= test_pbi_toggle_reg(38);
+    PBI_D1XX        <= test_pbi_toggle_reg(39);
+    PBI_EXTENB      <= test_pbi_toggle_reg(40);
+    PBI_EXTSEL      <= test_pbi_toggle_reg(41);
 
     -- SIO (Serial I/O)
     SIO_DATA_IN     <= 'Z';
