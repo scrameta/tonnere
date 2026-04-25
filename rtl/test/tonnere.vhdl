@@ -247,8 +247,8 @@ architecture vhdl of tonnere is
 	signal clk_hdmi : std_logic;
 	signal in_r,in_g,in_b : std_logic_vector(7 downto 0);
 	
-	signal AUDIO_L_PCM_SIGNED : std_logic_vector(15 downto 0);
-	signal AUDIO_R_PCM_SIGNED : std_logic_vector(15 downto 0);
+	signal AUDIO_L_PCM_SIGNED : signed(15 downto 0);
+	signal AUDIO_R_PCM_SIGNED : signed(15 downto 0);
 
 	signal ddio_out : std_logic_vector(7 downto 0);
 begin
@@ -292,9 +292,38 @@ PORT MAP(CLK => CLK1_536,
 		RESET_N => AUD_RESET_N,
 		 BCLK => FPGAAUD_BCK,
 		 DACLRC => FPGAAUD_LR,
-		 LEFT_IN => AUDIO_L_PCM_SIGNED,
-		 RIGHT_IN => AUDIO_R_PCM_SIGNED,
+		 LEFT_IN => std_logic_vector(AUDIO_L_PCM_SIGNED),
+		 RIGHT_IN => std_logic_vector(AUDIO_R_PCM_SIGNED),
 		 DACDAT => FPGAAUD_DATA);
+
+
+audio_testl : entity work.audio_sine_sweep
+    generic map (
+        G_CLK_HZ        => 27_000_000,
+        G_SAMPLE_RATE_HZ=> 1_000_000,
+        G_SWEEP_SECONDS => 30
+    )
+    port map (
+        clk           => CLK27_A12,
+        rst           => not (AUD_RESET_N), 
+
+        sample_out    => AUDIO_L_PCM_SIGNED,
+        sample_strobe => open
+    );
+
+audio_testr : entity work.audio_sine_sweep
+    generic map (
+        G_CLK_HZ        => 27_000_000,
+        G_SAMPLE_RATE_HZ=> 1_000_000,
+        G_SWEEP_SECONDS => 10
+    )
+    port map (
+        clk           => CLK27_A12,
+        rst           => not (AUD_RESET_N), 
+
+        sample_out    => AUDIO_R_PCM_SIGNED,
+        sample_strobe => open
+    );
 
     -- VGA DAC (sigma delta)
     --VDAC_R <= 'Z';
@@ -327,7 +356,7 @@ PORT MAP(CLK => CLK1_536,
 
     test_screen: entity work.video_test_top
     generic map (
-       MODE => 2
+       MODE => 1
        --0 = 1440x576i50
        --1 = 720x576p50
        --2 = 1280x720p50

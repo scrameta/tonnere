@@ -427,6 +427,10 @@ set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
 
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE video.stp
+
+
+
+set_global_assignment -name VHDL_FILE audio_sine_sweep.vhdl
 set_global_assignment -name VHDL_FILE hdmi.vhd
 set_global_assignment -name VHDL_FILE encoder.vhd
 set_global_assignment -name QIP_FILE altddio_out1.qip
@@ -445,6 +449,4 @@ set_global_assignment -name QIP_FILE pll_vdac.qip
 set_global_assignment -name QIP_FILE pixel_fifo.qip
 set_global_assignment -name QIP_FILE pll_aud.qip
 set_global_assignment -name QIP_FILE pll_hdmi.qip
-
-
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
