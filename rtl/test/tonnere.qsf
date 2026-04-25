@@ -75,8 +75,10 @@ set_location_assignment PIN_A17 -to PBI_A[13]
 set_location_assignment PIN_A18 -to PBI_D[0]
 set_location_assignment PIN_A19 -to PBI_D[3]
 set_location_assignment PIN_A20 -to PBI_D[6]
-set_location_assignment PIN_B3 -to FPGA_GPIO[1]
-set_location_assignment PIN_B4 -to FPGA_GPIO[3]
+#set_location_assignment PIN_B3 -to FPGA_GPIO[1]
+set_location_assignment PIN_B3 -to VDAC_RL
+#set_location_assignment PIN_B4 -to FPGA_GPIO[3]
+set_location_assignment PIN_B4 -to VDAC_BL
 set_location_assignment PIN_B5 -to FSMC_A[7]
 set_location_assignment PIN_B6 -to FSMC_A[10]
 set_location_assignment PIN_B7 -to FSMC_D[5]
@@ -94,8 +96,9 @@ set_location_assignment PIN_B20 -to PBI_D[7]
 set_location_assignment PIN_B21 -to PBI_PHI2
 set_location_assignment PIN_B22 -to PBI_EXTSEL
 #set_location_assignment PIN_C3 -to FPGA_GPIO[0]
-set_location_assignment PIN_C3 -to VDAC_G
-set_location_assignment PIN_C4 -to FPGA_GPIO[2]
+set_location_assignment PIN_C3 -to VDAC_GH
+#set_location_assignment PIN_C4 -to FPGA_GPIO[2]
+set_location_assignment PIN_C4 -to VDAC_GL
 set_location_assignment PIN_C6 -to FSMC_A[9]
 set_location_assignment PIN_C7 -to FSMC_D[4]
 set_location_assignment PIN_C8 -to FSMC_D[7]
@@ -119,7 +122,7 @@ set_location_assignment PIN_D19 -to PBI_D[2]
 set_location_assignment PIN_D20 -to PBI_CAS
 set_location_assignment PIN_D21 -to PBI_RD[4]
 set_location_assignment PIN_D22 -to PBI_S4_N
-set_location_assignment PIN_E1 -to VDAC_R
+set_location_assignment PIN_E1 -to VDAC_RH
 #set_location_assignment PIN_E2 -to SPI_CS[2] - for spi flash only
 set_location_assignment PIN_E5 -to FSMC_A[6]
 set_location_assignment PIN_E6 -to FSMC_A[5]
@@ -167,7 +170,7 @@ set_location_assignment PIN_H19 -to PBI_CCTL
 set_location_assignment PIN_H20 -to SIO_MOTOR
 set_location_assignment PIN_H21 -to ESP_CS
 set_location_assignment PIN_H22 -to ESP_MISO
-set_location_assignment PIN_J3 -to VDAC_B
+set_location_assignment PIN_J3 -to VDAC_BH
 set_location_assignment PIN_J4 -to FPGAAUD_DATA
 set_location_assignment PIN_J17 -to PBI_S5_N
 set_location_assignment PIN_J18 -to ESP_SCK
@@ -344,15 +347,59 @@ set_location_assignment PIN_AB18 -to SRAM2_A[12]
 set_location_assignment PIN_AB19 -to SRAM2_A[19]
 set_location_assignment PIN_AB20 -to SRAM2_D[15]
 
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_R
-set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_R
-set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_R
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_G
-set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_G
-set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_G
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_B
-set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_B
-set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_B
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_RH
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_RH
+set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_RH
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_GH
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_GH
+set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_GH
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_BH
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_BH
+set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_BH
+
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_RL
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_RL
+set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_RL
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_GL
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_GL
+set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_GL
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to VDAC_BL
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to VDAC_BL
+set_instance_assignment -name SLOW_SLEW_RATE OFF -to VDAC_BL
+
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_D2P
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_D2N
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_D1P
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_D1N
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_D0P
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_D0N
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_CKP
+set_instance_assignment -name CURRENT_STRENGTH_NEW "8MA" -to HDMI_CKN
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_D2P
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_D2P
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_D2P
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_D1P
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_D1P
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_D1P
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_D0P
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_D0P
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_D0P
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_CKP
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_CKP
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_CKP
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_D2N
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_D2N
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_D2N
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_D1N
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_D1N
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_D1N
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_D0N
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_D0N
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_D0N
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_CKN
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to HDMI_CKN
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to HDMI_CKN
+
 
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
@@ -380,6 +427,9 @@ set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
 
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE video.stp
+set_global_assignment -name VHDL_FILE hdmi.vhd
+set_global_assignment -name VHDL_FILE encoder.vhd
+set_global_assignment -name QIP_FILE altddio_out1.qip
 set_global_assignment -name VHDL_FILE font_rom_8x8.vhd
 set_global_assignment -name VHDL_FILE text_rom_3x40.vhd
 set_global_assignment -name VHDL_FILE test_pattern_generator.vhd
@@ -396,4 +446,7 @@ set_global_assignment -name QIP_FILE pll_video.qip
 set_global_assignment -name QIP_FILE pll_vdac.qip
 set_global_assignment -name QIP_FILE pixel_fifo.qip
 set_global_assignment -name QIP_FILE pll_aud.qip
+set_global_assignment -name QIP_FILE pll_hdmi.qip
+
+
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

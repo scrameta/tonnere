@@ -13,6 +13,7 @@ entity video_test_top is
         reset  : in  std_logic;
 
 		  clk_used : out std_logic;
+		  clk_pixel : in std_logic;
         active_x    : out unsigned(10 downto 0);
         active_y    : out unsigned(10 downto 0);
 		  
@@ -51,7 +52,7 @@ begin
         timing_i : entity work.video_timing_core
             generic map ( MODE => MODE )
             port map (
-                clk       => clk27,
+                clk       => clk_pixel,
                 reset     => reset,
                 hsync     => hsync_raw,
                 vsync     => vsync_raw,
@@ -67,7 +68,7 @@ begin
                 ACTIVE_H => ACTIVE_H
             )
             port map (
-                clk       => clk27,
+                clk       => clk_pixel,
                 reset     => reset,
                 active    => active_s,
                 active_x  => active_x_s,
@@ -78,9 +79,9 @@ begin
                 b         => b_s
             );
 
-        process(clk27)
+        process(clk_pixel)
         begin
-            if rising_edge(clk27) then
+            if rising_edge(clk_pixel) then
                 if reset = '1' then
                     hs_d <= (others => '0');
                     vs_d <= (others => '0');
@@ -110,7 +111,7 @@ begin
         timing_i : entity work.video_timing_core
             generic map ( MODE => MODE )
             port map (
-                clk       => clk74,
+                clk       => clk_pixel,
                 reset     => reset,
                 hsync     => hsync_raw,
                 vsync     => vsync_raw,
@@ -126,7 +127,7 @@ begin
                 ACTIVE_H => ACTIVE_H
             )
             port map (
-                clk       => clk74,
+                clk       => clk_pixel,
                 reset     => reset,
                 active    => active_s,
                 active_x  => active_x_s,
@@ -137,9 +138,9 @@ begin
                 b         => b_s
             );
 
-        process(clk74)
+        process(clk_pixel)
         begin
-            if rising_edge(clk74) then
+            if rising_edge(clk_pixel) then
                 if reset = '1' then
                     hs_d <= (others => '0');
                     vs_d <= (others => '0');

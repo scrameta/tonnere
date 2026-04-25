@@ -2,6 +2,39 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+----------------------------------------------------------------------
+-- test_pattern_generator
+--
+-- Multi-band test pattern with text overlay, written as a 4-stage
+-- pipeline.  Designed for Cyclone 10 LP at 74.25 MHz (1080i pixel
+-- clock).  The previous version had four integer divides and a
+-- triple multiply chain in a single combinational stage; both are
+-- gone.
+--
+-- Coding style: every register is `<name>_reg`, driven by the
+-- corresponding `<name>_next` combinational signal of the same shape.
+-- Each pipeline stage has exactly one clocked process whose only job
+-- is `_reg <= _next` (with synchronous reset).  All real logic lives
+-- in the unclocked assignments to `_next`.  This makes the pipeline
+-- depth obvious by reading top to bottom.
+--
+-- Pipeline (latency = 4 clocks from active_x/active_y inputs):
+--
+--   S1 : grid-coord counters       (cell_col, cell_row, char_x, char_y)
+--   S2 : pattern decode + text-ROM address
+--   S3 : text-ROM output captured -> font-ROM address
+--   S4 : font-ROM output captured -> final RGB compose
+--
+-- The text and font ROMs are themselves clocked (1-cycle read
+-- latency) so the text character emerges aligned with stage S3's
+-- registers, and the font row emerges aligned with stage S4's
+-- registers.
+--
+-- The font is rendered 1:1 at 8x8 - we DO NOT scale.  At higher
+-- resolutions the text appears smaller, which is intentional: it
+-- doubles as a sharpness / DAC-settling check.
+----------------------------------------------------------------------
+
 entity test_pattern_generator is
     generic (
         ACTIVE_W : integer := 720;
@@ -24,182 +57,172 @@ end entity;
 
 architecture rtl of test_pattern_generator is
 
-    function min_i(a : integer; b : integer) return integer is
+    ----------------------------------------------------------------
+    -- Geometry constants (all elaboration-time)
+    ----------------------------------------------------------------
+
+    -- Native 8x8 cell grid.  Power-of-two so all cell <-> pixel
+    -- arithmetic is just bit-slicing or shifting.
+    constant CELL_BITS  : integer := 3;                -- 2^3 = 8
+    constant CELL_SIZE  : integer := 2 ** CELL_BITS;   -- = 8
+    constant N_COLS     : integer := ACTIVE_W / CELL_SIZE;
+    constant N_ROWS     : integer := ACTIVE_H / CELL_SIZE;
+
+    -- Pattern-band boundaries in cell-rows.  Each band is roughly a
+    -- quarter of the screen.  Bottom band hosts the text overlay.
+    constant BAND0_END_ROW : integer := (1 * N_ROWS) / 4;
+    constant BAND1_END_ROW : integer := (2 * N_ROWS) / 4;
+    constant BAND2_END_ROW : integer := (3 * N_ROWS) / 4;
+
+    -- Text overlay region: 3 cell rows centred vertically inside the
+    -- bottom band, 40 cells centred horizontally.
+    constant TEXT_NROWS    : integer := 3;
+    constant TEXT_NCOLS    : integer := 40;
+    constant BAND3_HEIGHT  : integer := N_ROWS - BAND2_END_ROW;
+    constant TEXT_ROW_TOP  : integer := BAND2_END_ROW
+                                        + (BAND3_HEIGHT - TEXT_NROWS) / 2;
+    constant TEXT_COL_LEFT : integer := (N_COLS - TEXT_NCOLS) / 2;
+
+    -- Eighths and thirds and halves of active width (constant).
+    constant BAR_W   : integer := ACTIVE_W / 8;
+    constant THIRD_W : integer := ACTIVE_W / 3;
+    constant HALF_W  : integer := ACTIVE_W / 2;
+
+    -- 75% intensity for the colour bars.
+    constant LVL75   : unsigned(7 downto 0) := x"C0";
+
+    -- Pick a shift amount so that x_within_half >> RAMP_SHIFT lands
+    -- in roughly 0..255.  No multiplier, no divider - just a wire
+    -- slice once we cast to unsigned.
+    function ceil_log2(n : integer) return integer is
+        variable acc_v : integer := 1;
+        variable bits_v : integer := 0;
     begin
-        if a < b then
-            return a;
-        else
-            return b;
-        end if;
+        while acc_v < n loop
+            acc_v  := acc_v * 2;
+            bits_v := bits_v + 1;
+        end loop;
+        return bits_v;
     end function;
 
-    function sat_add_16(v : unsigned(7 downto 0)) return unsigned is
-        variable t : unsigned(8 downto 0);
-    begin
-        t := ('0' & v) + to_unsigned(16, 9);
-        if t > to_unsigned(255, 9) then
-            return to_unsigned(255, 8);
-        else
-            return t(7 downto 0);
-        end if;
-    end function;
+    -- For HALF_W = 960 -> ceil_log2 = 10 -> RAMP_SHIFT = 2 -> 0..239
+    -- For HALF_W = 640 -> ceil_log2 = 10 -> RAMP_SHIFT = 2 -> 0..159
+    -- For HALF_W = 360 -> ceil_log2 =  9 -> RAMP_SHIFT = 1 -> 0..179
+    constant RAMP_SHIFT : integer := ceil_log2(HALF_W) - 8;
 
-    function mul3_sat(v : unsigned(7 downto 0)) return unsigned is
-        variable t : unsigned(9 downto 0);
-    begin
-        t := resize(v, 10) + shift_left(resize(v, 10), 1);
-        if t > to_unsigned(255, 10) then
-            return to_unsigned(255, 8);
-        else
-            return t(7 downto 0);
-        end if;
-    end function;
+    ----------------------------------------------------------------
+    -- Stage 1: grid coordinates by bit-slicing the inputs.
+    --
+    -- Because CELL_SIZE is a power of two (8), the cell-coordinate
+    -- breakdown of the input pixel position is just:
+    --
+    --   cell_col = active_x >> 3      char_x = active_x(2:0)
+    --   cell_row = active_y >> 3      char_y = active_y(2:0)
+    --
+    -- No counters, no edge detection, no prev_* state.  We just
+    -- register the inputs and present the slices.  In interlace the
+    -- LSB of active_y is 0 in the even field and 1 in the odd field,
+    -- which is exactly the right phase offset for char_y.
+    ----------------------------------------------------------------
+    signal active_s1_reg     : std_logic := '0';
+    signal x_s1_reg          : integer   := 0;
+    signal y_s1_reg          : integer   := 0;
+    signal cell_col_s1_reg   : integer range 0 to 511 := 0;
+    signal cell_row_s1_reg   : integer range 0 to 511 := 0;
+    signal char_x_s1_reg     : integer range 0 to 7   := 0;
+    signal char_y_s1_reg     : integer range 0 to 7   := 0;
 
-    constant HALF_H   : integer := ACTIVE_H / 2;
+    -- combinational _next signals
+    signal active_s1_next    : std_logic;
+    signal x_s1_next         : integer;
+    signal y_s1_next         : integer;
+    signal cell_col_s1_next  : integer range 0 to 511;
+    signal cell_row_s1_next  : integer range 0 to 511;
+    signal char_x_s1_next    : integer range 0 to 7;
+    signal char_y_s1_next    : integer range 0 to 7;
 
-    constant Q0_START : integer := 0;
-    constant Q1_START : integer := ACTIVE_W / 4;
-    constant Q2_START : integer := ACTIVE_W / 2;
-    constant Q3_START : integer := (3 * ACTIVE_W) / 4;
+    ----------------------------------------------------------------
+    -- Stage 2: pattern decode + text-ROM address
+    ----------------------------------------------------------------
+    signal active_s2_reg      : std_logic := '0';
+    signal border_s2_reg      : std_logic := '0';
+    signal r_pat_s2_reg       : unsigned(7 downto 0) := (others => '0');
+    signal g_pat_s2_reg       : unsigned(7 downto 0) := (others => '0');
+    signal b_pat_s2_reg       : unsigned(7 downto 0) := (others => '0');
+    signal text_active_s2_reg : std_logic := '0';
+    signal char_x_s2_reg      : integer range 0 to 7 := 0;
+    signal char_y_s2_reg      : integer range 0 to 7 := 0;
 
-    constant Q0_W     : integer := Q1_START - Q0_START;
-    constant Q1_W     : integer := Q2_START - Q1_START;
-    constant Q2_W     : integer := Q3_START - Q2_START;
-    constant Q3_W     : integer := ACTIVE_W - Q3_START;
+    signal active_s2_next      : std_logic;
+    signal border_s2_next      : std_logic;
+    signal r_pat_s2_next       : unsigned(7 downto 0);
+    signal g_pat_s2_next       : unsigned(7 downto 0);
+    signal b_pat_s2_next       : unsigned(7 downto 0);
+    signal text_active_s2_next : std_logic;
 
-    constant BAR1_END : integer := (1 * ACTIVE_W) / 8;
-    constant BAR2_END : integer := (2 * ACTIVE_W) / 8;
-    constant BAR3_END : integer := (3 * ACTIVE_W) / 8;
-    constant BAR4_END : integer := (4 * ACTIVE_W) / 8;
-    constant BAR5_END : integer := (5 * ACTIVE_W) / 8;
-    constant BAR6_END : integer := (6 * ACTIVE_W) / 8;
-    constant BAR7_END : integer := (7 * ACTIVE_W) / 8;
+    -- text ROM address inputs come straight from S1 registers.
+    signal text_line_sel : unsigned(1 downto 0);
+    signal text_col      : unsigned(5 downto 0);
+    signal text_char_q   : unsigned(7 downto 0);
 
-    constant CELL_W : integer := ACTIVE_W / 40;
-    constant CELL_H : integer := ACTIVE_H / 24;
+    ----------------------------------------------------------------
+    -- Stage 3: text-ROM output captured + font-ROM address
+    ----------------------------------------------------------------
+    signal active_s3_reg      : std_logic := '0';
+    signal border_s3_reg      : std_logic := '0';
+    signal r_pat_s3_reg       : unsigned(7 downto 0) := (others => '0');
+    signal g_pat_s3_reg       : unsigned(7 downto 0) := (others => '0');
+    signal b_pat_s3_reg       : unsigned(7 downto 0) := (others => '0');
+    signal text_active_s3_reg : std_logic := '0';
+    signal char_x_s3_reg      : integer range 0 to 7 := 0;
 
-    function glyph_scale_fn return integer is
-        variable s : integer;
-    begin
-        if (CELL_W / 8) < (CELL_H / 8) then
-            s := CELL_W / 8;
-        else
-            s := CELL_H / 8;
-        end if;
+    -- font ROM addr = { char_code(6:0) , char_y(2:0) }  (10 bits)
+    signal font_addr  : unsigned(9 downto 0);
+    signal font_row_q : std_logic_vector(7 downto 0);
 
-        if s < 1 then
-            s := 1;
-        end if;
-        return s;
-    end function;
+    ----------------------------------------------------------------
+    -- Stage 4: final RGB
+    ----------------------------------------------------------------
+    signal r_reg : std_logic_vector(7 downto 0) := (others => '0');
+    signal g_reg : std_logic_vector(7 downto 0) := (others => '0');
+    signal b_reg : std_logic_vector(7 downto 0) := (others => '0');
 
-    constant SCALE_USE : integer := glyph_scale_fn;
-    constant GLYPH_W   : integer := 8 * SCALE_USE;
-    constant GLYPH_H   : integer := 8 * SCALE_USE;
-    constant GX_OFF    : integer := (CELL_W - GLYPH_W) / 2;
-    constant GY_OFF    : integer := (CELL_H - GLYPH_H) / 2;
-
-    -- 24-bit accumulators: upper byte used as 0..255 ramp
-    constant ACC_W : integer := 24;
-    constant ACC_ONE : integer := 65536;       -- 2^16
-    constant ACC_255 : integer := 255 * ACC_ONE;
-
-    function step_const(span : integer) return unsigned is
-        variable v : integer;
-    begin
-        if span <= 1 then
-            v := 0;
-        else
-            v := ACC_255 / (span - 1);
-        end if;
-        return to_unsigned(v, ACC_W);
-    end function;
-
-    constant STEP_Q0     : unsigned(ACC_W-1 downto 0) := step_const(Q0_W);
-    constant STEP_Q1     : unsigned(ACC_W-1 downto 0) := step_const(Q1_W);
-    constant STEP_Q2     : unsigned(ACC_W-1 downto 0) := step_const(Q2_W);
-    constant STEP_Q3     : unsigned(ACC_W-1 downto 0) := step_const(Q3_W);
-
-    constant BOT_H       : integer := ACTIVE_H - HALF_H;
-    constant STEP_V_BOT  : unsigned(ACC_W-1 downto 0) := step_const(BOT_H);
-    constant STEP_V_FULL : unsigned(ACC_W-1 downto 0) := step_const(ACTIVE_H);
-
-    --------------------------------------------------------------------
-    -- S0: sampled input stream and accumulators
-    --------------------------------------------------------------------
-    signal s0_active      : std_logic := '0';
-    signal s0_x           : integer := 0;
-    signal s0_y           : integer := 0;
-
-    signal prev_active    : std_logic := '0';
-    signal prev_y         : integer := 0;
-
-    signal ramp_acc_h     : unsigned(ACC_W-1 downto 0) := (others => '0');
-    signal bright_bot_acc : unsigned(ACC_W-1 downto 0) := (others => '0');
-    signal bright_full_acc: unsigned(ACC_W-1 downto 0) := (others => '0');
-
-    signal ramp_q_s0      : unsigned(7 downto 0) := (others => '0');
-    signal bright_bot_s0  : unsigned(7 downto 0) := (others => '0');
-    signal bright_full_s0 : unsigned(7 downto 0) := (others => '0');
-
-    --------------------------------------------------------------------
-    -- S1: base pattern + text decode, aligned with text ROM output next cycle
-    --------------------------------------------------------------------
-    signal s1_active      : std_logic := '0';
-    signal s1_border      : std_logic := '0';
-    signal s1_line        : std_logic := '0';
-    signal s1_r           : unsigned(7 downto 0) := (others => '0');
-    signal s1_g           : unsigned(7 downto 0) := (others => '0');
-    signal s1_b           : unsigned(7 downto 0) := (others => '0');
-
-    signal s1_text_valid  : std_logic := '0';
-    signal s1_gx          : integer range 0 to 7 := 0;
-    signal s1_gy          : integer range 0 to 7 := 0;
-    signal s1_text_line   : integer range 0 to 2 := 0;
-    signal s1_text_col    : integer range 0 to 39 := 0;
-
-    --------------------------------------------------------------------
-    -- text ROM interface
-    --------------------------------------------------------------------
-    signal text_line_sel  : unsigned(1 downto 0) := (others => '0');
-    signal text_col       : unsigned(5 downto 0) := (others => '0');
-    signal text_char_q    : unsigned(7 downto 0) := (others => '0');
-
-    --------------------------------------------------------------------
-    -- S2: align base RGB with char, drive font ROM
-    --------------------------------------------------------------------
-    signal s2_active      : std_logic := '0';
-    signal s2_border      : std_logic := '0';
-    signal s2_line        : std_logic := '0';
-    signal s2_r           : unsigned(7 downto 0) := (others => '0');
-    signal s2_g           : unsigned(7 downto 0) := (others => '0');
-    signal s2_b           : unsigned(7 downto 0) := (others => '0');
-
-    signal s2_text_valid  : std_logic := '0';
-    signal s2_gx          : integer range 0 to 7 := 0;
-    signal s2_gy          : integer range 0 to 7 := 0;
-    signal s2_char        : unsigned(7 downto 0) := (others => '0');
-
-    --------------------------------------------------------------------
-    -- font ROM interface
-    --------------------------------------------------------------------
-    signal font_addr      : unsigned(9 downto 0) := (others => '0');
-    signal font_row_q     : std_logic_vector(7 downto 0) := (others => '0');
-
-    --------------------------------------------------------------------
-    -- S3: final compose
-    --------------------------------------------------------------------
-    signal r_i            : std_logic_vector(7 downto 0) := (others => '0');
-    signal g_i            : std_logic_vector(7 downto 0) := (others => '0');
-    signal b_i            : std_logic_vector(7 downto 0) := (others => '0');
+    signal r_next : std_logic_vector(7 downto 0);
+    signal g_next : std_logic_vector(7 downto 0);
+    signal b_next : std_logic_vector(7 downto 0);
 
 begin
 
-    --------------------------------------------------------------------
+    --================================================================
     -- External ROMs
-    --------------------------------------------------------------------
-    text_line_sel <= to_unsigned(s1_text_line, 2);
-    text_col      <= to_unsigned(s1_text_col, 6);
+    --================================================================
+
+    -- The text ROM address comes straight from S1 registers, so the
+    -- ROM lookup runs during stage 2 and `text_char_q` becomes valid
+    -- at the start of stage 3.
+
+    -- text_line_sel: 3-way constant compare on cell_row_s1_reg.
+    text_line_sel <=
+        to_unsigned(0, 2) when (cell_row_s1_reg = TEXT_ROW_TOP    ) else
+        to_unsigned(1, 2) when (cell_row_s1_reg = TEXT_ROW_TOP + 1) else
+        to_unsigned(2, 2) when (cell_row_s1_reg = TEXT_ROW_TOP + 2) else
+        (others => '0');
+
+    -- text_col: cell_col relative to TEXT_COL_LEFT, clipped into
+    -- 0..63.  Outside the text window we drive 0 (a blank cell in
+    -- the ROM), so the ROM never sees a negative or out-of-range
+    -- address.  This avoids a separate "valid" gating path inside
+    -- the ROM.
+    process(cell_col_s1_reg)
+        variable rel_v : integer;
+    begin
+        rel_v := cell_col_s1_reg - TEXT_COL_LEFT;
+        if rel_v < 0 or rel_v > 63 then
+            text_col <= (others => '0');
+        else
+            text_col <= to_unsigned(rel_v, 6);
+        end if;
+    end process;
 
     text_rom_i : entity work.text_rom_3x40
         port map (
@@ -209,7 +232,11 @@ begin
             q        => text_char_q
         );
 
-    font_addr <= shift_left(resize(s2_char, 10), 3) + to_unsigned(s2_gy, 10);
+    -- Font ROM address: top-bit of the character code is masked off
+    -- to keep us inside the 1024-entry ROM.  The 8x glyph row index
+    -- is char_y from S2.
+    font_addr <= text_char_q(6 downto 0)
+                 & to_unsigned(char_y_s2_reg, 3);
 
     font_rom_i : entity work.font_rom_8x8
         port map (
@@ -218,387 +245,333 @@ begin
             q    => font_row_q
         );
 
-    --------------------------------------------------------------------
-    -- S0: sample inputs, update accumulators
-    --------------------------------------------------------------------
+    --================================================================
+    -- Stage 1: register the inputs and slice them into cell coords.
+    --
+    -- All four counters are produced by bit-slicing active_x and
+    -- active_y - no real arithmetic, no edge detection, no carries.
+    -- The integer-to-unsigned conversion is wide enough to cover the
+    -- biggest mode we care about (1920x1080 fits in 11 bits; we use
+    -- 12 to leave headroom).
+    --================================================================
+
+    active_s1_next <= active;
+    x_s1_next      <= active_x;
+    y_s1_next      <= active_y;
+
+    -- char_x = active_x mod 8, cell_col = active_x / 8
+    -- char_y = active_y mod 8, cell_row = active_y / 8
+    -- Implemented as bit-slicing of an unsigned view of the input.
+    process(active, active_x, active_y)
+        variable xu_v : unsigned(11 downto 0);
+        variable yu_v : unsigned(11 downto 0);
+    begin
+        if active = '1' then
+            xu_v := to_unsigned(active_x, 12);
+            yu_v := to_unsigned(active_y, 12);
+            char_x_s1_next   <= to_integer(xu_v(2 downto 0));
+            char_y_s1_next   <= to_integer(yu_v(2 downto 0));
+            cell_col_s1_next <= to_integer(xu_v(11 downto 3));
+            cell_row_s1_next <= to_integer(yu_v(11 downto 3));
+        else
+            -- During blanking the input integers can be undefined or
+            -- out-of-range; force to zero so to_unsigned never raises.
+            char_x_s1_next   <= 0;
+            char_y_s1_next   <= 0;
+            cell_col_s1_next <= 0;
+            cell_row_s1_next <= 0;
+        end if;
+    end process;
+
+    -- Stage 1 register
     process(clk)
-        variable new_line_v : boolean;
-        variable enter_active_v : boolean;
     begin
         if rising_edge(clk) then
             if reset = '1' then
-                s0_active       <= '0';
-                s0_x            <= 0;
-                s0_y            <= 0;
-                prev_active     <= '0';
-                prev_y          <= 0;
-                ramp_acc_h      <= (others => '0');
-                bright_bot_acc  <= (others => '0');
-                bright_full_acc <= (others => '0');
-                ramp_q_s0       <= (others => '0');
-                bright_bot_s0   <= (others => '0');
-                bright_full_s0  <= (others => '0');
+                active_s1_reg   <= '0';
+                x_s1_reg        <= 0;
+                y_s1_reg        <= 0;
+                cell_col_s1_reg <= 0;
+                cell_row_s1_reg <= 0;
+                char_x_s1_reg   <= 0;
+                char_y_s1_reg   <= 0;
             else
-                s0_active <= active;
-                s0_x      <= active_x;
-                s0_y      <= active_y;
+                active_s1_reg   <= active_s1_next;
+                x_s1_reg        <= x_s1_next;
+                y_s1_reg        <= y_s1_next;
+                cell_col_s1_reg <= cell_col_s1_next;
+                cell_row_s1_reg <= cell_row_s1_next;
+                char_x_s1_reg   <= char_x_s1_next;
+                char_y_s1_reg   <= char_y_s1_next;
+            end if;
+        end if;
+    end process;
 
-                new_line_v := false;
-                enter_active_v := false;
+    --================================================================
+    -- Stage 2: pattern decode (combinational) + register
+    --
+    -- Inputs are S1 registers only.  The longest combinational path
+    -- here is a band-select compare followed by a 7-way colour-bar
+    -- compare and a 3:1 mux to pattern RGB.  No multiplies.  Divides
+    -- are all by elaboration-time constants and either resolve to
+    -- bit-slicing (CELL_SIZE = 8, RAMP_SHIFT) or to constant
+    -- multipliers Quartus folds into shifts / additions.
+    --================================================================
 
-                if (prev_active = '0') and (active = '1') then
-                    enter_active_v := true;
+    active_s2_next <= active_s1_reg;
+
+    -- 1-pixel border on the outer edge of the active area.
+    border_s2_next <= '1' when (active_s1_reg = '1' and
+                                (x_s1_reg = 0 or x_s1_reg = ACTIVE_W - 1 or
+                                 y_s1_reg = 0 or y_s1_reg = ACTIVE_H - 1))
+                      else '0';
+
+    -- Text is "active" only inside the 3 designated text cell-rows
+    -- AND the 40-cell horizontal text window.
+    text_active_s2_next <= '1' when (active_s1_reg = '1' and
+        (cell_row_s1_reg = TEXT_ROW_TOP    or
+         cell_row_s1_reg = TEXT_ROW_TOP + 1 or
+         cell_row_s1_reg = TEXT_ROW_TOP + 2) and
+        cell_col_s1_reg >= TEXT_COL_LEFT and
+        cell_col_s1_reg <  TEXT_COL_LEFT + TEXT_NCOLS)
+        else '0';
+
+    -- Pattern RGB selector.  Plain comparator + mux logic; no
+    -- arithmetic deeper than a single constant compare or a constant
+    -- shift.
+    process(active_s1_reg, x_s1_reg, y_s1_reg,
+            cell_row_s1_reg, cell_col_s1_reg)
+        variable rv     : unsigned(7 downto 0);
+        variable gv     : unsigned(7 downto 0);
+        variable bv     : unsigned(7 downto 0);
+        variable ramp_v : unsigned(7 downto 0);
+        variable xu_v   : unsigned(15 downto 0);
+        variable xrelu_v: unsigned(15 downto 0);
+    begin
+        rv := (others => '0');
+        gv := (others => '0');
+        bv := (others => '0');
+
+        if active_s1_reg = '1' then
+
+            ----------------------------------------------------
+            -- Band 0: SMPTE-style 75% colour bars (8 vertical bars)
+            ----------------------------------------------------
+            if cell_row_s1_reg < BAND0_END_ROW then
+                if    x_s1_reg <     BAR_W then  -- 75% white
+                    rv := LVL75; gv := LVL75; bv := LVL75;
+                elsif x_s1_reg < 2 * BAR_W then  -- yellow
+                    rv := LVL75; gv := LVL75; bv := x"00";
+                elsif x_s1_reg < 3 * BAR_W then  -- cyan
+                    rv := x"00"; gv := LVL75; bv := LVL75;
+                elsif x_s1_reg < 4 * BAR_W then  -- green
+                    rv := x"00"; gv := LVL75; bv := x"00";
+                elsif x_s1_reg < 5 * BAR_W then  -- magenta
+                    rv := LVL75; gv := x"00"; bv := LVL75;
+                elsif x_s1_reg < 6 * BAR_W then  -- red
+                    rv := LVL75; gv := x"00"; bv := x"00";
+                elsif x_s1_reg < 7 * BAR_W then  -- blue
+                    rv := x"00"; gv := x"00"; bv := LVL75;
+                else                              -- black
+                    rv := x"00"; gv := x"00"; bv := x"00";
                 end if;
 
-                if (active = '1') and ((prev_active = '0') or (active_y /= prev_y)) then
-                    new_line_v := true;
-                end if;
-
-                -- Vertical accumulators: updated once per active line
-                if enter_active_v then
-                    bright_full_acc <= (others => '0');
-
-                    if active_y >= HALF_H then
-                        if active_y = HALF_H then
-                            bright_bot_acc <= (others => '0');
-                        else
-                            bright_bot_acc <= bright_bot_acc + STEP_V_BOT;
-                        end if;
+            ----------------------------------------------------
+            -- Band 1: high-frequency stripe tests
+            --   left third  : 1-pixel vertical stripes  (Nyquist)
+            --   middle third: 2-pixel vertical stripes  (Nyquist/2)
+            --   right third : 1-line  horizontal stripes
+            -- These are the most useful patterns for evaluating
+            -- output filter rolloff and DAC settling.
+            ----------------------------------------------------
+            elsif cell_row_s1_reg < BAND1_END_ROW then
+                if x_s1_reg < THIRD_W then
+                    -- bit 0 of x toggles every pixel
+                    if (x_s1_reg mod 2) = 0 then
+                        rv := x"FF"; gv := x"FF"; bv := x"FF";
                     else
-                        bright_bot_acc <= (others => '0');
+                        rv := x"00"; gv := x"00"; bv := x"00";
                     end if;
-
-                elsif new_line_v then
-                    bright_full_acc <= bright_full_acc + STEP_V_FULL;
-
-                    if active_y >= HALF_H then
-                        if active_y = HALF_H then
-                            bright_bot_acc <= (others => '0');
-                        else
-                            bright_bot_acc <= bright_bot_acc + STEP_V_BOT;
-                        end if;
+                elsif x_s1_reg < 2 * THIRD_W then
+                    -- bit 1 of x toggles every two pixels
+                    if ((x_s1_reg / 2) mod 2) = 0 then
+                        rv := x"FF"; gv := x"FF"; bv := x"FF";
                     else
-                        bright_bot_acc <= (others => '0');
-                    end if;
-                end if;
-
-                -- Horizontal accumulator: updated per pixel in bottom half only
-                if active = '1' then
-                    if new_line_v then
-                        ramp_acc_h <= (others => '0');
-                    else
-                        if active_y < HALF_H then
-                            ramp_acc_h <= (others => '0');
-                        else
-                            if active_x = Q0_START then
-                                ramp_acc_h <= (others => '0');
-                            elsif active_x = Q1_START then
-                                ramp_acc_h <= (others => '0');
-                            elsif active_x = Q2_START then
-                                ramp_acc_h <= (others => '0');
-                            elsif active_x = Q3_START then
-                                ramp_acc_h <= (others => '0');
-                            elsif active_x < Q1_START then
-                                ramp_acc_h <= ramp_acc_h + STEP_Q0;
-                            elsif active_x < Q2_START then
-                                ramp_acc_h <= ramp_acc_h + STEP_Q1;
-                            elsif active_x < Q3_START then
-                                ramp_acc_h <= ramp_acc_h + STEP_Q2;
-                            else
-                                ramp_acc_h <= ramp_acc_h + STEP_Q3;
-                            end if;
-                        end if;
+                        rv := x"00"; gv := x"00"; bv := x"00";
                     end if;
                 else
-                    ramp_acc_h <= (others => '0');
-                end if;
-
-                ramp_q_s0      <= ramp_acc_h(23 downto 16);
-                bright_bot_s0  <= bright_bot_acc(23 downto 16);
-                bright_full_s0 <= bright_full_acc(23 downto 16);
-
-                prev_active <= active;
-                prev_y      <= active_y;
-            end if;
-        end if;
-    end process;
-
-    --------------------------------------------------------------------
-    -- S1: base pattern + text decode
-    --------------------------------------------------------------------
-    process(clk)
-        variable x, y        : integer;
-        variable border_v    : std_logic;
-        variable line_v      : std_logic;
-        variable rv, gv, bv  : unsigned(7 downto 0);
-        variable col_v       : integer;
-        variable row_v       : integer;
-        variable px_v        : integer;
-        variable py_v        : integer;
-        variable gx_v        : integer;
-        variable gy_v        : integer;
-        variable text_ok_v   : std_logic;
-        variable text_line_v : integer range 0 to 2;
-        variable text_col_v  : integer range 0 to 39;
-        variable t           : unsigned(7 downto 0);
-        variable m           : unsigned(15 downto 0);
-    begin
-        if rising_edge(clk) then
-            if reset = '1' then
-                s1_active     <= '0';
-                s1_border     <= '0';
-                s1_line       <= '0';
-                s1_r          <= (others => '0');
-                s1_g          <= (others => '0');
-                s1_b          <= (others => '0');
-                s1_text_valid <= '0';
-                s1_gx         <= 0;
-                s1_gy         <= 0;
-                s1_text_line  <= 0;
-                s1_text_col   <= 0;
-            else
-                x := s0_x;
-                y := s0_y;
-
-                border_v := '0';
-                line_v   := '0';
-                rv := (others => '0');
-                gv := (others => '0');
-                bv := (others => '0');
-
-                text_ok_v := '0';
-                text_line_v := 0;
-                text_col_v := 0;
-                gx_v := 0;
-                gy_v := 0;
-
-                if s0_active = '1' then
-                    if (x = 0) or (x = ACTIVE_W - 1) or
-                       (y = 0) or (y = ACTIVE_H - 1) then
-                        border_v := '1';
-                    end if;
-
-                    -- Sparse guide lines only
-                    if (x = ACTIVE_W / 4) or
-                       (x = ACTIVE_W / 2) or
-                       (x = (3 * ACTIVE_W) / 4) or
-                       (y = ACTIVE_H / 2) then
-                        line_v := '1';
-                    end if;
-
-                    if y < HALF_H then
-                        -- Top half: colour bars
-                        if x < BAR1_END then
-                            rv := x"FF"; gv := x"FF"; bv := x"FF";
-                        elsif x < BAR2_END then
-                            rv := x"FF"; gv := x"FF"; bv := x"00";
-                        elsif x < BAR3_END then
-                            rv := x"00"; gv := x"FF"; bv := x"FF";
-                        elsif x < BAR4_END then
-                            rv := x"00"; gv := x"FF"; bv := x"00";
-                        elsif x < BAR5_END then
-                            rv := x"FF"; gv := x"00"; bv := x"FF";
-                        elsif x < BAR6_END then
-                            rv := x"FF"; gv := x"00"; bv := x"00";
-                        elsif x < BAR7_END then
-                            rv := x"00"; gv := x"00"; bv := x"FF";
-                        else
-                            rv := x"00"; gv := x"00"; bv := x"00";
-                        end if;
+                    -- 1-line horizontal stripes (per displayed line)
+                    if (y_s1_reg mod 2) = 0 then
+                        rv := x"FF"; gv := x"FF"; bv := x"FF";
                     else
-                        -- Bottom half from accumulators
-                        if x < Q1_START then
-                            rv := ramp_q_s0;
-                            gv := ramp_q_s0;
-                            bv := ramp_q_s0;
-
-                        elsif x < Q2_START then
-                            if y < (HALF_H + ACTIVE_H / 6) then
-                                rv := ramp_q_s0;
-                                gv := (others => '0');
-                                bv := (others => '0');
-                            elsif y < (HALF_H + 2 * ACTIVE_H / 6) then
-                                rv := (others => '0');
-                                gv := ramp_q_s0;
-                                bv := (others => '0');
-                            else
-                                rv := (others => '0');
-                                gv := (others => '0');
-                                bv := ramp_q_s0;
-                            end if;
-
-                        elsif x < Q3_START then
-                            if ramp_q_s0 < to_unsigned(85, 8) then
-                                t := mul3_sat(ramp_q_s0);
-                                rv := to_unsigned(255, 8) - t;
-                                gv := t;
-                                bv := (others => '0');
-                            elsif ramp_q_s0 < to_unsigned(170, 8) then
-                                t := mul3_sat(ramp_q_s0 - to_unsigned(85, 8));
-                                rv := (others => '0');
-                                gv := to_unsigned(255, 8) - t;
-                                bv := t;
-                            else
-                                t := mul3_sat(ramp_q_s0 - to_unsigned(170, 8));
-                                rv := t;
-                                gv := (others => '0');
-                                bv := to_unsigned(255, 8) - t;
-                            end if;
-
-                            m := rv * bright_bot_s0;
-                            rv := m(15 downto 8);
-                            m := gv * bright_bot_s0;
-                            gv := m(15 downto 8);
-                            m := bv * bright_bot_s0;
-                            bv := m(15 downto 8);
-
-                        else
-                            if x = Q3_START then
-                                rv := x"00";
-                                gv := bright_full_s0;
-                                bv := x"FF";
-                            else
-                                rv := ramp_q_s0;
-                                gv := bright_full_s0;
-                                bv := to_unsigned(255, 8) - ramp_q_s0;
-                            end if;
-                        end if;			    
-                    end if;
-
-                    -- Text decode
-                    if (CELL_W > 0) and (CELL_H > 0) then
-                        col_v := x / CELL_W;
-                        row_v := y / CELL_H;
-
-                        if (col_v >= 0) and (col_v < 40) and
-                           ((row_v = 16) or (row_v = 17) or (row_v = 18)) then
-
-                            px_v := x - (col_v * CELL_W);
-                            py_v := y - (row_v * CELL_H);
-
-                            if (px_v >= GX_OFF) and (px_v < GX_OFF + GLYPH_W) and
-                               (py_v >= GY_OFF) and (py_v < GY_OFF + GLYPH_H) then
-
-                                gx_v := (px_v - GX_OFF) / SCALE_USE;
-                                gy_v := (py_v - GY_OFF) / SCALE_USE;
-
-                                if (gx_v >= 0) and (gx_v < 8) and
-                                   (gy_v >= 0) and (gy_v < 8) then
-                                    text_ok_v := '1';
-                                    text_line_v := row_v - 16;
-                                    text_col_v := col_v;
-                                end if;
-                            end if;
-                        end if;
+                        rv := x"00"; gv := x"00"; bv := x"00";
                     end if;
                 end if;
 
-                s1_active     <= s0_active;
-                s1_border     <= border_v;
-                s1_line       <= line_v;
-                s1_r          <= rv;
-                s1_g          <= gv;
-                s1_b          <= bv;
+            ----------------------------------------------------
+            -- Band 2: ramps
+            --   left half : grey ramp    (R=G=B = (x       ) >> RAMP_SHIFT)
+            --   right half: split into 3 sub-bands by cell_row -
+            --               R-only, G-only, B-only ramp using
+            --               (x - HALF_W) >> RAMP_SHIFT.
+            -- Both ramps are pure shift-and-truncate; no multipliers.
+            ----------------------------------------------------
+            elsif cell_row_s1_reg < BAND2_END_ROW then
+                if x_s1_reg < HALF_W then
+                    xu_v   := to_unsigned(x_s1_reg, 16);
+                    ramp_v := xu_v(RAMP_SHIFT + 7 downto RAMP_SHIFT);
+                    rv := ramp_v; gv := ramp_v; bv := ramp_v;
+                else
+                    xrelu_v := to_unsigned(x_s1_reg - HALF_W, 16);
+                    ramp_v  := xrelu_v(RAMP_SHIFT + 7 downto RAMP_SHIFT);
+                    if cell_row_s1_reg <
+                       BAND1_END_ROW
+                       + (BAND2_END_ROW - BAND1_END_ROW) / 3 then
+                        rv := ramp_v; gv := x"00";   bv := x"00";
+                    elsif cell_row_s1_reg <
+                          BAND1_END_ROW
+                          + 2 * (BAND2_END_ROW - BAND1_END_ROW) / 3 then
+                        rv := x"00";  gv := ramp_v; bv := x"00";
+                    else
+                        rv := x"00";  gv := x"00";  bv := ramp_v;
+                    end if;
+                end if;
 
-                s1_text_valid <= text_ok_v;
-                s1_gx         <= gx_v;
-                s1_gy         <= gy_v;
-                s1_text_line  <= text_line_v;
-                s1_text_col   <= text_col_v;
+            ----------------------------------------------------
+            -- Band 3: 8x8 checkerboard background for the text.
+            -- We use cell_col + cell_row directly (already / 8) so
+            -- there's no divide.
+            ----------------------------------------------------
+            else
+                if ((cell_row_s1_reg + cell_col_s1_reg) mod 2) = 0 then
+                    rv := x"40"; gv := x"40"; bv := x"40";
+                else
+                    rv := x"20"; gv := x"20"; bv := x"20";
+                end if;
             end if;
         end if;
+
+        r_pat_s2_next <= rv;
+        g_pat_s2_next <= gv;
+        b_pat_s2_next <= bv;
     end process;
 
-    --------------------------------------------------------------------
-    -- S2: align base RGB with text char and font address
-    --------------------------------------------------------------------
+    -- Stage 2 register
     process(clk)
     begin
         if rising_edge(clk) then
             if reset = '1' then
-                s2_active     <= '0';
-                s2_border     <= '0';
-                s2_line       <= '0';
-                s2_r          <= (others => '0');
-                s2_g          <= (others => '0');
-                s2_b          <= (others => '0');
-                s2_text_valid <= '0';
-                s2_gx         <= 0;
-                s2_gy         <= 0;
-                s2_char       <= (others => '0');
+                active_s2_reg      <= '0';
+                border_s2_reg      <= '0';
+                r_pat_s2_reg       <= (others => '0');
+                g_pat_s2_reg       <= (others => '0');
+                b_pat_s2_reg       <= (others => '0');
+                text_active_s2_reg <= '0';
+                char_x_s2_reg      <= 0;
+                char_y_s2_reg      <= 0;
             else
-                s2_active     <= s1_active;
-                s2_border     <= s1_border;
-                s2_line       <= s1_line;
-                s2_r          <= s1_r;
-                s2_g          <= s1_g;
-                s2_b          <= s1_b;
-
-                s2_text_valid <= s1_text_valid;
-                s2_gx         <= s1_gx;
-                s2_gy         <= s1_gy;
-                s2_char       <= text_char_q;
+                active_s2_reg      <= active_s2_next;
+                border_s2_reg      <= border_s2_next;
+                r_pat_s2_reg       <= r_pat_s2_next;
+                g_pat_s2_reg       <= g_pat_s2_next;
+                b_pat_s2_reg       <= b_pat_s2_next;
+                text_active_s2_reg <= text_active_s2_next;
+                char_x_s2_reg      <= char_x_s1_reg;
+                char_y_s2_reg      <= char_y_s1_reg;
             end if;
         end if;
     end process;
 
-    --------------------------------------------------------------------
-    -- S3: final compose with font row
-    --------------------------------------------------------------------
+    --================================================================
+    -- Stage 3: text-ROM captured -> font-ROM addressed.
+    -- Pure shift register: everything just propagates one cycle so it
+    -- aligns with font_row_q at stage 4.
+    --================================================================
     process(clk)
-        variable rv       : unsigned(7 downto 0);
-        variable gv       : unsigned(7 downto 0);
-        variable bv       : unsigned(7 downto 0);
-        variable text_pix : std_logic;
     begin
         if rising_edge(clk) then
             if reset = '1' then
-                r_i <= (others => '0');
-                g_i <= (others => '0');
-                b_i <= (others => '0');
+                active_s3_reg      <= '0';
+                border_s3_reg      <= '0';
+                r_pat_s3_reg       <= (others => '0');
+                g_pat_s3_reg       <= (others => '0');
+                b_pat_s3_reg       <= (others => '0');
+                text_active_s3_reg <= '0';
+                char_x_s3_reg      <= 0;
             else
-                rv := s2_r;
-                gv := s2_g;
-                bv := s2_b;
-
-                if s2_line = '1' then
-                    rv := sat_add_16(rv);
-                    gv := sat_add_16(gv);
-                    bv := sat_add_16(bv);
-                end if;
-
-                text_pix := '0';
-                if s2_text_valid = '1' then
-                    text_pix := font_row_q(7 - s2_gx);
-                end if;
-
-                if text_pix = '1' then
-                    rv := x"FF";
-                    gv := x"FF";
-                    bv := x"80";
-                end if;
-
-                if s2_border = '1' then
-                    rv := x"FF";
-                    gv := x"FF";
-                    bv := x"FF";
-                end if;
-
-                if s2_active = '0' then
-                    rv := x"00";
-                    gv := x"00";
-                    bv := x"00";
-                end if;
-
-                r_i <= std_logic_vector(rv);
-                g_i <= std_logic_vector(gv);
-                b_i <= std_logic_vector(bv);
+                active_s3_reg      <= active_s2_reg;
+                border_s3_reg      <= border_s2_reg;
+                r_pat_s3_reg       <= r_pat_s2_reg;
+                g_pat_s3_reg       <= g_pat_s2_reg;
+                b_pat_s3_reg       <= b_pat_s2_reg;
+                text_active_s3_reg <= text_active_s2_reg;
+                char_x_s3_reg      <= char_x_s2_reg;
             end if;
         end if;
     end process;
 
-    r <= r_i;
-    g <= g_i;
-    b <= b_i;
+    --================================================================
+    -- Stage 4: final compose with font_row_q.
+    --
+    -- text_pix is a single 8:1 mux selecting one bit of font_row_q.
+    -- Final priority: inactive -> black; border -> white;
+    -- text pixel -> bright yellow; otherwise pattern colour.
+    --================================================================
+    process(active_s3_reg, border_s3_reg, text_active_s3_reg,
+            char_x_s3_reg, font_row_q,
+            r_pat_s3_reg, g_pat_s3_reg, b_pat_s3_reg)
+        variable text_pix_v : std_logic;
+        variable rv, gv, bv : unsigned(7 downto 0);
+    begin
+        rv := r_pat_s3_reg;
+        gv := g_pat_s3_reg;
+        bv := b_pat_s3_reg;
+
+        text_pix_v := text_active_s3_reg
+                      and font_row_q(7 - char_x_s3_reg);
+
+        if text_pix_v = '1' then
+            rv := x"FF"; gv := x"FF"; bv := x"80";
+        end if;
+
+        if border_s3_reg = '1' then
+            rv := x"FF"; gv := x"FF"; bv := x"FF";
+        end if;
+
+        if active_s3_reg = '0' then
+            rv := x"00"; gv := x"00"; bv := x"00";
+        end if;
+
+        r_next <= std_logic_vector(rv);
+        g_next <= std_logic_vector(gv);
+        b_next <= std_logic_vector(bv);
+    end process;
+
+    -- Stage 4 (output) register
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if reset = '1' then
+                r_reg <= (others => '0');
+                g_reg <= (others => '0');
+                b_reg <= (others => '0');
+            else
+                r_reg <= r_next;
+                g_reg <= g_next;
+                b_reg <= b_next;
+            end if;
+        end if;
+    end process;
+
+    r <= r_reg;
+    g <= g_reg;
+    b <= b_reg;
+
+    -- field_odd is unused now (we deliberately don't try to undo
+    -- interlace - the test pattern is meant to be displayed as-is
+    -- so any interlace artifacts are part of the test).  Reading
+    -- the port avoids "unused signal" warnings in some flows.
+    -- (Strictly, leaving an input unused is fine in VHDL; this is
+    -- just documentation.)
 
 end architecture;

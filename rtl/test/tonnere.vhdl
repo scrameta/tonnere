@@ -74,7 +74,7 @@ entity tonnere is
     -- FPGA GPIO  (via U29 bus switch to PBI edge connector)
     ---------------------------------------------------------------------------
     -- FPGA_GPIO       : inout std_logic_vector(4 downto 0);
-    FPGA_GPIO       : inout std_logic_vector(4 downto 1);
+    FPGA_GPIO       : inout std_logic_vector(4 downto 4);
 
     ---------------------------------------------------------------------------
     -- ESP32 SPI slave bus  (direct to ESP32-WROVER-E U34, 3V3, no bus switch)
@@ -94,9 +94,12 @@ entity tonnere is
     ---------------------------------------------------------------------------
     -- Video DAC  (via series resistors into THS7316 video buffer U21)
     ---------------------------------------------------------------------------
-    VDAC_R          : out   std_logic;                      -- red   via R75 -> U21 ch3
-    VDAC_G          : out   std_logic;                      -- green via R74 -> U21 ch2
-    VDAC_B          : out   std_logic;                      -- blue  via R76 -> U21 ch1
+    VDAC_RH          : out   std_logic;                      -- red   via R75 -> U21 ch3
+    VDAC_GH          : out   std_logic;                      -- green via R74 -> U21 ch2
+    VDAC_BH          : out   std_logic;                      -- blue  via R76 -> U21 ch1
+    VDAC_RL          : out   std_logic;                      -- red   low bits
+    VDAC_GL          : out   std_logic;                      -- green low bits
+    VDAC_BL          : out   std_logic;                      -- blue  low bits
     VDAC_HSYNC      : out   std_logic;                      -- hsync via R39 -> connector
     VDAC_VSYNC      : out   std_logic;                      -- vsync via R38 -> connector
 
@@ -225,13 +228,13 @@ end entity tonnere;
 architecture vhdl of tonnere is
     signal CLK27 : std_logic;
 	 signal CLK74_25 : std_logic;
-	 signal CLK135 : std_logic;
-	 signal CLK270 : std_logic;
+	 signal CLK_PATTERN : std_logic;
 	 signal CLK1_536 : std_logic;
 	 
 	 signal AUD_RESET_N : std_logic;
 	 signal VDAC_RESET_N : std_logic;
 	 signal VIDEO_RESET_N : std_logic;
+	 signal HDMI_RESET_N : std_logic;
 	 
 	signal test_r,test_g,test_b : std_logic_vector(7 downto 0);
 	signal test_hsync,test_vsync : std_logic;
@@ -239,11 +242,15 @@ architecture vhdl of tonnere is
 	signal test_active_x    : unsigned(10 downto 0);
 	signal test_active_y    : unsigned(10 downto 0);	
 
+	signal clk_pixel_in : std_logic;
 	signal clk_pixel : std_logic;
+	signal clk_hdmi : std_logic;
 	signal in_r,in_g,in_b : std_logic_vector(7 downto 0);
 	
 	signal AUDIO_L_PCM_SIGNED : std_logic_vector(15 downto 0);
 	signal AUDIO_R_PCM_SIGNED : std_logic_vector(15 downto 0);
+
+	signal ddio_out : std_logic_vector(7 downto 0);
 begin
     -- FSMC bus from STM (we are SRAM!)
     FSMC_D <= (others=>'Z'); --Do not drive
@@ -270,6 +277,15 @@ begin
         c0		=> CLK1_536,
         locked => AUD_RESET_N
     );	 
+
+    pll_hdmi1 : ENTITY work.pll_hdmi
+	 PORT MAP
+    (
+        inclk0 => clk_pixel_in,
+        c0		=> clk_pixel,
+        c1		=> clk_hdmi,
+        locked => HDMI_RESET_N
+    );	 
 	 
 audio_codec_data : entity work.i2smaster
 PORT MAP(CLK => CLK1_536,
@@ -295,15 +311,14 @@ PORT MAP(CLK => CLK1_536,
         c1		=> CLK74_25,
         locked => VIDEO_RESET_N
     );
-	 
+
     pll_vdac1 : ENTITY work.pll_vdac
 	 PORT MAP
     (
         inclk0 => CLK27_A12,
-        c0		=> CLK270,
-		  c1		=> CLK135,
+        c0		=> CLK_PATTERN,
         locked => VDAC_RESET_N
-    );	 
+    );
 	 
     --clk_pixel <= CLK74_25;
     --in_r <= std_logic_vector(COUNT_REG);
@@ -312,7 +327,7 @@ PORT MAP(CLK => CLK1_536,
 
     test_screen: entity work.video_test_top
     generic map (
-       MODE => 1
+       MODE => 2
        --0 = 1440x576i50
        --1 = 720x576p50
        --2 = 1280x720p50
@@ -325,7 +340,8 @@ PORT MAP(CLK => CLK1_536,
         clk27  => CLK27,
         clk74  => CLK74_25,
         reset  => not(VIDEO_RESET_N),
-		  clk_used => clk_pixel,
+		  clk_used => clk_pixel_in,
+		  clk_pixel => clk_pixel,
 
 		  active_x => test_active_x,
 		  active_y => test_active_y,
@@ -338,24 +354,31 @@ PORT MAP(CLK => CLK1_536,
     );
 	 
     --clk_pixel <= clk_pixel;
-    --in_r <= test_r;
-    --in_g <= test_g;
-    --in_b <= test_b;
+    in_r <= test_r;
+    in_g <= test_g;
+    in_b <= test_b;
 	 
-    in_r(3 downto 0) <= (others=>'0'); --std_logic_vector(test_active_x(8 downto 5));
+    --in_r(3 downto 0) <= (others=>'0'); --std_logic_vector(test_active_x(8 downto 5));
 	 --in_r(7 downto 4) <= (others=>'0'); -- std_logic_vector(test_active_y(8 downto 3));
-	 in_r(7 downto 4) <= std_logic_vector(test_active_x(8 downto 5));
-    in_g <= in_r;
-    in_b <= in_r;	 
+	 --in_r(7 downto 4) <= std_logic_vector(test_active_x(8 downto 5));
 	 
-    VDAC_HSYNC <= test_hsync; -- and test_vsync;
+	 --in_b(3 downto 0) <= std_logic_vector(test_active_x(8 downto 5));
+	 --in_b(7 downto 4) <= std_logic_vector(test_active_y(8 downto 5));	 
+    --in_g <= in_r;
+    --in_b <= in_r;	 
+	 
+	 --in_r <= (others=>'0');
+    --in_g <= (others=>'0');
+	 --in_b <= (others=>'0');
+	 
+    --VDAC_HSYNC <= test_hsync; -- and test_vsync;
+	 VDAC_HSYNC <= not(test_hsync or test_vsync);
 	 --VDAC_HSYNC <= test_hsync and test_vsync;
     VDAC_VSYNC <= test_vsync;
 	 
     vdac : entity work.sdm_dac_video
     port map (
-        clk_270  => CLK270,
-		  clk_135  => CLK135,
+        clk_pattern  => CLK_PATTERN,
         rst_n    => VDAC_RESET_N,
 
         -- 8-bit unsigned pixel inputs, in the clk_pix domain.
@@ -370,20 +393,35 @@ PORT MAP(CLK => CLK1_536,
         --in_b     => std_logic_vector(to_unsigned(120,8)),		  
 
         -- 1-bit DDR outputs — one pin each, 540 Mbps
-        dac_r    => VDAC_R,
-        dac_g    => VDAC_G,
-        dac_b    => VDAC_B
+        dac_r(1)    => VDAC_RH,
+        dac_g(1)    => VDAC_GH,
+        dac_b(1)    => VDAC_BH,
+        dac_r(0)    => VDAC_RL,
+        dac_g(0)    => VDAC_GL,
+        dac_b(0)    => VDAC_BL
     );	 
 
     -- HDMI TMDS
-    HDMI_D0P <= 'Z';
-    HDMI_D0N <= 'Z';
-    HDMI_D1P <= 'Z';
-    HDMI_D1N <= 'Z';
-    HDMI_D2P <= 'Z';
-    HDMI_D2N <= 'Z';
-    HDMI_CKP <= 'Z';
-    HDMI_CKN <= 'Z';
+    hdmi_inst : entity work.hdmi
+    port map (
+    	I_CLK_PIXEL	=> clk_pixel,
+    	I_CLK_TMDS	=> clk_hdmi,	-- pixelclock*5
+    	I_HSYNC		=> test_hsync,
+    	I_VSYNC		=> test_vsync,
+    	I_BLANK		=> not(test_blank_n),
+    	I_RED		=> in_r,
+    	I_GREEN		=> in_g,
+    	I_BLUE		=> in_b,
+    	O_TMDS		=> ddio_out
+    );
+    HDMI_D2P <= DDIO_OUT(7); -- D2P
+    HDMI_D2N <= DDIO_OUT(6); -- D2N
+    HDMI_D1P <= DDIO_OUT(5); -- D1P
+    HDMI_D1N <= DDIO_OUT(4); -- D1N
+    HDMI_D0P <= DDIO_OUT(3); -- D0P
+    HDMI_D0N <= DDIO_OUT(2); -- D0N
+    HDMI_CKP <= DDIO_OUT(1); -- C P
+    HDMI_CKN <= DDIO_OUT(0); -- C N
 
     -- SDRAM  (AS4C16M16SA U35, FPGA-mastered, direct)
     SDRAM1_A        <= (others=>'Z');
