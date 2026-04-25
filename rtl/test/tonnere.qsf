@@ -437,8 +437,6 @@ set_global_assignment -name VHDL_FILE video_timing_core.vhd
 set_global_assignment -name VHDL_FILE video_test_top.vhd
 set_global_assignment -name VHDL_FILE video_modes_pkg.vhd
 set_global_assignment -name VHDL_FILE i2smaster.vhdl
-set_global_assignment -name VHDL_FILE sdm_level_gen.vhd
-set_global_assignment -name VHDL_FILE sdm_level_gen_rgb.vhd
 set_global_assignment -name VHDL_FILE ddr_pattern_gen.vhd
 set_global_assignment -name VHDL_FILE sdm_dac_video.vhd
 set_global_assignment -name VHDL_FILE tonnere.vhdl
