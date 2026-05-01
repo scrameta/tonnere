@@ -211,9 +211,11 @@ entity tonnere is
     --   TRIG0 (R32), TRIG1 (R49), TRIG2 (R63), TRIG3 (R85)
     ---------------------------------------------------------------------------
     JOY_DIR         : inout std_logic_vector(7 downto 0);   -- port 1 directions (via U27); ext pull-up +5V
-    JOY_TRIG        : in std_logic_vector(1 downto 0);   -- port 1 triggers   (via U27); ext pull-up +5V
+    --JOY_TRIG        : in std_logic_vector(1 downto 0);   -- port 1 triggers   (via U27); ext pull-up +5V
+    JOY_TRIG        : inout std_logic_vector(1 downto 0);   -- port 1 triggers   (via U27); ext pull-up +5V	 
     JOY2_DIR        : inout std_logic_vector(15 downto 8);  -- port 2 directions (via U27/U31); ext pull-up +5V
-    JOY2_TRIG       : in std_logic_vector(3 downto 2);   -- port 2 triggers   (via U27/U31); ext pull-up +5V
+    --JOY2_TRIG       : in std_logic_vector(3 downto 2);   -- port 2 triggers   (via U27/U31); ext pull-up +5V
+    JOY2_TRIG       : inout std_logic_vector(3 downto 2);   -- port 2 triggers   (via U27/U31); ext pull-up +5V	 
 
     ---------------------------------------------------------------------------
     -- Console keys  (via bus switch U31)
@@ -251,11 +253,29 @@ architecture vhdl of tonnere is
 	signal AUDIO_R_PCM_SIGNED : signed(15 downto 0);
 	
 	signal test_pbi_toggle_reg : std_logic_vector(41 downto 0);
+	signal test_joy_toggle_reg : std_logic_vector(19 downto 0);
+	signal test_sio_toggle_reg : std_logic_vector(13 downto 0);
 
 	signal ddio_out : std_logic_vector(7 downto 0);
+
+
+-- Function to replace '1' with 'Z' in a std_logic_vector
+function open_drain(vec : std_logic_vector) return std_logic_vector is
+    variable result : std_logic_vector(vec'range);
+begin
+    for i in vec'range loop
+        if vec(i) = '1' then
+            result(i) := 'Z';
+        else
+            result(i) := vec(i);
+        end if;
+    end loop;
+    return result;
+end function;
+	
 begin
     -- FSMC bus from STM (we are SRAM!)
-    FSMC_D <= (others=>'Z'); --Do not drive
+    --FSMC_D <= (others=>'Z'); --Do not drive
     FSMC_NWAIT <= '1';       --Do not wait
 
     -- IRQ to STM, is this active low or high?
@@ -280,15 +300,6 @@ begin
         locked => AUD_RESET_N
     );	 
 
-    pll_hdmi1 : ENTITY work.pll_hdmi
-	 PORT MAP
-    (
-        inclk0 => clk_pixel_in,
-        c0		=> clk_pixel,
-        c1		=> clk_hdmi,
-        locked => HDMI_RESET_N
-    );	 
-	 
 audio_codec_data : entity work.i2smaster
 PORT MAP(CLK => CLK1_536,
 		RESET_N => AUD_RESET_N,
@@ -371,12 +382,12 @@ audio_testr : entity work.audio_sine_sweep
         clk27  => CLK27,
         clk74  => CLK74_25,
         reset  => not(VIDEO_RESET_N),
-		  clk_used => clk_pixel_in,
-		  clk_pixel => clk_pixel,
+        clk_used => clk_pixel_in,
+        clk_pixel => clk_pixel,
 
-		  active_x => test_active_x,
-		  active_y => test_active_y,
-		  blank_n => test_blank_n,
+        active_x => test_active_x,
+        active_y => test_active_y,
+        blank_n => test_blank_n,
         hsync  => test_hsync,
         vsync  => test_vsync,
         r      => test_r,
@@ -390,21 +401,21 @@ audio_testr : entity work.audio_sine_sweep
     in_b <= test_b;
 	 
     --in_r(3 downto 0) <= (others=>'0'); --std_logic_vector(test_active_x(8 downto 5));
-	 --in_r(7 downto 4) <= (others=>'0'); -- std_logic_vector(test_active_y(8 downto 3));
-	 --in_r(7 downto 4) <= std_logic_vector(test_active_x(8 downto 5));
+    --in_r(7 downto 4) <= (others=>'0'); -- std_logic_vector(test_active_y(8 downto 3));
+    --in_r(7 downto 4) <= std_logic_vector(test_active_x(8 downto 5));
 	 
-	 --in_b(3 downto 0) <= std_logic_vector(test_active_x(8 downto 5));
-	 --in_b(7 downto 4) <= std_logic_vector(test_active_y(8 downto 5));	 
+    --in_b(3 downto 0) <= std_logic_vector(test_active_x(8 downto 5));
+    --in_b(7 downto 4) <= std_logic_vector(test_active_y(8 downto 5));	 
     --in_g <= in_r;
     --in_b <= in_r;	 
 	 
-	 --in_r <= (others=>'0');
+    --in_r <= (others=>'0');
     --in_g <= (others=>'0');
-	 --in_b <= (others=>'0');
+    --in_b <= (others=>'0');
 	 
     --VDAC_HSYNC <= test_hsync; -- and test_vsync;
-	 VDAC_HSYNC <= not(test_hsync or test_vsync);
-	 --VDAC_HSYNC <= test_hsync and test_vsync;
+    VDAC_HSYNC <= not(test_hsync or test_vsync);
+    --VDAC_HSYNC <= test_hsync and test_vsync;
     VDAC_VSYNC <= test_vsync;
 	 
     vdac : entity work.sdm_dac_video
@@ -414,14 +425,14 @@ audio_testr : entity work.audio_sine_sweep
 
         -- 8-bit unsigned pixel inputs, in the clk_pix domain.
         -- Internally synchronised to clk_sdm via two-stage CDC.
-		  clk_pixel => clk_pixel,
+        clk_pixel => clk_pixel,
         in_r     => in_r,
         in_g     => in_g,
         in_b     => in_b,
-		  in_blank_n => test_blank_n,
+        in_blank_n => test_blank_n,
         --in_r     => std_logic_vector(to_unsigned(120,8)),
         --in_g     => std_logic_vector(to_unsigned(120,8)),
-        --in_b     => std_logic_vector(to_unsigned(120,8)),		  
+        --in_b     => std_logic_vector(to_unsigned(120,8)),  
 
         -- 1-bit DDR outputs — one pin each, 540 Mbps
         dac_r(1)    => VDAC_RH,
@@ -430,9 +441,27 @@ audio_testr : entity work.audio_sine_sweep
         dac_r(0)    => VDAC_RL,
         dac_g(0)    => VDAC_GL,
         dac_b(0)    => VDAC_BL
-    );	 
+    ); 
 
     -- HDMI TMDS
+    -- HDMI_D2P <= 'Z';
+    -- HDMI_D2N <= 'Z';
+    -- HDMI_D1P <= 'Z';
+    -- HDMI_D1N <= 'Z';
+    -- HDMI_D0P <= 'Z';
+    -- HDMI_D0N <= 'Z';
+    -- HDMI_CKP <= 'Z';
+    -- HDMI_CKN <= 'Z';
+
+    pll_hdmi1 : ENTITY work.pll_hdmi
+    PORT MAP
+    (
+        inclk0 => clk_pixel_in,
+        c0     => clk_pixel,
+        c1     => clk_hdmi,
+        locked => HDMI_RESET_N
+    );
+
     hdmi_inst : entity work.hdmi
     port map (
     	I_CLK_PIXEL	=> clk_pixel,
@@ -468,6 +497,7 @@ audio_testr : entity work.audio_sine_sweep
     SDRAM1_UDQM     <= 'Z';
 
     -- SRAM 1  (IS61WV204816BLL U28, FPGA-mastered, direct)
+    -- 512KB
     SRAM1_A         <= (others=>'Z');
     SRAM1_D         <= (others=>'Z');
     SRAM1_CE_N      <= '1';
@@ -476,14 +506,34 @@ audio_testr : entity work.audio_sine_sweep
     SRAM1_LB_N      <= 'Z';
     SRAM1_UB_N      <= 'Z';
 
+--    SRAM1_A <= FSMC_A(19 downto 0);
+--    SRAM1_D <= FSMC_D when FSMC_NOE='1' else (others=>'Z');
+--    SRAM1_CE_N <= FSMC_NE(1);
+--    SRAM1_OE_N <= FSMC_NOE;
+--    SRAM1_W_N <= FSMC_NWE;
+--    SRAM1_LB_N <= FSMC_NBL(0);
+--    SRAM1_UB_N <= FSMC_NBL(1);
+--
+--    FSMC_D <= SRAM1_D when FSMC_NOE='0' else (others=>'Z');
+
     -- SRAM 2  (IS61WV204816BLL U32, FPGA-mastered, direct)
-    SRAM2_A         <= (others=>'Z');
-    SRAM2_D         <= (others=>'Z');
-    SRAM2_CE_N      <= '1';
-    SRAM2_OE_N      <= '1';
-    SRAM2_W_N       <= 'Z';
-    SRAM2_LB_N      <= 'Z';
-    SRAM2_UB_N      <= 'Z';
+--    SRAM2_A         <= (others=>'Z');
+--    SRAM2_D         <= (others=>'Z');
+--    SRAM2_CE_N      <= '1';
+--    SRAM2_OE_N      <= '1';
+--    SRAM2_W_N       <= 'Z';
+--    SRAM2_LB_N      <= 'Z';
+--    SRAM2_UB_N      <= 'Z';
+
+    SRAM2_A <= FSMC_A(19 downto 0);
+    SRAM2_D <= FSMC_D when FSMC_NOE='1' else (others=>'Z');
+    SRAM2_CE_N <= FSMC_NE(1);
+    SRAM2_OE_N <= FSMC_NOE;
+    SRAM2_W_N <= FSMC_NWE;
+    SRAM2_LB_N <= FSMC_NBL(0);
+    SRAM2_UB_N <= FSMC_NBL(1);
+
+    FSMC_D <= SRAM2_D when FSMC_NOE='0' else (others=>'Z');
 
     -- PBI (Parallel Bus Interface)
 	 pbi_test : entity work.io_square_test
@@ -519,16 +569,60 @@ audio_testr : entity work.audio_sine_sweep
     PBI_EXTSEL      <= test_pbi_toggle_reg(41);
 
     -- SIO (Serial I/O)
-    SIO_DATA_IN     <= 'Z';
-    SIO_DATA_OUT    <= 'Z';
-    SIO_CLOCK_IN    <= 'Z';
-    SIO_CLOCK_OUT   <= 'Z';
-    SIO_COMMAND     <= 'Z';
-    SIO_PROCEED     <= 'Z';
-    SIO_INTERRUPT   <= 'Z';
-    SIO_MOTOR       <= 'Z';
+    --SIO_DATA_IN     <= 'Z';
+    --SIO_DATA_OUT    <= 'Z';
+    --SIO_CLOCK_IN    <= 'Z';
+    --SIO_CLOCK_OUT   <= 'Z';
+    --SIO_COMMAND     <= 'Z';
+    --SIO_PROCEED     <= 'Z';
+    --SIO_INTERRUPT   <= 'Z';
+    --SIO_MOTOR       <= 'Z';
+
+    sio_test : entity work.io_square_test
+    generic map(
+        G_CLK_HZ        => 27_000_000,
+        G_NUM_PINS      => 14,
+        G_BASE_FREQ_HZ  => 1000,
+        G_STEP_FREQ_HZ  => 10
+    )
+    port map (
+        clk     => CLK27_A12,
+        rst     => not(AUD_RESET_N),
+        io_out  => test_sio_toggle_reg
+    );
+    SIO_DATA_IN     <= test_sio_toggle_reg(3); --ok
+    SIO_DATA_OUT    <= test_sio_toggle_reg(5); --ok
+    SIO_CLOCK_IN    <= test_sio_toggle_reg(1); --ok
+--    SIO_CLOCK_OUT   <= test_sio_toggle_reg(2);
+	SIO_CLOCK_OUT <= 'Z';-- currently the ESP is writing to it!
+    SIO_COMMAND     <= test_sio_toggle_reg(7); --ok
+    SIO_PROCEED     <= test_sio_toggle_reg(9); --ok
+    SIO_INTERRUPT   <= test_sio_toggle_reg(13);--ok
+    SIO_MOTOR       <= '0' when test_sio_toggle_reg(8)='1' else 'Z'; --input ok, output FAIL!
 
     -- Joystick ports
-    JOY_DIR  <= (others=>'Z');
-    JOY2_DIR <= (others=>'Z');
+    --JOY_DIR  <= (others=>'Z');
+    --JOY_TRIG  <= (others=>'Z');
+    --JOY2_DIR <= (others=>'Z');
+    --JOY2_TRIG <= (others=>'Z');
+
+    joy_test : entity work.io_square_test
+    generic map(
+        G_CLK_HZ        => 27_000_000,
+        G_NUM_PINS      => 20,
+        G_BASE_FREQ_HZ  => 200_000,
+        G_STEP_FREQ_HZ  => 1000
+    )
+    port map (
+        clk     => CLK27_A12,
+        rst     => not(AUD_RESET_N),
+        io_out  => test_joy_toggle_reg
+    );
+
+
+    JOY_DIR  <= open_drain(test_joy_toggle_reg(7 downto 0)); -- 1)top right, 2)bottom right - UDLR (3 downto 0)
+    JOY2_DIR <= open_drain(test_joy_toggle_reg(15 downto 8));-- 3)top left,  4)bottom left
+    JOY_TRIG  <= open_drain(test_joy_toggle_reg(17 downto 16)); -- same
+    JOY2_TRIG <= open_drain(test_joy_toggle_reg(19 downto 18));
+
 end vhdl;
