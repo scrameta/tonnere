@@ -1,3 +1,0 @@
-/home/markw/git/tonnere/firmware/stm32testproject/build/CMakeFiles/firmware.elf.dir
-/home/markw/git/tonnere/firmware/stm32testproject/build/CMakeFiles/edit_cache.dir
-/home/markw/git/tonnere/firmware/stm32testproject/build/CMakeFiles/rebuild_cache.dir
