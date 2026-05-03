@@ -10,6 +10,11 @@ v) G2 (DAC G) is also on an input only pin. Move to F1? Bodge: Use FPGA GPIO on 
 vi) DAC is a bit noisy with only one pin per channel and sigma delta. Add a capacitor at a minimum, though most likely use a second pin at a lower level (part R2R and part pattern based or sigma delta - TBD).
 vii) SIO.MOTOR does not go via the level shifter (so does not turn on). Also transistor is not fully on but is enough for 100mA which is within SIO specs I think.
 
+Layout:
+a) Move power switch and power in slightly further apart.
+b) Add solder pads to DB9s
+c) Add a power LED or at least an LED header
+
 To consider:
 a) USB power ic and VBUS plumbing
 b) USB HS PHY
