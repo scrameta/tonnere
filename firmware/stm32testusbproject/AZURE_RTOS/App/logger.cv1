@@ -1,0 +1,67 @@
+#include "main.h"
+#include "tx_api.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
+extern UART_HandleTypeDef huart3;   // or whichever CubeMX generated
+
+#define LOG_QUEUE_DEPTH 16
+#define LOG_MSG_LEN     128
+#define LOG_STACK_SIZE  1024
+
+typedef struct {
+    char text[LOG_MSG_LEN];
+} log_msg_t;
+
+static TX_THREAD logger_thread;
+static ULONG logger_stack[LOG_STACK_SIZE/sizeof(ULONG)];
+
+static TX_QUEUE log_queue;
+static log_msg_t log_queue_storage[LOG_QUEUE_DEPTH];
+
+static void logger_thread_entry(ULONG arg)
+{
+    (void)arg;
+    log_msg_t msg;
+
+    while (1) {
+        if (tx_queue_receive(&log_queue, &msg, TX_WAIT_FOREVER) == TX_SUCCESS) {
+            HAL_UART_Transmit(&huart3,
+                              (uint8_t *)msg.text,
+                              strlen(msg.text),
+                              HAL_MAX_DELAY);
+        }
+    }
+}
+
+void logger_init(void)
+{
+    tx_queue_create(&log_queue,
+                    "log_queue",
+                    sizeof(log_msg_t) / sizeof(ULONG),
+                    log_queue_storage,
+                    sizeof(log_queue_storage));
+
+    tx_thread_create(&logger_thread,
+                     "logger",
+                     logger_thread_entry,
+                     0,
+                     logger_stack,
+                     sizeof(logger_stack),
+                     4, 4,
+                     TX_NO_TIME_SLICE,
+                     TX_AUTO_START);
+}
+
+void log_printf(const char *fmt, ...)
+{
+    log_msg_t msg;
+
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(msg.text, sizeof(msg.text), fmt, ap);
+    va_end(ap);
+
+    tx_queue_send(&log_queue, &msg, TX_NO_WAIT);
+}
