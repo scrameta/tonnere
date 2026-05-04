@@ -83,8 +83,6 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr)
   {
 
         VOID *stack_pool;
-	  
-	log_printf("USBX - A\r\n");
 
     /* Allocate the USBX memory pool out of the byte pool. */
     if (tx_byte_allocate(byte_pool, &stack_pool,
@@ -92,60 +90,50 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr)
                          TX_NO_WAIT) != TX_SUCCESS) {
         return TX_POOL_ERROR;
     }
-	log_printf("USBX - B\r\n");
 
     /* Initialise USBX system memory. F407 has no D-cache so cache pool is 0. */
     if (ux_system_initialize(stack_pool, USBX_HOST_MEMORY_STACK_SIZE,
                              UX_NULL, 0) != UX_SUCCESS) {
         return UX_ERROR;
     }
-	log_printf("USBX - C\r\n");
 
     /* Initialise the USBX host stack with the change callback. */
     if (ux_host_stack_initialize(usb_host_change_cb) != UX_SUCCESS) {
         return UX_ERROR;
     }
-	log_printf("USBX - D\r\n");
 
     /* Register HID class. */
     if (ux_host_stack_class_register(_ux_system_host_class_hub_name,
                                      ux_host_class_hub_entry) != UX_SUCCESS) {
         return UX_ERROR;
     }
-	log_printf("USBX - HUB\r\n");
 
     /* Register HID class. */
     if (ux_host_stack_class_register(_ux_system_host_class_hid_name,
                                      ux_host_class_hid_entry) != UX_SUCCESS) {
         return UX_ERROR;
     }
-	log_printf("USBX - E\r\n");
 
     /* Register HID keyboard and mouse clients. */
     if (ux_host_class_hid_client_register(_ux_system_host_class_hid_client_keyboard_name,
                                           ux_host_class_hid_keyboard_entry) != UX_SUCCESS) {
         return UX_ERROR;
     }
-	log_printf("USBX - F\r\n");
     if (ux_host_class_hid_client_register(_ux_system_host_class_hid_client_mouse_name,
                                           ux_host_class_hid_mouse_entry) != UX_SUCCESS) {
         return UX_ERROR;
     }
-	log_printf("USBX - G\r\n");
 
     if (tx_semaphore_create(&hid_keyboard_semaphore, "hid_kb_sem", 0) != TX_SUCCESS) {
         return UX_ERROR;
     }
-    log_printf("USBX - sem\r\n");	
 
     /* Register the STM32 OTG host controller driver. */
     UINT s = ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
                                    _ux_hcd_stm32_initialize,
 				   USB_OTG_FS_PERIPH_BASE,
                                    (ULONG)&hhcd_USB_OTG_FS);
-    log_printf("hcd_register=0x%02X\r\n", s);
     if (s != UX_SUCCESS) return UX_ERROR;
-	log_printf("USBX - H\r\n");
 
     {
         static TX_THREAD hid_keyboard_thread;
@@ -158,11 +146,9 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr)
                              20, 20, TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
             return UX_ERROR;
     }
-    log_printf("USBX - thread\r\n");
 
     /* Bring up the OTG FS hardware via HAL. */
     HAL_HCD_Start(&hhcd_USB_OTG_FS);
-	log_printf("USBX - I\r\n");
   }
 
   /* USER CODE END MX_USBX_Host_Init */
