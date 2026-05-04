@@ -229,6 +229,9 @@ end entity tonnere;
 
 architecture vhdl of tonnere is
     signal CLK27 : std_logic;
+	 signal CLK54 : std_logic;
+	 signal CLK108 : std_logic;
+	 signal CLK108_N : std_logic;
 	 signal CLK74_25 : std_logic;
 	 signal CLK_PATTERN : std_logic;
 	 signal CLK1_536 : std_logic;
@@ -257,7 +260,12 @@ architecture vhdl of tonnere is
 	signal test_sio_toggle_reg : std_logic_vector(13 downto 0);
 
 	signal ddio_out : std_logic_vector(7 downto 0);
-
+	
+	signal SDRAM_DO : std_logic_vector(31 downto 0);
+	signal SDRAM_READ_ENABLE : std_logic;
+	signal SDRAM_WRITE_ENABLE : std_logic;
+	signal SDRAM_REQUEST : std_logic;
+	signal SDRAM_REQUEST_COMPLETE : std_logic;
 
 -- Function to replace '1' with 'Z' in a std_logic_vector
 function open_drain(vec : std_logic_vector) return std_logic_vector is
@@ -276,7 +284,7 @@ end function;
 begin
     -- FSMC bus from STM (we are SRAM!)
     --FSMC_D <= (others=>'Z'); --Do not drive
-    FSMC_NWAIT <= '1';       --Do not wait
+    --FSMC_NWAIT <= '1';       --Do not wait
 
     -- IRQ to STM, is this active low or high?
     FPGA_IRQ <= 'Z';
@@ -351,6 +359,9 @@ audio_testr : entity work.audio_sine_sweep
         inclk0 => CLK27_A12,
         c0		=> CLK27,
         c1		=> CLK74_25,
+		  c2		=> CLK54,
+		  c3		=> CLK108,
+		  c4		=> CLK108_N,
         locked => VIDEO_RESET_N
     );
 
@@ -484,17 +495,63 @@ audio_testr : entity work.audio_sine_sweep
     HDMI_CKN <= DDIO_OUT(0); -- C N
 
     -- SDRAM  (AS4C16M16SA U35, FPGA-mastered, direct)
-    SDRAM1_A        <= (others=>'Z');
-    SDRAM1_BA       <= (others=>'Z');
-    SDRAM1_DQ       <= (others=>'Z');
-    SDRAM1_CAS_N    <= 'Z';
-    SDRAM1_RAS_N    <= 'Z';
-    SDRAM1_WE_N     <= 'Z';
-    SDRAM1_CS_N     <= '1';
-    SDRAM1_CKE      <= 'Z';
-    SDRAM1_CLK      <= 'Z';
-    SDRAM1_LDQM     <= 'Z';
-    SDRAM1_UDQM     <= 'Z';
+--    SDRAM1_A        <= (others=>'Z');
+--    SDRAM1_BA       <= (others=>'Z');
+--    SDRAM1_DQ       <= (others=>'Z');
+--    SDRAM1_CAS_N    <= 'Z';
+--    SDRAM1_RAS_N    <= 'Z';
+--    SDRAM1_WE_N     <= 'Z';
+--    SDRAM1_CS_N     <= '1';
+--    SDRAM1_CKE      <= 'Z';
+--    SDRAM1_CLK      <= 'Z';
+--    SDRAM1_LDQM     <= 'Z';
+--    SDRAM1_UDQM     <= 'Z';
+
+sdram_adaptor : entity work.sdram_statemachine
+GENERIC MAP(ADDRESS_WIDTH => 22,
+			AP_BIT => 10,
+			COLUMN_WIDTH => 8,
+			ROW_WIDTH => 12
+			)
+PORT MAP(CLK_SYSTEM => CLK54,
+		 CLK_SDRAM => CLK108,
+		 RESET_N =>  VIDEO_RESET_N,
+
+		 READ_EN => SDRAM_READ_ENABLE,
+		 WRITE_EN => SDRAM_WRITE_ENABLE,
+		 REQUEST => SDRAM_REQUEST,
+		 COMPLETE => SDRAM_REQUEST_COMPLETE,
+		 BYTE_ACCESS => '0',
+		 WORD_ACCESS => '1',
+		 LONGWORD_ACCESS => '0',
+		 REFRESH => '0',
+		 ADDRESS_IN => FSMC_A,
+		 DATA_IN => FSMC_D&FSMC_D,
+		 DATA_OUT => SDRAM_DO,
+
+		 SDRAM_DQ => SDRAM1_DQ,
+		 SDRAM_BA0 => SDRAM1_BA(0),
+		 SDRAM_BA1 => SDRAM1_BA(1),
+		 SDRAM_CKE => SDRAM1_CKE,
+		 SDRAM_CS_N => SDRAM1_CS_N,
+		 SDRAM_RAS_N => SDRAM1_RAS_N,
+		 SDRAM_CAS_N => SDRAM1_CAS_N,
+		 SDRAM_WE_N => SDRAM1_WE_N,
+		 SDRAM_ldqm => SDRAM1_LDQM,
+		 SDRAM_udqm => SDRAM1_UDQM,
+		 SDRAM_ADDR => SDRAM1_A(11 downto 0),
+		 reset_client_n => open
+		 );
+
+SDRAM1_A(12) <= '0';
+SDRAM1_CLK <= CLK108_N;
+
+    SDRAM_REQUEST <= not(FSMC_NE(1));
+    SDRAM_READ_ENABLE <= FSMC_NWE;
+    SDRAM_WRITE_ENABLE <= not(FSMC_NWE);
+
+    FSMC_D <= SDRAM_DO(15 downto 0) when FSMC_NOE='0' else (others=>'Z');
+    FSMC_NWAIT <= not(SDRAM_REQUEST_COMPLETE);
 
     -- SRAM 1  (IS61WV204816BLL U28, FPGA-mastered, direct)
     -- 512KB
@@ -515,25 +572,27 @@ audio_testr : entity work.audio_sine_sweep
 --    SRAM1_UB_N <= FSMC_NBL(1);
 --
 --    FSMC_D <= SRAM1_D when FSMC_NOE='0' else (others=>'Z');
+--    FSMC_NWAIT <= '1';       --Do not wait
 
     -- SRAM 2  (IS61WV204816BLL U32, FPGA-mastered, direct)
---    SRAM2_A         <= (others=>'Z');
---    SRAM2_D         <= (others=>'Z');
---    SRAM2_CE_N      <= '1';
---    SRAM2_OE_N      <= '1';
---    SRAM2_W_N       <= 'Z';
---    SRAM2_LB_N      <= 'Z';
---    SRAM2_UB_N      <= 'Z';
+    SRAM2_A         <= (others=>'Z');
+    SRAM2_D         <= (others=>'Z');
+    SRAM2_CE_N      <= '1';
+    SRAM2_OE_N      <= '1';
+    SRAM2_W_N       <= 'Z';
+    SRAM2_LB_N      <= 'Z';
+    SRAM2_UB_N      <= 'Z';
 
-    SRAM2_A <= FSMC_A(19 downto 0);
-    SRAM2_D <= FSMC_D when FSMC_NOE='1' else (others=>'Z');
-    SRAM2_CE_N <= FSMC_NE(1);
-    SRAM2_OE_N <= FSMC_NOE;
-    SRAM2_W_N <= FSMC_NWE;
-    SRAM2_LB_N <= FSMC_NBL(0);
-    SRAM2_UB_N <= FSMC_NBL(1);
-
-    FSMC_D <= SRAM2_D when FSMC_NOE='0' else (others=>'Z');
+--    SRAM2_A <= FSMC_A(19 downto 0);
+--    SRAM2_D <= FSMC_D when FSMC_NOE='1' else (others=>'Z');
+--    SRAM2_CE_N <= FSMC_NE(1);
+--    SRAM2_OE_N <= FSMC_NOE;
+--    SRAM2_W_N <= FSMC_NWE;
+--    SRAM2_LB_N <= FSMC_NBL(0);
+--    SRAM2_UB_N <= FSMC_NBL(1);
+--
+--    FSMC_D <= SRAM2_D when FSMC_NOE='0' else (others=>'Z');
+--    FSMC_NWAIT <= '1';       --Do not wait
 
     -- PBI (Parallel Bus Interface)
 	 pbi_test : entity work.io_square_test
