@@ -10,7 +10,7 @@ static ULONG toggle_stack[128];
 
 static void thread_toggle_entry(ULONG arg)
 {
-    log_printf("Hello world");
+    log_printf("Toggling F6\r\n");
     while (1)
     {
         HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_6);
