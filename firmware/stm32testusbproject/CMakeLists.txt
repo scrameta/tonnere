@@ -82,6 +82,7 @@ target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
 # User sources can be added here if they are not already included by CubeMX.
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     AZURE_RTOS/App/thread_toggle.c
+    AZURE_RTOS/App/thread_memtest.c
     AZURE_RTOS/App/logger.c
 )
 
