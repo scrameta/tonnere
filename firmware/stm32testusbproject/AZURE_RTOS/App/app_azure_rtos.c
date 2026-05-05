@@ -132,7 +132,7 @@ VOID tx_application_define(VOID *first_unused_memory)
 
     /* USER CODE BEGIN MX_USBX_Host_Init_Success */
     thread_toggle_init();
-    thread_memtest_init();
+ //   thread_memtest_init();
 
     /* USER CODE END MX_USBX_Host_Init_Success */
   }
