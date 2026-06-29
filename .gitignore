@@ -3,3 +3,5 @@ board/kicad/tonnere/tonnere-backups
 .history
 keyboard/Models
 plate/MegaXE-plate-backups
+keyboard/production/backups
+*.FCBak
