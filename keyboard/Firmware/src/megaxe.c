@@ -26,7 +26,8 @@ static int frame = 0;
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     const uint8_t mods = get_mods();
-    if ((mods & MOD_MASK_CG) && record->event.pressed) {
+    // [Ctrl]+[GUI] special functions
+    if ((mods & MOD_MASK_CTRL) && (mods & MOD_MASK_GUI) && record->event.pressed) {
         switch (keycode) {
             case KC_1:
                 rgb_matrix_toggle();
