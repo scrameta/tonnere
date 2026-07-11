@@ -6,3 +6,5 @@ plate/MegaXE-plate-backups
 keyboard/production/backups
 *.FCBak
 keyboard/Badge/Badge-backups
+*.lck
+*.af~lock~
