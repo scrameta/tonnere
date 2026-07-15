@@ -1,0 +1,182 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity vga_576p50_test is
+    port (
+        clk27  : in  std_logic;  -- 27 MHz pixel clock
+        reset  : in  std_logic;  -- synchronous active-high reset
+
+        hsync  : out std_logic;
+        vsync  : out std_logic;
+        r      : out std_logic_vector(7 downto 0);
+        g      : out std_logic_vector(7 downto 0);
+        b      : out std_logic_vector(7 downto 0)
+    );
+end entity;
+
+architecture rtl of vga_576p50_test is
+
+    -- 576p50 timing @ 27 MHz
+    constant H_ACTIVE : integer := 720;
+    constant H_FP     : integer := 12;
+    constant H_SYNC   : integer := 64;
+    constant H_BP     : integer := 68;
+    constant H_TOTAL  : integer := H_ACTIVE + H_FP + H_SYNC + H_BP;  -- 864
+
+    constant V_ACTIVE : integer := 576;
+    constant V_FP     : integer := 5;
+    constant V_SYNC   : integer := 5;
+    constant V_BP     : integer := 39;
+    constant V_TOTAL  : integer := V_ACTIVE + V_FP + V_SYNC + V_BP;  -- 625
+
+    signal h_count : integer range 0 to H_TOTAL - 1 := 0;
+    signal v_count : integer range 0 to V_TOTAL - 1 := 0;
+
+    signal active_video : std_logic;
+
+    signal r_i, g_i, b_i : std_logic_vector(7 downto 0) := (others => '0');
+
+begin
+
+    --------------------------------------------------------------------
+    -- Timing generator
+    --------------------------------------------------------------------
+    process(clk27)
+    begin
+        if rising_edge(clk27) then
+            if reset = '1' then
+                h_count <= 0;
+                v_count <= 0;
+            else
+                if h_count = H_TOTAL - 1 then
+                    h_count <= 0;
+                    if v_count = V_TOTAL - 1 then
+                        v_count <= 0;
+                    else
+                        v_count <= v_count + 1;
+                    end if;
+                else
+                    h_count <= h_count + 1;
+                end if;
+            end if;
+        end if;
+    end process;
+
+    active_video <= '1' when (h_count < H_ACTIVE and v_count < V_ACTIVE) else '0';
+
+    --------------------------------------------------------------------
+    -- Syncs
+    -- Assumed active-low syncs
+    --------------------------------------------------------------------
+    hsync <= '0' when (h_count >= H_ACTIVE + H_FP and
+                       h_count <  H_ACTIVE + H_FP + H_SYNC) else '1';
+
+    vsync <= '0' when (v_count >= V_ACTIVE + V_FP and
+                       v_count <  V_ACTIVE + V_FP + V_SYNC) else '1';
+
+    --------------------------------------------------------------------
+    -- Test pattern generator
+    --------------------------------------------------------------------
+    process(h_count, v_count, active_video)
+        variable x      : integer;
+        variable y      : integer;
+        variable bar    : integer;
+        variable rv     : unsigned(7 downto 0);
+        variable gv     : unsigned(7 downto 0);
+        variable bv     : unsigned(7 downto 0);
+        variable gradx  : unsigned(7 downto 0);
+        variable grady  : unsigned(7 downto 0);
+        variable border : boolean;
+        variable grid   : boolean;
+    begin
+        rv := (others => '0');
+        gv := (others => '0');
+        bv := (others => '0');
+
+        if active_video = '1' then
+            x := h_count;
+            y := v_count;
+
+            border := (x = 0) or (x = H_ACTIVE - 1) or
+                      (y = 0) or (y = V_ACTIVE - 1);
+
+            grid := ((x mod 32) = 0) or ((y mod 32) = 0);
+
+            -- Simple gradients
+            gradx := to_unsigned((x * 255) / (H_ACTIVE - 1), 8);
+            grady := to_unsigned((y * 255) / (V_ACTIVE - 1), 8);
+
+            if border then
+                -- White border
+                rv := x"FF";
+                gv := x"FF";
+                bv := x"FF";
+
+            elsif y < (V_ACTIVE / 2) then
+                -- Top half: 8 vertical colour bars
+                bar := x / (H_ACTIVE / 8);
+
+                case bar is
+                    when 0 =>
+                        rv := x"FF"; gv := x"FF"; bv := x"FF"; -- white
+                    when 1 =>
+                        rv := x"FF"; gv := x"FF"; bv := x"00"; -- yellow
+                    when 2 =>
+                        rv := x"00"; gv := x"FF"; bv := x"FF"; -- cyan
+                    when 3 =>
+                        rv := x"00"; gv := x"FF"; bv := x"00"; -- green
+                    when 4 =>
+                        rv := x"FF"; gv := x"00"; bv := x"FF"; -- magenta
+                    when 5 =>
+                        rv := x"FF"; gv := x"00"; bv := x"00"; -- red
+                    when 6 =>
+                        rv := x"00"; gv := x"00"; bv := x"FF"; -- blue
+                    when others =>
+                        rv := x"00"; gv := x"00"; bv := x"00"; -- black
+                end case;
+
+                -- Darken every other 32-pixel cell slightly for visual alignment
+                if ((x / 32) mod 2) = 1 then
+                    rv := shift_right(rv, 1);
+                    gv := shift_right(gv, 1);
+                    bv := shift_right(bv, 1);
+                end if;
+
+            else
+                -- Bottom half: colourful gradient / test area
+                rv := gradx;
+                gv := grady;
+                bv := gradx xor grady;
+
+                -- Add a bright centre box
+                if (x > 220 and x < 500 and y > 360 and y < 520) then
+                    rv := rv or x"40";
+                    gv := gv or x"40";
+                    bv := bv or x"40";
+                end if;
+            end if;
+
+            -- Grid overlay
+            if grid then
+                rv := rv or x"20";
+                gv := gv or x"20";
+                bv := bv or x"20";
+            end if;
+
+        else
+            rv := (others => '0');
+            gv := (others => '0');
+            bv := (others => '0');
+        end if;
+
+        r_i <= std_logic_vector(rv);
+        g_i <= std_logic_vector(gv);
+        b_i <= std_logic_vector(bv);
+    end process;
+
+    r <= r_i;
+    g <= g_i;
+    b <= b_i;
+
+end architecture;
