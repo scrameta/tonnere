@@ -16,7 +16,7 @@
 | PLL2              |  🟢    | Programmed via I2C and checked they produce clocks |
 | SDCARD(EXT)       | ⚪     |  | 
 | SDCARD(INT)       | ⚪     |  | 
-| SDRAM             | ⚪     | Initial signs promising | 
+| SDRAM             |  🟢    | Boots to ready | 
 | SRAM1             |  🟡    | Used input pins on FPGA, had to correct with a few wires  | 
 | SRAM2             |  🟡    | Used input pins on FPGA, had to correct with a few wires  | 
 | STM32 ADC         | ⚪     |  | 
