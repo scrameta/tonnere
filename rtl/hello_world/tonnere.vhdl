@@ -369,7 +369,7 @@ PORT MAP(CLK => CLK1_536,
     vdac : entity work.sdm_dac_video
     port map (
         clk_pattern  => CLK_PATTERN,
-        rst_n    => VDAC_RESET_N,
+        rst_n    => AUD_RESET_N,
 
         -- 8-bit unsigned pixel inputs, in the clk_pix domain.
         -- Internally synchronised to clk_sdm via two-stage CDC.
@@ -632,7 +632,7 @@ hello_world : ENTITY work.atari800core_simple_sdram
 	PORT MAP
 	(
 		CLK => CLK56,
-		RESET_N => VIDEO_RESET_N,
+		RESET_N => AUD_RESET_N,
 
 		-- VIDEO OUT - PAL/NTSC, original Atari timings approx (may be higher res)
 		VIDEO_VS => video_vsync,

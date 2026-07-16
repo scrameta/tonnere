@@ -17,11 +17,16 @@ set_clock_groups -asynchronous \
   -group { PLL2[0] } \
   -group { PLL2[1] } \
   -group { PLL2[2] } \
+  -group { pll_aud1|altpll_component|auto_generated|pll1|clk[0] } \
+  -group { pll_aud1|altpll_component|auto_generated|pll1|clk[1] } \
   -group { pll_vdac1|altpll_component|auto_generated|pll1|clk[0] } \
-  -group { pll_video1|altpll_component|auto_generated|pll1|clk[0] } \
-  -group { pll_video1|altpll_component|auto_generated|pll1|clk[1] } \
+  -group { pll_video1|altpll_component|auto_generated|pll1|clk[0] \
+           pll_video1|altpll_component|auto_generated|pll1|clk[2] \
+           pll_video1|altpll_component|auto_generated|pll1|clk[3] \
+           pll_video1|altpll_component|auto_generated|pll1|clk[4] } \
   -group { pll_hdmi1|altpll_component|auto_generated|pll1|clk[0] \
            pll_hdmi1|altpll_component|auto_generated|pll1|clk[1] } 
+
 
 
 
