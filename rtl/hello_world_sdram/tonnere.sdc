@@ -1,10 +1,10 @@
 create_clock -period 27MHz [get_ports CLK27_A12]
-create_clock -period 27MHz [get_ports PLL1[0]]
-create_clock -period 27MHz [get_ports PLL1[1]]
-create_clock -period 27MHz [get_ports PLL1[2]]
-create_clock -period 27MHz [get_ports PLL2[0]]
-create_clock -period 27MHz [get_ports PLL2[1]]
-create_clock -period 27MHz [get_ports PLL2[2]]
+create_clock -period 74.25MHz [get_ports PLL1[0]]
+create_clock -period 7.1MHz [get_ports PLL1[1]]
+create_clock -period 4.5MHz [get_ports PLL1[2]]
+create_clock -period 74.25MHz [get_ports PLL2[0]]
+create_clock -period 7.1MHz [get_ports PLL2[1]]
+create_clock -period 4.5MHz [get_ports PLL2[2]]
 
 derive_pll_clocks
 derive_clock_uncertainty
@@ -18,17 +18,13 @@ set_clock_groups -asynchronous \
   -group { PLL2[1] } \
   -group { PLL2[2] } \
   -group { pll_aud1|altpll_component|auto_generated|pll1|clk[0] } \
-  -group { pll_aud1|altpll_component|auto_generated|pll1|clk[1] } \
   -group { pll_vdac1|altpll_component|auto_generated|pll1|clk[0] } \
-  -group { pll_video1|altpll_component|auto_generated|pll1|clk[0] \
-           pll_video1|altpll_component|auto_generated|pll1|clk[2] \
-           pll_video1|altpll_component|auto_generated|pll1|clk[3] \
-           pll_video1|altpll_component|auto_generated|pll1|clk[4] } \
+  -group { pll_atari1|altpll_component|auto_generated|pll1|clk[0] \
+           pll_atari1|altpll_component|auto_generated|pll1|clk[1] \
+           pll_atari1|altpll_component|auto_generated|pll1|clk[2] \
+           pll_atari1|altpll_component|auto_generated|pll1|clk[3] } \
   -group { pll_hdmi1|altpll_component|auto_generated|pll1|clk[0] \
            pll_hdmi1|altpll_component|auto_generated|pll1|clk[1] } 
-
-
-
 
 # Waive port rate check on DAC outputs.
 # Slow/100C model is overly pessimistic for 5-40C operating range.

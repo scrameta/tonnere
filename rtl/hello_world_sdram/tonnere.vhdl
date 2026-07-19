@@ -228,18 +228,26 @@ entity tonnere is
 end entity tonnere;
 
 architecture vhdl of tonnere is
-    signal CLK27 : std_logic;
-	 signal CLK54 : std_logic;
 	 signal CLK56 : std_logic;
 	 signal CLK112 : std_logic;
 	 signal CLK112_N : std_logic;
-	 signal CLK74_25 : std_logic;
 	 signal CLK_PATTERN : std_logic;
 	 signal CLK1_536 : std_logic;
 	 
+	 -- Raw PLL lock flags (active-high, 1 = locked), one per PLL.
+	 signal atari_lock : std_logic;
+	 signal aud_lock   : std_logic;
+	 signal vdac_lock  : std_logic;
+	 signal hdmi_lock  : std_logic;
+
+	 -- Single gated master reset: released (='1') only once the Si5351 refs and
+	 -- all four FPGA PLLs are locked and stable. Feeds every core/consumer.
+	 signal MASTER_RESET_N : std_logic;
+
+	 -- Kept as aliases so existing references below still read naturally.
+	 signal ATARI_RESET_N : std_logic;
 	 signal AUD_RESET_N : std_logic;
 	 signal VDAC_RESET_N : std_logic;
-	 signal VIDEO_RESET_N : std_logic;
 	 signal HDMI_RESET_N : std_logic;
 	 
 	signal clk_pixel_in : std_logic;
@@ -260,10 +268,6 @@ architecture vhdl of tonnere is
 	signal video_blank : std_logic;
 	signal video_burst : std_logic;
 	
-	signal test_pbi_toggle_reg : std_logic_vector(41 downto 0);
-	signal test_joy_toggle_reg : std_logic_vector(19 downto 0);
-	signal test_sio_toggle_reg : std_logic_vector(13 downto 0);
-
 	signal ddio_out : std_logic_vector(7 downto 0);
 	
 	signal SDRAM_REQUEST : std_logic;
@@ -323,11 +327,41 @@ begin
     (
         inclk0 => CLK27_A12,
         c0		=> CLK1_536,
+        locked => aud_lock
+    );	 
+
+    pll_atari1 : ENTITY work.pll_atari
+	 PORT MAP
+    (
+        inclk0 => PLL1(1),
+        c0		=> open, -- PHI2
         c1		=> CLK56,
         c2		=> CLK112,
         c3		=> CLK112_N,
-        locked => AUD_RESET_N
+        locked => atari_lock
     );	 
+
+    -- Master reset: hold everything in reset until the Si5351 references and
+    -- all four FPGA PLLs are locked and have been stable for STABLE_CYCLES.
+    -- Clocked on CLK56, which only runs once pll_atari is locked, so the
+    -- stability counter can never advance on a dead/absent clock.
+    reset_gen1 : ENTITY work.reset_gen
+    GENERIC MAP ( STABLE_CYCLES => 65536 )   -- ~1.17 ms at 56 MHz
+    PORT MAP (
+        clk            => CLK56,
+        pll_atari_lock => atari_lock,
+        pll_aud_lock   => aud_lock,
+        pll_vdac_lock  => vdac_lock,
+        pll_hdmi_lock  => hdmi_lock,
+        reset_n        => MASTER_RESET_N
+    );
+
+    -- All consumers share the single gated reset. Aliases retained so the
+    -- port maps below stay readable.
+    ATARI_RESET_N <= MASTER_RESET_N;
+    AUD_RESET_N   <= MASTER_RESET_N;
+    VDAC_RESET_N  <= MASTER_RESET_N;
+    HDMI_RESET_N  <= MASTER_RESET_N;
 
 audio_codec_data : entity work.i2smaster
 PORT MAP(CLK => CLK1_536,
@@ -338,51 +372,21 @@ PORT MAP(CLK => CLK1_536,
 		 RIGHT_IN => std_logic_vector(AUDIO_R_PCM_SIGNED),
 		 DACDAT => FPGAAUD_DATA);
 
-    pll_video1 : ENTITY work.pll_video
-	 PORT MAP
-    (
-        inclk0 => CLK27_A12,
-        c0		=> CLK27,
-        c1		=> CLK74_25,
-		  c2		=> CLK54,
-        locked => VIDEO_RESET_N
-    );
-
     pll_vdac1 : ENTITY work.pll_vdac
 	 PORT MAP
     (
         inclk0 => CLK27_A12,
         c0		=> CLK_PATTERN,
-        locked => VDAC_RESET_N
+        locked => vdac_lock -- TODO: synchronize clock to Atari video
     );
 	 
-    ----VDAC_HSYNC <= test_hsync; -- and test_vsync;
-    --VDAC_HSYNC <= not(video_hsync or video_vsync);
-    ----VDAC_HSYNC <= test_hsync and test_vsync;
-    --VDAC_VSYNC <= video_vsync;
-
-    --VDAC_HSYNC <= not(video_hsync);
-    --VDAC_VSYNC <= not(video_vsync);
     VDAC_HSYNC <= video_hsync;
     VDAC_VSYNC <= video_vsync;
 
---	VDAC_HSYNC <= not(video_csync);
---	VDAC_VSYNC <= '1';
-
---                        if (composite_on_hsync = '1') then
---                                --hsync_next <= not(hsync_in xor vsync_in);
---                                hsync_next <= not(csync_in);
---                                vsync_next <='1';
---                        else
---                                hsync_next <= not(hsync_in);
---                                vsync_next <= not(vsync_in);
---                        end if;
-    
-	 
     vdac : entity work.sdm_dac_video
     port map (
         clk_pattern  => CLK_PATTERN,
-        rst_n    => AUD_RESET_N,
+        rst_n    => ATARI_RESET_N,
 
         -- 8-bit unsigned pixel inputs, in the clk_pix domain.
         -- Internally synchronised to clk_sdm via two-stage CDC.
@@ -414,14 +418,14 @@ PORT MAP(CLK => CLK1_536,
     -- HDMI_CKP <= 'Z';
     -- HDMI_CKN <= 'Z';
 
-    clk_pixel_in <= CLK27;
+    clk_pixel_in <= PLL1(0);
     pll_hdmi1 : ENTITY work.pll_hdmi
     PORT MAP
     (
         inclk0 => clk_pixel_in,
         c0     => clk_pixel,
         c1     => clk_hdmi,
-        locked => HDMI_RESET_N
+        locked => hdmi_lock
     );
 
     hdmi_inst : entity work.hdmi
@@ -549,37 +553,7 @@ SDRAM1_CLK <= CLK112_N;
 --    FSMC_NWAIT <= '1';       --Do not wait
 
     -- PBI (Parallel Bus Interface)
-	 pbi_test : entity work.io_square_test
-    generic map(
-        G_CLK_HZ        => 27_000_000,
-        G_NUM_PINS      => 42,
-        G_BASE_FREQ_HZ  => 100_000,
-        G_STEP_FREQ_HZ  => 1000
-    )
-    port map (
-        clk     => CLK27_A12,
-        rst     => not(AUD_RESET_N),
-        io_out  => test_pbi_toggle_reg
-    );
-    PBI_A           <= test_pbi_toggle_reg(15 downto 0);
-    PBI_D           <= test_pbi_toggle_reg(23 downto 16);
-    PBI_PHI2        <= test_pbi_toggle_reg(24);
-    PBI_RW_N        <= test_pbi_toggle_reg(25);
-    PBI_RD          <= test_pbi_toggle_reg(27 downto 26);
-    PBI_HALT        <= test_pbi_toggle_reg(28);
-    PBI_IRQ         <= test_pbi_toggle_reg(29);
-    PBI_RST         <= test_pbi_toggle_reg(30);
-    PBI_RDY         <= test_pbi_toggle_reg(31);
-    PBI_REF         <= test_pbi_toggle_reg(32);
-    PBI_RAS         <= test_pbi_toggle_reg(33);
-    PBI_CAS         <= test_pbi_toggle_reg(34);
-    PBI_MPD         <= test_pbi_toggle_reg(35);
-    PBI_S4_N        <= test_pbi_toggle_reg(36);
-    PBI_S5_N        <= test_pbi_toggle_reg(37);
-    PBI_CCTL        <= test_pbi_toggle_reg(38);
-    PBI_D1XX        <= test_pbi_toggle_reg(39);
-    PBI_EXTENB      <= test_pbi_toggle_reg(40);
-    PBI_EXTSEL      <= test_pbi_toggle_reg(41);
+    -- NOT DONE YET
 
     -- SIO (Serial I/O)
     SIO_DATA_IN     <= 'Z';
@@ -591,52 +565,16 @@ SDRAM1_CLK <= CLK112_N;
     SIO_INTERRUPT   <= 'Z';
     SIO_MOTOR       <= 'Z';
 
-    sio_test : entity work.io_square_test
-    generic map(
-        G_CLK_HZ        => 27_000_000,
-        G_NUM_PINS      => 14,
-        G_BASE_FREQ_HZ  => 1000,
-        G_STEP_FREQ_HZ  => 10
-    )
-    port map (
-        clk     => CLK27_A12,
-        rst     => not(AUD_RESET_N),
-        io_out  => test_sio_toggle_reg
-    );
-   -- SIO_DATA_IN     <= test_sio_toggle_reg(3); --ok
-   -- SIO_DATA_OUT    <= test_sio_toggle_reg(5); --ok
-   -- SIO_CLOCK_IN    <= test_sio_toggle_reg(1); --ok
---    SIO_CLOCK_OUT   <= test_sio_toggle_reg(2);
-	--SIO_CLOCK_OUT <= 'Z';-- currently the ESP is writing to it!
-    --SIO_COMMAND     <= test_sio_toggle_reg(7); --ok
-    --SIO_PROCEED     <= test_sio_toggle_reg(9); --ok
-    --SIO_INTERRUPT   <= test_sio_toggle_reg(13);--ok
-    --SIO_MOTOR       <= '0' when test_sio_toggle_reg(8)='1' else 'Z'; --input ok, output FAIL!
-
     -- Joystick ports
-    --JOY_DIR  <= (others=>'Z');
-    --JOY_TRIG  <= (others=>'Z');
-    --JOY2_DIR <= (others=>'Z');
-    --JOY2_TRIG <= (others=>'Z');
+    JOY_DIR  <= (others=>'Z');
+    JOY_TRIG  <= (others=>'Z');
+    JOY2_DIR <= (others=>'Z');
+    JOY2_TRIG <= (others=>'Z');
 
-    joy_test : entity work.io_square_test
-    generic map(
-        G_CLK_HZ        => 27_000_000,
-        G_NUM_PINS      => 20,
-        G_BASE_FREQ_HZ  => 200_000,
-        G_STEP_FREQ_HZ  => 1000
-    )
-    port map (
-        clk     => CLK27_A12,
-        rst     => not(AUD_RESET_N),
-        io_out  => test_joy_toggle_reg
-    );
-
-
-    JOY_DIR  <= open_drain(test_joy_toggle_reg(7 downto 0)); -- 1)top right, 2)bottom right - UDLR (3 downto 0)
-    JOY2_DIR <= open_drain(test_joy_toggle_reg(15 downto 8));-- 3)top left,  4)bottom left
-    JOY_TRIG  <= open_drain(test_joy_toggle_reg(17 downto 16)); -- same
-    JOY2_TRIG <= open_drain(test_joy_toggle_reg(19 downto 18));
+--    JOY_DIR  <= open_drain(test_joy_toggle_reg(7 downto 0)); -- 1)top right, 2)bottom right - UDLR (3 downto 0)
+--    JOY2_DIR <= open_drain(test_joy_toggle_reg(15 downto 8));-- 3)top left,  4)bottom left
+--    JOY_TRIG  <= open_drain(test_joy_toggle_reg(17 downto 16)); -- same
+--    JOY2_TRIG <= open_drain(test_joy_toggle_reg(19 downto 18));
 
 sdram_adaptor : entity work.sdram_statemachine
 GENERIC MAP(ADDRESS_WIDTH => 22,
@@ -646,7 +584,7 @@ GENERIC MAP(ADDRESS_WIDTH => 22,
 			)
 	PORT MAP(CLK_SYSTEM => CLK56,
 		CLK_SDRAM => CLK112,
-		RESET_N =>  AUD_RESET_N,
+		RESET_N =>  ATARI_RESET_N,
 		READ_EN => SDRAM_READ_ENABLE,
 		WRITE_EN => SDRAM_WRITE_ENABLE,
 		REQUEST => SDRAM_REQUEST,
@@ -681,13 +619,12 @@ hello_world : ENTITY work.atari800core_simple_sdram
 	(
 		cycle_length => 32,
 		internal_rom => 1,
-		internal_ram =>0
-	--	internal_ram =>16384
+		internal_ram =>0	
 	)
 	PORT MAP
 	(
 		CLK => CLK56,
-		RESET_N => AUD_RESET_N and SDRAM_RESET_N, -- and not(reset_atari),
+		RESET_N => ATARI_RESET_N and SDRAM_RESET_N, -- and not(reset_atari),
 
 		-- VIDEO OUT - PAL/NTSC, original Atari timings approx (may be higher res)
 		VIDEO_VS => video_vsync,
