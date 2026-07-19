@@ -1,0 +1,3 @@
+[submodule "atari_800xl/common"]
+	path = atari_800xl/common
+	url = https://github.com/scrameta/atari_xl_fpga_common.git

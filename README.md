@@ -1,10 +1,51 @@
-## Project Tonnere
+# Project Tonnere
 
-The EclaireXL was a partially open Atari XL FPGA implementation designed almost a decade ago. This project is intended to be a fully open community follow up version.
+The EclaireXL was a partially open Atari XL FPGA implementation designed almost
+a decade ago. This project is intended to be a fully open community follow-up
+version. (It is being renamed **MegaXE**; *tonnere* — deliberately misspelt, to
+match "EclaireXL" — is French for thunder, following on from the EclaireXL's
+lightning.)
+
+## The Atari core
+
+The FPGA Atari core itself is **not** duplicated here. It lives in the shared
+[**atari_xl_fpga_common**](https://github.com/scrameta/atari_xl_fpga_common)
+repository — the same core used by the multi-board
+[atari_xl_fpga](https://github.com/scrameta/atari_xl_fpga) project — and is
+included in this repo as a git submodule at `atari_800xl/common`. This board
+project provides the hardware design plus the board-specific top level, clocking,
+pin mapping and I/O wrapped around that common core.
+
+## Getting the code
+
+The shared core is a submodule, so clone recursively:
+
+```sh
+git clone --recursive https://github.com/scrameta/tonnere
+
+# …or, if you already cloned without --recursive:
+git submodule update --init --recursive
+```
+
+The core then appears under `atari_800xl/common`. To move onto a newer core
+revision, bump the submodule pointer:
+
+```sh
+cd atari_800xl/common
+git checkout <desired-commit-or-branch>
+cd -
+git add atari_800xl/common
+git commit -m "Bump common core to <rev>"
+```
+
+See the
+[common repo](https://github.com/scrameta/atari_xl_fpga_common#using-this-repository)
+for more on the submodule workflow.
 
 ## Status
 
-For now there is only a hardware design from which a physical board has been produced. The design goals of this are described below.
+For now there is only a hardware design, from which a physical board has been
+produced. The design goals of this are described below.
 
 ## Memory
 
