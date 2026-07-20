@@ -1,0 +1,73 @@
+<internal_error>
+<sub_system>ERR</sub_system>
+<callstack>
+	0x7a127616c2d6: ccl_err + 0x82d6 (_ZN15ERR_STACKWALKER15get_stack_traceEPPKviiPv + 0x146)
+	0x7a127616f3a8: ccl_err + 0xb3a8 (_Z14err_terminatorv + 0x5a)
+	0x7a1285fd1c16: jtag_client + 0x38c16 (_ZN10__cxxabiv111__terminateEPFvvE + 0x6)
+	0x7a1285fde279: jtag_client + 0x45279
+	0x7a1285fd18c4: jtag_client + 0x388c4 (__gxx_personality_v0 + 0x264)
+	0x7a1285fe76ab: jtag_client + 0x4e6ab (_Unwind_RaiseException_Phase2 + 0x4b)
+	0x7a1285fe7d40: jtag_client + 0x4ed40 (_Unwind_RaiseException + 0x2a0)
+	0x7a1285fd1dc7: jtag_client + 0x38dc7 (__cxa_throw + 0x37)
+	0x7a127616f32a: ccl_err + 0xb32a (err_sigaction_handler + 0x13c)
+	0x7a1266845330: c.so.6 + 0x45330
+	0x7a1285e3dd96: sld_sdr + 0x6ad96 (_ZNSt8_Rb_treeIPSsSt4pairIKS0_iESt10_Select1stIS3_E23STL_CASE_SENSITIVE_LESSSaIS3_EE4findERS2_ + 0xe)
+	0x7a1285e411fc: sld_sdr + 0x6e1fc (_ZN17SDR_DATA_INSTANCE17get_position_dataEPKc + 0x60)
+	0x7a1285e8d803: sld_sdr + 0xba803 (_ZN15SDR_TX_INSTANCE17get_position_dataEPKc + 0xd)
+	0x7a12492761fb: sld_sedq + 0x761fb (_ZN15SEDQ_TX_MANAGER13get_int_stateEiPKci + 0x1b)
+	0x7a124927699e: sld_sedq + 0x7699e (_ZN15SEDQ_TX_MANAGER21is_instance_data_modeEv + 0x1a)
+	0x7a12492fc88e: sld_sedq + 0xfc88e (_ZN14SEDQ_FRAME_WND9on_updateEP7QObjecti + 0xae)
+	0x7a1249318877: sld_sedq + 0x118877 (_ZN14SEDQ_FRAME_WND18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv + 0x143)
+	0x7a126b18e4e9: Qt6Core.so.6 + 0x18e4e9 (_ZN7QObject5eventEP6QEvent + 0x2c9)
+	0x7a126c3e1ac0: Qt6Widgets.so.6 + 0x1e1ac0 (_ZN7QWidget5eventEP6QEvent + 0x2a0)
+	0x7a126c5319eb: Qt6Widgets.so.6 + 0x3319eb (_ZN11QMainWindow5eventEP6QEvent + 0xcb)
+	0x7a126c384072: Qt6Widgets.so.6 + 0x184072 (_ZN19QApplicationPrivate13notify_helperEP7QObjectP6QEvent + 0x82)
+	0x7a126c38f9f0: Qt6Widgets.so.6 + 0x18f9f0 (_ZN12QApplication6notifyEP7QObjectP6QEvent + 0x2b0)
+	0x7a126b13ed3a: Qt6Core.so.6 + 0x13ed3a (_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent + 0x12a)
+	0x7a126b142225: Qt6Core.so.6 + 0x142225 (_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData + 0x195)
+	0x7a126b2df27d: Qt6Core.so.6 + 0x2df27d (_ZN20QEventDispatcherUNIX13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE + 0x4d)
+	0x7a126a29d88e: Qt6XcbQpa.so.6 + 0x5f88e (_ZN23QXcbUnixEventDispatcher13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE + 0xe)
+	0x7a126b14a0a3: Qt6Core.so.6 + 0x14a0a3 (_ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE + 0x193)
+	0x7a126c5ff7e5: Qt6Widgets.so.6 + 0x3ff7e5 (_ZN7QDialog4execEv + 0x1c5)
+	0x7a1284b759c2: gcl_afcq + 0x1759c2 (_ZN16AFCQ_MSG_DISPLAY22internal_error_displayESs + 0x2fc)
+	0x7a1276ecab39: ccl_msg + 0x48b39 (_ZN10MSG_REPORT14internal_errorERKSs + 0x73)
+	0x7a1276ee951f: ccl_msg + 0x6751f (_ZN14MSG_ERROR_INFO8finalizeEv + 0x5f)
+	0x7a1276ee9a19: ccl_msg + 0x67a19 (_ZN18MSG_INTERNAL_ERROR12report_fatalEPKcPv + 0x6b)
+	0x7a127616f026: ccl_err + 0xb026 (_Z26err_report_fatal_exceptionPKcPv + 0x71)
+	0x7a127616f2ec: ccl_err + 0xb2ec (err_sigaction_handler + 0xfe)
+	0x7a1266845330: c.so.6 + 0x45330
+	0x7a1285e3df4a: sld_sdr + 0x6af4a (_ZNSt8_Rb_treeIPSsSt4pairIKS0_P13SDR_INT_ARRAYESt10_Select1stIS5_E23STL_CASE_SENSITIVE_LESSSaIS5_EE4findERS2_ + 0xe)
+	0x7a1285e3880a: sld_sdr + 0x6580a (_ZN16SDR_DATA_SESSION15get_global_dataEPKcPi + 0x66)
+	0x7a1285e89e49: sld_sdr + 0xb6e49 (_ZN14SDR_TX_SESSION15get_global_dataEPKcPi + 0xd)
+	0x7a12492774bc: sld_sedq + 0x774bc (_ZN9SEDQ_VIEW18load_column_widthsEv + 0x30)
+	0x7a124931292b: sld_sedq + 0x11292b (_ZN9SEDQ_VIEW9on_updateEP7QObjecti + 0xb1)
+	0x7a124938523b: sld_sedq + 0x18523b (_ZN9SEDQ_VIEW18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv + 0x39)
+	0x7a126b18e4e9: Qt6Core.so.6 + 0x18e4e9 (_ZN7QObject5eventEP6QEvent + 0x2c9)
+	0x7a126c3e1ac0: Qt6Widgets.so.6 + 0x1e1ac0 (_ZN7QWidget5eventEP6QEvent + 0x2a0)
+	0x7a1249368508: sld_sedq + 0x168508 (_ZN9SEDQ_VIEW5eventEP6QEvent + 0x36)
+	0x7a126c384072: Qt6Widgets.so.6 + 0x184072 (_ZN19QApplicationPrivate13notify_helperEP7QObjectP6QEvent + 0x82)
+	0x7a126c38f9f0: Qt6Widgets.so.6 + 0x18f9f0 (_ZN12QApplication6notifyEP7QObjectP6QEvent + 0x2b0)
+	0x7a126b13ed3a: Qt6Core.so.6 + 0x13ed3a (_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent + 0x12a)
+	0x7a126b142225: Qt6Core.so.6 + 0x142225 (_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData + 0x195)
+	0x7a126b2df27d: Qt6Core.so.6 + 0x2df27d (_ZN20QEventDispatcherUNIX13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE + 0x4d)
+	0x7a126a29d88e: Qt6XcbQpa.so.6 + 0x5f88e (_ZN23QXcbUnixEventDispatcher13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE + 0xe)
+	0x7a126b14a0a3: Qt6Core.so.6 + 0x14a0a3 (_ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE + 0x193)
+	0x7a126b146692: Qt6Core.so.6 + 0x146692 (_ZN16QCoreApplication4execEv + 0x92)
+	0x592f87c428eb: quartus + 0x38eb (_Z8qgq_mainiPPKc + 0x7b)
+	0x7a1276ec0540: ccl_msg + 0x3e540 (_Z15msg_main_threadPv + 0x10)
+	0x7a1276134c1c: ccl_thr + 0x5c1c (thr_final_wrapper + 0xc)
+	0x7a1276ec060a: ccl_msg + 0x3e60a (_Z18msg_thread_wrapperPFPvS_ES_ + 0x6e)
+	0x7a1276765046: ccl_mem + 0xc046 (_Z18mem_thread_wrapperPFPvS_ES_ + 0x96)
+	0x7a127616d188: ccl_err + 0x9188 (_Z18err_thread_wrapperPFPvS_ES_ + 0x27)
+	0x7a1276134c5f: ccl_thr + 0x5c5f (thr_thread_wrapper + 0x15)
+	0x7a1276ec250a: ccl_msg + 0x4050a (_Z12msg_exe_mainiPPKcPFiiS1_E + 0xa8)
+	0x592f87c429d5: quartus + 0x39d5 (main + 0x26)
+	0x7a126682a1ca: c.so.6 + 0x2a1ca
+	0x7a126682a28b: c.so.6 + 0x2a28b (__libc_start_main + 0x8b)
+	0x592f87c427aa: quartus + 0x37aa (_start + 0x2a)
+</callstack>
+<error>*** Fatal Error: Unhandled Exception</error>
+<date>Wed Apr 29 22:20:38 2026
+</date>
+<version>Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition</version>
+</internal_error>

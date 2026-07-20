@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element serial_flash_loader_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="10CL040YF484I7G" />
+ <parameter name="deviceFamily" value="Cyclone 10 LP" />
+ <parameter name="deviceSpeedGrade" value="7" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="tonnere.qpf" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="asdo_in"
+   internal="serial_flash_loader_0.asdo_in"
+   type="conduit"
+   dir="end">
+  <port name="asdo_in" internal="asdo_in" />
+ </interface>
+ <interface
+   name="asmi_access_granted"
+   internal="serial_flash_loader_0.asmi_access_granted"
+   type="conduit"
+   dir="end">
+  <port name="asmi_access_granted" internal="asmi_access_granted" />
+ </interface>
+ <interface
+   name="asmi_access_request"
+   internal="serial_flash_loader_0.asmi_access_request"
+   type="conduit"
+   dir="end">
+  <port name="asmi_access_request" internal="asmi_access_request" />
+ </interface>
+ <interface
+   name="data0_out"
+   internal="serial_flash_loader_0.data0_out"
+   type="conduit"
+   dir="end">
+  <port name="data0_out" internal="data0_out" />
+ </interface>
+ <interface name="data_in" internal="serial_flash_loader_0.data_in" />
+ <interface name="data_oe" internal="serial_flash_loader_0.data_oe" />
+ <interface name="data_out" internal="serial_flash_loader_0.data_out" />
+ <interface
+   name="dclk_in"
+   internal="serial_flash_loader_0.dclk_in"
+   type="conduit"
+   dir="end">
+  <port name="dclk_in" internal="dclk_in" />
+ </interface>
+ <interface
+   name="ncso_in"
+   internal="serial_flash_loader_0.ncso_in"
+   type="conduit"
+   dir="end">
+  <port name="ncso_in" internal="ncso_in" />
+ </interface>
+ <interface
+   name="noe_in"
+   internal="serial_flash_loader_0.noe_in"
+   type="conduit"
+   dir="end">
+  <port name="noe_in" internal="noe_in" />
+ </interface>
+ <module
+   name="serial_flash_loader_0"
+   kind="altera_serial_flash_loader"
+   version="25.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="ENHANCED_MODE" value="true" />
+  <parameter name="INTENDED_DEVICE_FAMILY" value="Cyclone 10 LP" />
+  <parameter name="gui_shared_access" value="true" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

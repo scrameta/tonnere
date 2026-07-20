@@ -1,0 +1,22 @@
+BLOCK		START ADDRESS		END ADDRESS
+
+settings1.hex		0x00200000		0x00200007
+settings2.hex		0x00202000		0x00202007
+settings3.hex		0x00204000		0x00204007
+settings4.hex		0x00206000		0x00206007
+basic.hex		0x00208000		0x0020FFFF
+os.hex		0x00210000		0x0021FFFF
+freezer.hex		0x00220000		0x0022FFFF
+Page_0		0x00000000		0x00086809
+
+
+Configuration device: 10CL040Y
+Configuration mode: Active Serial
+Quad-Serial configuration device dummy clock cycle: 8
+
+
+Notes:
+
+- Data checksum for this conversion is 0x77B4193E
+
+- All the addresses in this file are byte addresses

@@ -1,0 +1,73 @@
+IP Upgrade report for tonnere
+Sun Jul 19 18:22:46 2026
+Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. IP Upgrade Summary
+  3. Successfully Upgraded IP Components
+  4. IP Upgrade Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2025  Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Altera and sold by Altera or its authorized distributors.  Please
+refer to the Altera Software License Subscription Agreements 
+on the Quartus Prime software download page.
+
+
+
++--------------------------------------------------------------------------------+
+; IP Upgrade Summary                                                             ;
++------------------------------+-------------------------------------------------+
+; IP Components Upgrade Status ; Passed - Sun Jul 19 18:22:46 2026               ;
+; Quartus Prime Version        ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
+; Revision Name                ; tonnere                                         ;
+; Top-level Entity Name        ; tonnere                                         ;
+; Family                       ; Cyclone 10 LP                                   ;
++------------------------------+-------------------------------------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Successfully Upgraded IP Components                                                                                                                                                                ;
++---------------+----------------+---------+-----------------------------------------------+-----------------------------------------------+-----------------------------------------------+---------+
+; Entity Name   ; Component Name ; Version ; Original Source File                          ; Generation File Path                          ; New Source File                               ; Message ;
++---------------+----------------+---------+-----------------------------------------------+-----------------------------------------------+-----------------------------------------------+---------+
+; fifo_transmit ; FIFO           ; 16.1    ; components/fifo_cyclone10LP/fifo_transmit.qip ; components/fifo_cyclone10LP/fifo_transmit.vhd ; components/fifo_cyclone10LP/fifo_transmit.qip ;         ;
+; fifo_receive  ; FIFO           ; 16.1    ; components/fifo_cyclone10LP/fifo_receive.qip  ; components/fifo_cyclone10LP/fifo_receive.vhd  ; components/fifo_cyclone10LP/fifo_receive.qip  ;         ;
++---------------+----------------+---------+-----------------------------------------------+-----------------------------------------------+-----------------------------------------------+---------+
+
+
++---------------------+
+; IP Upgrade Messages ;
++---------------------+
+Info (11902): Backing up file "components/fifo_cyclone10LP/fifo_transmit.vhd" to "components/fifo_cyclone10LP/fifo_transmit.BAK.vhd"
+Info (11837): Started upgrading IP component FIFO with file "components/fifo_cyclone10LP/fifo_transmit.vhd"
+Info (11902): Backing up file "components/fifo_cyclone10LP/fifo_receive.vhd" to "components/fifo_cyclone10LP/fifo_receive.BAK.vhd"
+Info (11837): Started upgrading IP component FIFO with file "components/fifo_cyclone10LP/fifo_receive.vhd"
+Info (11131): Completed upgrading IP component FIFO with file "components/fifo_cyclone10LP/fifo_transmit.vhd"
+Info (11131): Completed upgrading IP component FIFO with file "components/fifo_cyclone10LP/fifo_receive.vhd"
+Info (23030): Evaluation of Tcl script /home/markw/intelFPGA_lite/25.1std/quartus/common/tcl/internal/ip_regen/ip_regen.tcl was successful
+Info: Quartus Prime Shell was successful. 0 errors, 1 warning
+    Info: Peak virtual memory: 588 megabytes
+    Info: Processing ended: Sun Jul 19 18:22:46 2026
+    Info: Elapsed time: 00:00:05
+    Info: Total CPU time (on all processors): 00:00:10
+
+
