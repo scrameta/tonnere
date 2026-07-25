@@ -1,0 +1,13 @@
+#include "regs.h"
+#include "regs.c"
+#include "main.c"
+#include "fat.c" 
+#include "SDrive.c"
+#include "mmc.c"
+#include "spi.c"
+#include "uart.c"
+#include "led.c"
+#include "pind.c" 
+#include "eeprom.c"
+#include "pause.c"
+

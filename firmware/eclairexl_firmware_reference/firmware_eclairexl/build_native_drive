@@ -1,0 +1,1 @@
+gcc -g -O0 -DLITTLE_ENDIAN test_drive.c fileutils.c atari_drive_emulator.c native/uart.c hexdump.c printf/printf.c fat/pff_file.c fat/pff.c common/utils.c sd_direct/diskio_mmc.c native/mmc.c -I. -Iprintf -Ifat -Icommon

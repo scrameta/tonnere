@@ -1,0 +1,17 @@
+zpu-elf-gcc -I. -Isd_direct -Iprintf -Ifat -Icommon -c -g -O2  -DDISABLE_UART_RX  -o zpu_obj/uart.o -c pokey/uart.c
+zpu-elf-gcc -I. -Isd_direct -Iprintf -Ifat -Icommon -c -g -O2  -DDISABLE_UART_RX  -o zpu_obj/hexdump.o -c hexdump.c
+zpu-elf-gcc -I. -Isd_direct -Iprintf -Ifat -Icommon -c -g -O2  -DDISABLE_UART_RX  -o zpu_obj/printf.o -c printf/printf.c
+zpu-elf-gcc -I. -Isd_direct -Iprintf -Ifat -Icommon -c -g -O2  -DDISABLE_UART_RX  -o zpu_obj/pff_file.o -c fat/pff_file.c
+zpu-elf-gcc -I. -Isd_direct -Iprintf -Ifat -Icommon -c -g -O2  -DDISABLE_UART_RX  -o zpu_obj/pff.o -c fat/pff.c
+zpu-elf-gcc -I. -Isd_direct -Iprintf -Ifat -Icommon -c -g -O2  -DDISABLE_UART_RX  -o zpu_obj/utils.o -c common/utils.c
+zpu-elf-gcc -I. -Isd_direct -Iprintf -Ifat -Icommon -c -g -O2  -DDISABLE_UART_RX  -o zpu_obj/diskio_mmc.o -c diskio_mmc.c
+zpu-elf-gcc -nostartfiles -Wl,--relax -g -Os -T ./standalone_simple.ld -o JustStartAtari.elf mycrt0.s zpu_obj/main.o zpu_obj/regs.o zpu_obj/atari_drive_emulator.o zpu_obj/pokey/uart.o zpu_obj/hexdump.o zpu_obj/printf/printf.o zpu_obj/fat/pff_file.o zpu_obj/fat/pff.o zpu_obj/common/utils.o zpu_obj/diskio_mmc.o 
+zpu-elf-objcopy -O binary JustStartAtari.elf JustStartAtari.bin
+echo >JustStartAtari.rpt -n "End of code:\t"
+zpu-elf-objdump -x JustStartAtari.elf | grep >>JustStartAtari.rpt _romend
+echo >>JustStartAtari.rpt -n "Start of BSS:\t"
+zpu-elf-objdump -x JustStartAtari.elf | grep  >>JustStartAtari.rpt __bss_start__
+echo >>JustStartAtari.rpt -n "End of BSS:\t"
+zpu-elf-objdump -x JustStartAtari.elf | grep >>JustStartAtari.rpt __bss_end__
+cat JustStartAtari.rpt
+

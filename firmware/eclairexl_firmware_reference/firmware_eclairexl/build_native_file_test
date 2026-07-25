@@ -1,0 +1,1 @@
+gcc -g -O0 printf/printf.c test_file.c fileutils.c fileselector.c fat/pff_file.c fat/pff.c common/utils.c native/regs.c native/joystick.c native/diskio_mmc.c native/mmc.c native/screen.c -I. -Ifat -Icommon -Iprintf
