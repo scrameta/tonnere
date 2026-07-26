@@ -16,6 +16,7 @@ set(MX_Include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../AZURE_RTOS/App
     ${CMAKE_CURRENT_SOURCE_DIR}/../../FileX/App
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../FileX/Target
     ${CMAKE_CURRENT_SOURCE_DIR}/../../USBX/App
     ${CMAKE_CURRENT_SOURCE_DIR}/../../USBX/Target
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F4xx_HAL_Driver/Inc
@@ -35,6 +36,7 @@ set(MX_Include_Dirs
 # STM32CubeMX generated application sources
 set(MX_Application_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../AZURE_RTOS/App/app_azure_rtos.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../FileX/Target/fx_stm32_sd_driver_glue.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../FileX/App/app_filex.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../USBX/App/ux_host_keyboard.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../USBX/App/ux_host_mouse.c
@@ -92,6 +94,9 @@ set(STM32_Drivers_Src
 # Drivers Midllewares
 
 
+set(Interfaces_Src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/filex/common/drivers/fx_stm32_sd_driver.c
+)
 set(USBX_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_stm32_host_controllers/ux_hcd_stm32_callback.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_stm32_host_controllers/ux_hcd_stm32_controller_disable.c
@@ -278,6 +283,7 @@ set(USBX_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_hid_mouse_deactivate.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_hid_mouse_entry.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_hid_mouse_position_get.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_hid_mouse_wheel_get.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_hid_mouse_wheel_get.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_hub_activate.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_hub_change_detect.c
@@ -709,7 +715,7 @@ set(MX_LINK_DIRS
 set(MX_LINK_LIBS 
     STM32_Drivers
     ${TOOLCHAIN_LINK_LIBRARIES}
-    USBX	FileX	ThreadX	
+    Interfaces	USBX	FileX	ThreadX	
 )
 # Interface library for includes and symbols
 add_library(stm32cubemx INTERFACE)
@@ -721,6 +727,11 @@ add_library(STM32_Drivers OBJECT)
 target_sources(STM32_Drivers PRIVATE ${STM32_Drivers_Src})
 target_link_libraries(STM32_Drivers PUBLIC stm32cubemx)
 
+
+# Create Interfaces static library
+add_library(Interfaces OBJECT)
+target_sources(Interfaces PRIVATE ${Interfaces_Src})
+target_link_libraries(Interfaces PUBLIC stm32cubemx)
 
 # Create USBX static library
 add_library(USBX OBJECT)
