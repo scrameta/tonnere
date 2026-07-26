@@ -1,0 +1,97 @@
+/*
+ * fpga_bus.h — typed HAL over the FSMC/FPGA interface (v0.2, native 16-bit).
+ *
+ * No code above this layer touches a raw FSMC pointer. Every register is a
+ * plain 16-bit access — no half composition, no cross-boundary RMW.
+ *
+ * Two backends implement this header:
+ *   - fpga_bus_stm32.c : real FSMC accesses (on-target, -DFPGA_BUS_STM32)
+ *   - fpga_bus_fake.c  : in-memory model (host tests, -DFPGA_BUS_FAKE)
+ */
+#ifndef TONNEREXL_FPGA_BUS_H
+#define TONNEREXL_FPGA_BUS_H
+
+#include <stdint.h>
+#include <stddef.h>
+#include "fpga_bus_map.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    FPGA_OK = 0,
+    FPGA_ERR_RANGE,
+    FPGA_ERR_MAGIC,
+    FPGA_ERR_TIMEOUT,
+    FPGA_ERR_BUSY,
+    FPGA_ERR_STATE,
+} fpga_status_t;
+
+/* ---- lifecycle ---- */
+fpga_status_t fpga_bus_init(void);        /* init mutex, verify identity */
+uint16_t      fpga_iface_magic(void);
+uint16_t      fpga_iface_version(void);
+
+/* ---- raw 16-bit register access (by logical index) ---- */
+uint16_t fpga_reg_read(enum fpga_reg_index idx);
+void     fpga_reg_write(enum fpga_reg_index idx, uint16_t value);
+void     fpga_reg_rmw(enum fpga_reg_index idx, uint16_t mask, uint16_t value);
+
+/* ---- machine control (typed) ---- */
+void fpga_core_set_pause(int on);
+void fpga_core_set_warm_reset(int on);
+void fpga_core_cold_reset_strobe(void);     /* pulse the cold-reset strobe */
+void fpga_core_set_freezer(int on);
+void fpga_core_set_atari800(int on);
+void fpga_set_ramconfig(uint16_t sel);
+void fpga_set_performance(uint16_t speed, int vbl_restrict);
+void fpga_set_turbo_drive(uint16_t sel);
+void fpga_set_cart(uint16_t cart_type);
+void fpga_set_video(uint16_t mode, int pal, int scanlines, int csync);
+
+/* ---- keyboard matrix (firmware is the source; write-only) ---- */
+/* Write the full 64-bit matrix (bit n = KBCODE n) as four 16-bit regs. */
+void fpga_kbd_matrix_write(uint16_t kbd0, uint16_t kbd1, uint16_t kbd2, uint16_t kbd3);
+/* Convenience: set/clear a single matrix bit (0..63) in a shadow, then flush. */
+void fpga_kbd_set(uint8_t kbcode, int pressed);
+void fpga_kbd_clear_all(void);
+void fpga_kbd_flush(void);                  /* push shadow to KBD0..3 */
+
+/* ---- console keys ---- */
+void     fpga_console_inject(uint16_t bits);   /* CONSOLE_START_BIT etc. */
+uint16_t fpga_console_phys_read(void);         /* physical switch state */
+
+/* ---- joysticks (digital, firmware-injected) ---- */
+void fpga_joy_write(int pair /*0=JOY01,1=JOY23*/, uint16_t a_field, uint16_t b_field);
+
+/* ---- paddles (analog, from STM32 ADCs) ---- */
+void fpga_paddle_write(int pair /*0=PADDLE01,1=PADDLE23*/, uint8_t axis_a, uint8_t axis_b);
+
+/* ---- freezer debug ---- */
+void fpga_freeze_addr(uint16_t addr);
+void fpga_freeze_data_ctrl(uint8_t data, int rd, int wr, int match);
+
+/* ---- Atari memory window (bounded, direct FSMC indexing) ---- */
+fpga_status_t fpga_atari_write(uint32_t off, const void *src, size_t len);
+fpga_status_t fpga_atari_read(uint32_t off, void *dst, size_t len);
+
+/* ---- interrupt controller ---- */
+void     fpga_irq_enable(uint16_t mask);        /* set the enable mask       */
+uint16_t fpga_irq_enabled(void);
+uint16_t fpga_irq_pending(void);                /* read pending (enabled) bits */
+void     fpga_irq_clear(uint16_t bits);         /* write-1-to-clear           */
+
+/* ---- SIO UART ---- */
+int      fpga_sio_rx_empty(void);
+int      fpga_sio_tx_full(void);
+uint16_t fpga_sio_tx_count(void);
+int      fpga_sio_getc(uint8_t *out);
+int      fpga_sio_putc(uint8_t c);
+void     fpga_sio_set_divisor(uint8_t div);
+uint16_t fpga_sio_framing_errors(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* TONNEREXL_FPGA_BUS_H */
