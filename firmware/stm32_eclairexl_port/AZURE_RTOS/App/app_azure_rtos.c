@@ -28,11 +28,12 @@
 
 #include "main.h"
 #include "logger.h"
-#include "thread_toggle.h"
-#include "thread_memtest.h"
 
 #include "si5351_modes.h"
 #include "i2c_switch.h"
+
+#include "app_main.h"
+#include "platform.h"
 
 /* USER CODE END Includes */
 
@@ -166,8 +167,6 @@ VOID tx_application_define(VOID *first_unused_memory)
     }
 
     /* USER CODE BEGIN MX_USBX_Host_Init_Success */
-    thread_toggle_init();
- //   thread_memtest_init();
     log_printf("Init SI5351\r\n");
     HAL_GPIO_WritePin(STM_I2CRESET_GPIO_Port, STM_I2CRESET_Pin, GPIO_PIN_SET);
     pca9546_select(2);
@@ -177,6 +176,15 @@ VOID tx_application_define(VOID *first_unused_memory)
     si5351_init();                          // once after power-on
     si5351_apply_mode(SI5351_MODE_720_PAL); // call whenever mode changes
     log_printf("Init SI5351 DONE\r\n");
+
+    /* --- TonnereXL port entry --- */
+    {
+        app_config_t port_cfg;
+        port_cfg.thread_pool = &tx_app_byte_pool;
+        if (app_main(&port_cfg) != TX_SUCCESS) {
+            log_printf("app_main failed\r\n");
+        }
+    }
 
     /* USER CODE END MX_USBX_Host_Init_Success */
   }
@@ -188,12 +196,45 @@ extern I2C_HandleTypeDef hi2c1;
 void si5351_write(uint8_t reg, uint8_t val)
 {
     uint8_t buf[2] = { reg, val };
-    HAL_I2C_Master_Transmit(&hi2c1, 0xc0, &buf, 2, HAL_MAX_DELAY);
+    HAL_I2C_Master_Transmit(&hi2c1, 0xc0, &buf[0], 2, HAL_MAX_DELAY);
 }
 extern void pca9546_write(uint8_t addr, uint8_t val)
 {
     HAL_I2C_Master_Transmit(&hi2c1, addr, &val, 1, HAL_MAX_DELAY);
 }
 
+/* Map the port's abstract video-clock request to your si5351 code. */
+void board_set_video_clock(int mode)   /* platform_clock_mode_t */
+{
+    switch(mode)
+    {
+    case PLAT_CLK_NTSC:
+        si5351_apply_mode(SI5351_MODE_480_NTSC);
+        break;
+    case PLAT_CLK_PAL:
+        si5351_apply_mode(SI5351_MODE_576_PAL);
+        break;
+    case PLAT_CLK_480P: // TODO, these are not match
+        break;
+    case PLAT_CLK_720P:
+        break;
+    default:	 
+        break;
+    }
+//    SI5351_MODE_576_PAL           , /* 576p/i PAL@50 */
+//    SI5351_MODE_480_NTSC          , /* 480p/i NTSC@59.94 */
+//    SI5351_MODE_720_PAL           , /* 720p/1080i PAL@50 */
+//    SI5351_MODE_720_PAL_HI        , /* 720p/1080i PAL@50 Hi */
+//    SI5351_MODE_720_NTSC          , /* 720p/1080i NTSC@60 */
+//    SI5351_MODE_720_NTSC_HI         /* 720p/1080i NTSC@60 Hi */
+    /* e.g. switch(mode){ case PLAT_CLK_PAL: ... si5351_apply_mode(...) ... } */
+}
+
+/* Emit one log byte to your console transport (UART/ITM). */
+extern UART_HandleTypeDef huart3;   // or whichever CubeMX generated
+void board_log_putc(char c)
+{
+    HAL_UART_Transmit(&huart3,(uint8_t*)&c,1,1); 
+}
 
 /* USER CODE END  0 */

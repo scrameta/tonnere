@@ -57,7 +57,10 @@ set(PORT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 add_library(tonnerexl_port STATIC
   ${PORT_ROOT}/Platform/fpga_bus_fake.c
+  ${PORT_ROOT}/Platform/platform_host.c
   ${PORT_ROOT}/Filesystem/simplefile_filex.c
+  ${PORT_ROOT}/App/app_main.c
+  ${PORT_ROOT}/App/logger.c
   ${PORT_ROOT}/App/app_threads.c
   ${PORT_ROOT}/App/app_service_steps.c
 )

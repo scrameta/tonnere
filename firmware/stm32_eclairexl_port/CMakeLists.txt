@@ -67,6 +67,7 @@ add_subdirectory(cmake/stm32cubemx)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     USE_HAL_DRIVER
     STM32F407xx
+    FPGA_BUS_STM32
 )
 
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
@@ -81,13 +82,23 @@ target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
 
 # User sources can be added here if they are not already included by CubeMX.
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    AZURE_RTOS/App/thread_toggle.c
-    AZURE_RTOS/App/thread_memtest.c
-    AZURE_RTOS/App/logger.c
+    #AZURE_RTOS/App/thread_toggle.c
+    #AZURE_RTOS/App/thread_memtest.c
+    #AZURE_RTOS/App/logger.c
+    tonnerexl/Platform/fpga_bus_stm32.c
+    tonnerexl/Platform/platform_stm32.c
+    tonnerexl/Filesystem/simplefile_filex.c
+    tonnerexl/App/app_main.c
+    tonnerexl/App/app_threads.c
+    tonnerexl/App/app_service_steps.c
+    tonnerexl/App/logger.c
 )
 
 # User include directories can be added here if needed.
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    tonnerexl/Platform/
+    tonnerexl/App/
+    tonnerexl/Filesystem/
 )
 
 # Keep CubeMX-generated code in the separate stm32cubemx target.

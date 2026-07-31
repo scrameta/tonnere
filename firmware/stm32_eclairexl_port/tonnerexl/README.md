@@ -27,14 +27,21 @@ FetchContent play NO part here.
 
 Add to your existing STM32Cube CMake build:
 
-1. Source files:
-   - `Platform/fpga_bus_stm32.c`   (NOT fpga_bus_fake.c) — native 16-bit HAL
-   - `Filesystem/simplefile_filex.c`
-   - `App/app_threads.c`, `App/app_service_steps.c`
+See `docs/board_integration.md` for the exact edits. In brief:
+
+1. Source files: `Platform/fpga_bus_stm32.c` + `Platform/platform_stm32.c`
+   (NOT the _fake/_host ones), `App/app_main.c`, `App/logger.c`,
+   `App/app_threads.c`, `App/app_service_steps.c`, `Filesystem/simplefile_filex.c`
 2. Include dirs: `Platform/`, `Filesystem/`, `App/`
 3. Compile define: `FPGA_BUS_STM32`
-4. Ensure the FileX generic port include is on the path (your project already
-   has it): `Middlewares/ST/filex/ports/generic/inc`
+4. FileX generic port include on the path: `Middlewares/ST/filex/ports/generic/inc`
+5. Call the shared `app_main(&cfg)` from `tx_application_define`, and provide two
+   board hooks (`board_set_video_clock`, `board_log_putc`). Both detailed in
+   `docs/board_integration.md`.
+
+The port has ONE shared entry, `app_main()`, called by both board and host, so
+the startup path is exercised by the host tests. Only the `platform_*` seam and
+the FSMC backend differ per target.
 
 Verified: all four sources compile clean for cortex-m4 (`-Wall -Wextra -Werror`)
 against ST 6.1.10 headers. `fpga_bus_stm32.c` assumes the FSMC is already
