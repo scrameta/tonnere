@@ -29,8 +29,6 @@
 #include "ux_host_class_hub.h"
 #include "ux_host_stack.h"
 
-#include "logger.h"
-
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
@@ -229,7 +227,6 @@ USHORT      local_port_change;
     else
     {
 // At line 228 (the else for disconnection):
-log_printf("HUB: disconnect path entered\r\n");
         /* Check if there was a no previous device attached on this port. */
         if ((hub -> ux_host_class_hub_port_state & (UINT)(1 << port)))
         {
@@ -237,9 +234,7 @@ log_printf("HUB: disconnect path entered\r\n");
             hub -> ux_host_class_hub_port_state &= (UINT)~(1 << port);
 
             /* We get here when there is a device extraction.  */
-log_printf("HUB: calling device_remove\r\n");
             _ux_host_stack_device_remove(hcd, hub -> ux_host_class_hub_device, port);
-log_printf("HUB: device_remove returned\r\n");
         }
 
 #if defined(UX_HOST_STANDALONE)
@@ -247,19 +242,13 @@ log_printf("HUB: device_remove returned\r\n");
 #else
 
         /* The port should be disabled now. Power is still applied.  */
-log_printf("HUB: clear PORT_ENABLE\r\n");
         status =  _ux_host_class_hub_feature(hub, port, UX_CLEAR_FEATURE, UX_HOST_CLASS_HUB_PORT_ENABLE);
-log_printf("HUB: clear PORT_ENABLE returned %d\r\n", status);
 
         /* We must clear the enable change condition so that we don't get awaken again.  */
-log_printf("HUB: clear C_PORT_ENABLE\r\n");
         _ux_host_class_hub_feature(hub, port, UX_CLEAR_FEATURE, UX_HOST_CLASS_HUB_C_PORT_ENABLE);
-log_printf("HUB: clear C_PORT_ENABLE returned\r\n");
 
         /* We must clear the connection change condition so that we don't get awaken again.  */
-log_printf("HUB: clear C_PORT_CONNECTION\r\n");
         _ux_host_class_hub_feature(hub, port, UX_CLEAR_FEATURE, UX_HOST_CLASS_HUB_C_PORT_CONNECTION);
-log_printf("HUB: clear C_PORT_CONNECTION returned\r\n");
 #endif
     }
 

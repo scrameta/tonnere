@@ -29,7 +29,6 @@
 #include "ux_host_stack.h"
 #include "ux_host_class_hub.h"
 
-#include "logger.h"
 int transfer_complete_count = 0;
 volatile int tc_last_completion_code = 0;
 volatile int tc_last_hub_state = 0;

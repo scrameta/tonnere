@@ -30,8 +30,6 @@
 #include "ux_host_stack.h"
 
 
-#include "logger.h"
-
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
@@ -73,8 +71,6 @@ UX_TRANSFER     *transfer_request;
 USHORT          port_status_change_bits;
 UINT            port_index;
 UINT            status;
-
-    log_printf("_ux_host_class_hub_change_process\r\n");
 
     /* Now get the transfer_request attached to the interrupt endpoint.  */
     transfer_request =  &hub -> ux_host_class_hub_interrupt_endpoint -> ux_endpoint_transfer_request;

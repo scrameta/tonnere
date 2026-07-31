@@ -29,8 +29,6 @@
 #include "ux_host_class_hub.h"
 #include "ux_host_stack.h"
 
-#include "logger.h"
-
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
@@ -79,7 +77,6 @@ UX_HOST_CLASS           *class;
 UX_HOST_CLASS_HUB       *hub;
 UINT                    status;
 UINT                    class_index;
-log_printf("HUB:Change detect\n");
 
     /* Get the class container first.  */
     _ux_host_stack_class_get(_ux_system_host_class_hub_name, &class);

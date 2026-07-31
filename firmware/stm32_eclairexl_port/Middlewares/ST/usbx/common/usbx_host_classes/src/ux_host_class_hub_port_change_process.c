@@ -29,8 +29,6 @@
 #include "ux_host_class_hub.h"
 #include "ux_host_stack.h"
 
-#include "logger.h"
-
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
@@ -79,8 +77,6 @@ UINT  _ux_host_class_hub_port_change_process(UX_HOST_CLASS_HUB *hub, UINT port)
 USHORT      port_status;
 USHORT      port_change;
 UINT        status;
-
-    log_printf("port change process\r\n");
 
     /* First step is to retrieve the status on the port with a GET_STATUS.  */
     status =  _ux_host_class_hub_status_get(hub, port, &port_status, &port_change);
