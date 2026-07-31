@@ -178,13 +178,48 @@ enum fpga_uart_index {
  */
 
 /* ------------------------------------------------------------------ */
-/* Firmware-side GPIO the RTL does NOT own. TODO(mark): real pins.     */
+/* Firmware-side GPIO (from the board netlist / CubeMX pinlist).        */
+/* These are STM32-side signals, not FPGA registers. Guarded to the     */
+/* on-target build since they reference STM32 HAL GPIO symbols.         */
 /* ------------------------------------------------------------------ */
-/* SD card-detect/write-protect are STM32-side (SD is not on the FPGA). */
-#define FPGA_SD_CD_ACTIVE_LOW   1   /* TODO(mark): confirm */
-#define FPGA_SD_WP_ACTIVE_HIGH  1   /* TODO(mark): confirm */
-/* TODO(mark): FPGA_SD_CD_GPIO_PORT / _PIN / EXTI line */
-/* TODO(mark): FPGA_SD_WP_GPIO_PORT / _PIN */
-/* TODO(mark): FPGA_IRQ_GPIO_PORT / _PIN / EXTI line (contract §6) */
+#if defined(FPGA_BUS_STM32)
+
+/* FPGA -> STM32 interrupt line: PG12 (net FPGA.IRQ). EXTI12.          */
+#define FPGA_IRQ_GPIO_PORT      GPIOG
+#define FPGA_IRQ_GPIO_PIN       GPIO_PIN_12
+#define FPGA_IRQ_EXTI_IRQn      EXTI15_10_IRQn
+
+/* SD card-detect: PC13 (net SD_DETECT).                               */
+#define FPGA_SD_CD_GPIO_PORT    GPIOC
+#define FPGA_SD_CD_GPIO_PIN     GPIO_PIN_13
+
+/* SD write-protect: PD3 (schematic net SD.WP; the pinlist .md mislabelled
+ * this pin as a generic net, so an earlier revision wrongly assumed no WP). */
+#define FPGA_SD_WP_GPIO_PORT    GPIOD
+#define FPGA_SD_WP_GPIO_PIN     GPIO_PIN_3
+
+/* SD write-protect: PD3 (SD.WP via RN7; pinlist net label was generic  */
+/* Net-(RN7-R2.2) but the schematic shows it as SD.WP).                 */
+#define FPGA_SD_WP_GPIO_PORT    GPIOD
+#define FPGA_SD_WP_GPIO_PIN     GPIO_PIN_3
+
+/* Other FPGA config/status lines from the netlist, for later use:     */
+/*   PG11 FPGA.PS_N, PG13 FPGA.CONFIG_N, PG14 FPGA.STATUS_N,           */
+/*   PG15 FPGA.CONF_DONE — FPGA (re)configuration control.             */
+#define FPGA_CONFIG_N_PORT      GPIOG
+#define FPGA_CONFIG_N_PIN       GPIO_PIN_13
+#define FPGA_STATUS_N_PORT      GPIOG
+#define FPGA_STATUS_N_PIN       GPIO_PIN_14
+#define FPGA_CONF_DONE_PORT     GPIOG
+#define FPGA_CONF_DONE_PIN      GPIO_PIN_15
+#define FPGA_PS_N_PORT          GPIOG
+#define FPGA_PS_N_PIN           GPIO_PIN_11
+
+#endif /* FPGA_BUS_STM32 */
+
+/* Board characteristics (target-independent, safe on host). */
+#define FPGA_SD_CD_ACTIVE_LOW   1   /* TODO(mark): confirm CD polarity via RN7 */
+#define FPGA_SD_HAS_WP          1   /* write-protect on PD3 (via RN7) */
+#define FPGA_SD_WP_ACTIVE_HIGH  1   /* TODO(mark): confirm WP polarity */
 
 #endif /* TONNEREXL_FPGA_BUS_MAP_H */
