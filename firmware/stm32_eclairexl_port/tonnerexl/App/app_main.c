@@ -18,18 +18,26 @@ UINT app_main(const app_config_t *cfg) {
     if (!cfg || !cfg->thread_pool) return TX_PTR_ERROR;
 
     logger_init();
+    log_puts("\r\n=== TonnereXL: entered app_main ===\r\n");
+
     if (platform_init() != 0) {
         log_puts("platform_init failed\r\n");
         return TX_NOT_DONE;
     }
 
+    log_puts("checking FPGA interface...\r\n");
     fpga_status_t fs = fpga_bus_init();
     if (fs == FPGA_ERR_MAGIC) {
-        /* Identity mismatch: RTL/firmware contract skew. Continue in a limited
-         * mode rather than trusting the bus — the menu can still report it. */
-        log_puts("WARNING: FPGA identity mismatch (safe mode)\r\n");
+        /* Identity mismatch: RTL/firmware contract skew, or FPGA not yet
+         * configured/responding. Continue in a limited mode rather than
+         * trusting the bus — hello-world still completes. */
+        log_printf("  FPGA identity = 0x%04X ver 0x%04X (expected magic 0x%04X)\r\n",
+                   fpga_iface_magic(), fpga_iface_version(), FPGA_IFACE_MAGIC);
+        log_puts("  -> FPGA not matched; safe mode\r\n");
     } else if (fs != FPGA_OK) {
-        log_puts("fpga_bus_init failed\r\n");
+        log_puts("  fpga_bus_init failed\r\n");
+    } else {
+        log_puts("  FPGA interface OK\r\n");
     }
 
     simplefile_init_lock();
