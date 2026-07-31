@@ -46,10 +46,15 @@ set(THREADX_ARCH linux CACHE STRING "" FORCE)
 set(THREADX_TOOLCHAIN gnu CACHE STRING "" FORCE)
 FetchContent_MakeAvailable(threadx filex)
 
-# Third-party: don't apply -Werror to upstream code.
+# Third-party: don't apply -Werror to upstream code, and don't sanitize it.
+# The ThreadX linux-port stack builder does an intentional misaligned ULONG
+# store (simulator stack frame setup) that UBSan flags — harmless, x86-only,
+# and absent from the cortex-m4 port used on-target. We test OUR port, not
+# upstream's simulator, so strip sanitizer instrumentation from these targets.
+# (Our port library + tests remain fully sanitized.)
 foreach(tgt threadx filex)
   if(TARGET ${tgt})
-    target_compile_options(${tgt} PRIVATE -w)
+    target_compile_options(${tgt} PRIVATE -w -fno-sanitize=all)
   endif()
 endforeach()
 
