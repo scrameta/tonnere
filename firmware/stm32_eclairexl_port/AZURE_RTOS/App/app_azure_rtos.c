@@ -203,36 +203,52 @@ extern void pca9546_write(uint8_t addr, uint8_t val)
     HAL_I2C_Master_Transmit(&hi2c1, addr, &val, 1, HAL_MAX_DELAY);
 }
 
-/* Map the port's abstract video-clock request to your si5351 code. */
-void board_set_video_clock(int mode)   /* platform_clock_mode_t */
+int video_to_pll(platform_video_standard_t s, platform_video_refresh_t r)
 {
-    switch(mode)
-    {
-    case PLAT_CLK_NTSC:
-        si5351_apply_mode(SI5351_MODE_480_NTSC);
+    int mode = -1;
+    switch (s) {
+    case STANDARD_ORIGINAL:
+        if (r == REFRESH_PAL_50)  mode = SI5351_MODE_PAL_ORIGINAL;
+        if (r == REFRESH_NTSC_60) mode = SI5351_MODE_NTSC_ORIGINAL;
+        /* no 59.94 original */
         break;
-    case PLAT_CLK_PAL:
-        si5351_apply_mode(SI5351_MODE_576_PAL);
+    case STANDARD_ED:
+        if (r == REFRESH_PAL_50)    mode = SI5351_MODE_576_PAL;     /* PAL ED = 576p */
+        if (r == REFRESH_NTSC_60)   mode = SI5351_MODE_480_NTSC_60; /* NTSC ED = 480p */
+        if (r == REFRESH_NTSC_5994) mode = SI5351_MODE_480_NTSC;
         break;
-    case PLAT_CLK_480P: // TODO, these are not match
+    case STANDARD_HD720:
+        if (r == REFRESH_PAL_50)    mode = SI5351_MODE_720_PAL;
+        if (r == REFRESH_NTSC_60)   mode = SI5351_MODE_720_NTSC;
+        if (r == REFRESH_NTSC_5994) mode = SI5351_MODE_720_NTSC_5994;
         break;
-    case PLAT_CLK_720P:
-        break;
-    default:	 
+    default:
         break;
     }
-//    SI5351_MODE_576_PAL           , /* 576p/i PAL@50 */
-//    SI5351_MODE_480_NTSC          , /* 480p/i NTSC@59.94 */
-//    SI5351_MODE_720_PAL           , /* 720p/1080i PAL@50 */
-//    SI5351_MODE_720_PAL_HI        , /* 720p/1080i PAL@50 Hi */
-//    SI5351_MODE_720_NTSC          , /* 720p/1080i NTSC@60 */
-//    SI5351_MODE_720_NTSC_HI         /* 720p/1080i NTSC@60 Hi */
-    /* e.g. switch(mode){ case PLAT_CLK_PAL: ... si5351_apply_mode(...) ... } */
+    return mode;
+}
+
+int platform_video_supported(platform_video_standard_t s, platform_video_refresh_t r) {
+    int mode = video_to_pll(s,r);
+    return mode >= 0;
+}
+
+int platform_set_video(platform_video_standard_t s, platform_video_refresh_t r) {
+    int mode = video_to_pll(s,r);
+    if (mode >=0)
+    {
+        si5351_apply_mode(mode);
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
 
 /* Emit one log byte to your console transport (UART/ITM). */
 extern UART_HandleTypeDef huart3;   // or whichever CubeMX generated
-void board_log_putc(char c)
+void platform_log_putc(char c)
 {
     HAL_UART_Transmit(&huart3,(uint8_t*)&c,1,1); 
 }
