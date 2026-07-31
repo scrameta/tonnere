@@ -53,28 +53,35 @@ all pools + USBX + FileX + clocks are ready):
 local struct — cleaner if you add the port's App/ dir to your includes, which
 edit 3 does anyway.)
 
-## Edit 2 — provide the two board hooks
+## Edit 2 — provide the board hooks
 
-The port calls two board-provided functions (declared `weak` so it links
-without them, but you'll want real ones). Add them anywhere in your board code,
-e.g. next to your si5351 code or in `app_azure_rtos.c`'s USER CODE 0 block:
+The port calls board-provided functions (declared `weak` so it links without
+them). Add real ones in your board code:
 
 ```c
-/* Map the port's abstract video-clock request to your si5351 code. */
-void board_set_video_clock(int mode)   /* platform_clock_mode_t */
-{
-    /* e.g. switch(mode){ case PLAT_CLK_PAL: ... si5351_apply_mode(...) ... } */
-}
-
-/* Emit one log byte to your console transport (UART/ITM). */
+/* Emit one log byte to your console transport (UART — you've wired this). */
 void board_log_putc(char c)
 {
-    /* e.g. ITM_SendChar(c);  or  HAL_UART_Transmit(&huartX,(uint8_t*)&c,1,1); */
+    /* HAL_UART_Transmit(&huartX,(uint8_t*)&c,1,HAL_MAX_DELAY); */
+}
+
+/* Apply an si5351 mode. The port never sees SI5351_MODE_*; platform_stm32.c
+ * maps the abstract (standard, refresh) pair to one of these mode ids and
+ * calls this. Map the int to your real si5351_apply_mode on the right pca9546
+ * channels. The int values are the BSI_* enum in platform_stm32.c — keep them
+ * in sync with your SI5351_MODE_* order, or edit resolve_mode() to match. */
+void board_si5351_apply_mode(int si5351_mode)
+{
+    /* e.g. pca9546_select(2); si5351_apply_mode((si5351_mode_t)si5351_mode);
+     *      pca9546_select(3); si5351_apply_mode((si5351_mode_t)si5351_mode); */
 }
 ```
 
-Until you fill these in, the weak stubs make logging silent and clock-switch a
-no-op — the port still runs.
+The port requests video via `platform_set_video(standard, refresh)` and checks
+`platform_video_supported(...)`; the (standard, refresh) → si5351 mapping and the
+valid-pair table live in `platform_stm32.c`'s `resolve_mode()`. Today that table
+is hardcoded; later it can read monitor EDID/HDMI caps over I2C behind the same
+interface, without the port changing.
 
 ## Edit 3 — add the port sources to your CMake / project
 

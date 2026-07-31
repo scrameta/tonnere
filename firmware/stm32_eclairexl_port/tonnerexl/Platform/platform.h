@@ -27,10 +27,35 @@ extern "C" {
  * Returns 0 on success. */
 int platform_init(void);
 
-/* Video clock mode change request from the port (e.g. menu picks PAL/NTSC).
- * Board: drives si5351 via the board's clock code. Host: no-op/records last. */
-typedef enum { PLAT_CLK_NTSC, PLAT_CLK_PAL, PLAT_CLK_480P, PLAT_CLK_720P } platform_clock_mode_t;
-void platform_set_clock_mode(platform_clock_mode_t mode);
+/* Video output configuration. The port speaks in abstract (standard, refresh)
+ * pairs; the board maps them to its actual clock generator (si5351) modes and
+ * owns the table of which pairs are valid. Not every pair exists (e.g. ORIGINAL
+ * has no 59.94 variant) — platform_video_supported() reports validity. Today
+ * the board hardcodes the table; later it may read monitor EDID/HDMI caps
+ * behind the same interface. */
+typedef enum {
+    STANDARD_ORIGINAL = 0,  /* authentic Atari clocks (PAL 28.375 / NTSC 28.636, with chroma) */
+    STANDARD_ED,            /* enhanced-def progressive: 576p (PAL) / 480p (NTSC), 27.0 MHz */
+    STANDARD_HD720,         /* 720p, 74.25 MHz */
+    STANDARD_COUNT
+} platform_video_standard_t;
+
+typedef enum {
+    REFRESH_PAL_50 = 0,     /* 50 Hz    */
+    REFRESH_NTSC_60,        /* 60.000 Hz */
+    REFRESH_NTSC_5994,      /* 59.940 Hz */
+    REFRESH_COUNT
+} platform_video_refresh_t;
+
+/* Request a video mode. If the (standard, refresh) pair is unsupported, the
+ * board leaves the current mode unchanged and returns non-zero. */
+int platform_set_video(platform_video_standard_t standard,
+                       platform_video_refresh_t refresh);
+
+/* Query whether a (standard, refresh) pair is currently supported (for a
+ * settings menu to grey out invalid combos). Returns 1 if valid, 0 if not. */
+int platform_video_supported(platform_video_standard_t standard,
+                             platform_video_refresh_t refresh);
 
 /* Log sink: emit one byte to the target's console. The shared logger
  * (logger.c) calls this; it's the ONLY board-specific part of logging.

@@ -190,3 +190,21 @@ void run_fpga_bus_tests(void) {
     RUN(test_atari_copy_even_odd);
     RUN(test_sio_fifo);
 }
+
+#include "platform.h"
+static void test_video_modes(void) {
+    /* ORIGINAL has no 59.94 variant */
+    CHECK(platform_video_supported(STANDARD_ORIGINAL, REFRESH_PAL_50) == 1);
+    CHECK(platform_video_supported(STANDARD_ORIGINAL, REFRESH_NTSC_60) == 1);
+    CHECK(platform_video_supported(STANDARD_ORIGINAL, REFRESH_NTSC_5994) == 0);
+    /* ED and HD720 support all three refreshes */
+    CHECK(platform_video_supported(STANDARD_ED, REFRESH_NTSC_5994) == 1);
+    CHECK(platform_video_supported(STANDARD_HD720, REFRESH_NTSC_5994) == 1);
+    /* setting a valid mode succeeds; invalid is rejected */
+    CHECK(platform_set_video(STANDARD_HD720, REFRESH_PAL_50) == 0);
+    CHECK(platform_set_video(STANDARD_ORIGINAL, REFRESH_NTSC_5994) == -1);
+}
+
+void run_platform_video_tests(void) {
+    RUN(test_video_modes);
+}

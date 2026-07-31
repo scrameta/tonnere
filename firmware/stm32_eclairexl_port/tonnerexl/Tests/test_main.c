@@ -19,6 +19,7 @@ int g_tests_failed = 0;
 
 void run_fpga_bus_tests(void);
 void run_simplefile_tests(void);
+void run_platform_video_tests(void);
 
 static TX_THREAD test_thread;
 static UCHAR     test_stack[32*1024];
@@ -34,6 +35,9 @@ static void test_thread_entry(ULONG arg) {
     run_fpga_bus_tests();
     printf("\n--- simplefile on FileX (real RAM disk) ---\n");
     run_simplefile_tests();
+
+    printf("\n--- platform video modes ---\n");
+    run_platform_video_tests();
 
     printf("\n--- app_main() shared startup path ---\n");
     tx_byte_pool_create(&app_pool, "app", app_pool_mem, sizeof app_pool_mem);
