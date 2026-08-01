@@ -87,3 +87,13 @@ target_link_libraries(host_tests PRIVATE tonnerexl_port azrtos::threadx azrtos::
 
 enable_testing()
 add_test(NAME host_tests COMMAND host_tests)
+
+# Interactive host runner: boots the real app_main() and gives a REPL to drive
+# it (inject keypresses as USB, dump state). ./host_interactive
+add_executable(host_interactive
+  ${CMAKE_CURRENT_SOURCE_DIR}/host_interactive.c
+)
+target_include_directories(host_interactive PRIVATE
+  ${PORT_ROOT}/Platform ${PORT_ROOT}/Filesystem ${PORT_ROOT}/App
+)
+target_link_libraries(host_interactive PRIVATE tonnerexl_port azrtos::threadx azrtos::filex pthread)
