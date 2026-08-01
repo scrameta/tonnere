@@ -41,7 +41,7 @@ all pools + USBX + FileX + clocks are ready):
     {
         extern UINT app_main(const void *cfg);   /* app_config_t* */
         static struct { TX_BYTE_POOL *thread_pool; } port_cfg;
-        port_cfg.thread_pool = &tx_app_byte_pool;
+        port_cfg.thread_pool = TX_NULL;   /* use the port's own internal pool */
         if (app_main(&port_cfg) != TX_SUCCESS) {
             log_printf("app_main failed\r\n");
         }
@@ -108,29 +108,62 @@ board-specific part is `board_log_putc` (edit 2). If you keep your existing
 same signatures and you can drop the port's `App/logger.c` from the build. Using
 the port's logger means host and board log through identical code.
 
-## Byte pool sizing
+## Byte pool
 
-`app_threads_create` allocates thread stacks from `tx_app_byte_pool`:
+The port needs ~13 KB for its four thread stacks + input queue + ThreadX
+per-allocation overhead. Two ways to provide it, both fine:
 
-| Thread | Stack |
-| --- | --- |
-| drive/SIO | 2 KB |
-| usb input | 2 KB |
-| sd lifecycle | 4 KB |
-| menu | 3 KB |
-| input queue | 128 B |
+1. **Enlarge `TX_APP_MEM_POOL_SIZE`** and pass `&tx_app_byte_pool` to `app_main`
+   (what the current board build does). The CubeMX default is tiny (~1 KB), which
+   is why the first run gave `app_threads_create failed: 5` — error 5 is
+   `TX_SIZE_ERROR`, the pool being too small. Bumping it to 16 KB fixed it. If
+   you add threads later, bump it again.
+2. **Let the port own its pool** — pass a dedicated pool. Keeps the port's
+   footprint separate from CubeMX's.
 
-Plus ThreadX control-block and byte-pool allocation overhead: budget **~12 KB**
-of `TX_APP_MEM_POOL_SIZE` for the port, on top of whatever your existing app
-uses. If `TX_APP_MEM_POOL_SIZE` is currently sized only for the CubeMX template,
-bump it in the `.ioc` (ThreadX → memory pool size) by ~12 KB, regenerate, and
-your USER CODE edits survive (they're in preserved blocks).
+Either works; option 1 is what's running now.
 
-If `app_threads_create` returns non-`TX_SUCCESS`, the pool is too small — that's
-the first thing to check.
+## Memory: byte pools, SRAM regions, and the CCM/DMA rule
+
+A ThreadX byte pool is just a static RAM array that `tx_byte_allocate` carves up
+(a private malloc arena). Thread stacks, the input queue, etc. are pulled from
+it. The pool array itself lives in your SRAM alongside everything else
+(`.data`/`.bss`, main stack, FileX sector cache, USB buffers), so pools do NOT
+get "all" the RAM — they share the 192 KB with the whole system. Size each pool
+to what draws from it plus modest headroom; over-sizing just hides bugs.
+
+**The F407's 192 KB is not one flat block — and this rule will bite you:**
+
+| Region | Size | Address | DMA-capable? |
+| --- | --- | --- | --- |
+| SRAM1 + SRAM2 | 128 KB | `0x2000_0000` | **YES** |
+| CCM (core-coupled) | 64 KB | `0x1000_0000` | **NO** |
+
+CCM is fast, zero-wait CPU RAM — great for **thread stacks and CPU-only working
+buffers**. But **no peripheral DMA can reach CCM**: not SDIO, not USB, not
+SPI/UART DMA. So:
+
+- **Anything a DMA engine touches MUST live in SRAM1/2 (`0x2000_0000`), never CCM.**
+  For this project that specifically means: **FileX's SD sector buffer(s), the
+  SDIO DMA buffer, and the USBX transfer buffers.** Put an SD buffer in CCM and
+  SDIO transfers fail silently (or return zeros) — a classic afternoon-waster.
+- **Safe to put in CCM:** the ThreadX app byte pool (thread stacks are CPU-only),
+  the port's scratch, anything never handed to a DMA/peripheral.
+
+Practical split for later optimisation (not needed now): put the **ThreadX app
+pool in CCM** (frees main SRAM), keep the **FileX and USBX pools in SRAM1/2**
+because their buffers are DMA targets. To place a pool in CCM with GCC, put its
+backing array in a `.ccmram` section via a linker-script region + an
+`__attribute__((section(".ccmram")))` on the array. The default CubeMX linker
+script for the F407 usually already defines a `CCMRAM` region — check yours.
+
+Also relevant to the FileX SD driver (Phase 3): its DMA path needs the transfer
+buffer **word-aligned** as well as DMA-reachable (F407 has no data cache, so
+alignment is the concern, not cache coherency).
 
 ## SDIO init (Phase 3, when you get there)
 
 `MX_SDIO_SD_Init()` is still commented out in `main.c`. The SD lifecycle thread
 will call it on first card-detect (so a later-inserted card works). No action
-needed now; noted so it's not forgotten.
+needed now; noted so it's not forgotten. When you wire it: the SD/FileX DMA
+buffer must be in SRAM1/2 (not CCM) and word-aligned — see the memory note above.

@@ -25,8 +25,6 @@ static TX_THREAD test_thread;
 static UCHAR     test_stack[32*1024];
 
 /* a byte pool for app_main's threads, mirroring the board's tx_app_byte_pool */
-static TX_BYTE_POOL app_pool;
-static UCHAR        app_pool_mem[64*1024];
 
 static void test_thread_entry(ULONG arg) {
     (void)arg;
@@ -40,9 +38,9 @@ static void test_thread_entry(ULONG arg) {
     run_platform_video_tests();
 
     printf("\n--- app_main() shared startup path ---\n");
-    tx_byte_pool_create(&app_pool, "app", app_pool_mem, sizeof app_pool_mem);
-    app_config_t cfg = { .thread_pool = &app_pool };
+    app_config_t cfg = { .thread_pool = TX_NULL };  /* port's own pool, as board does */
     UINT st = app_main(&cfg);
+    if (st != TX_SUCCESS) printf("  app_main returned %u\n", st);
     CHECK(st == TX_SUCCESS);
     /* give the started threads a couple of ticks to run their first iteration */
     tx_thread_sleep(4);

@@ -15,7 +15,7 @@
 #include "simplefile_filex.h"
 
 UINT app_main(const app_config_t *cfg) {
-    if (!cfg || !cfg->thread_pool) return TX_PTR_ERROR;
+    if (!cfg) return TX_PTR_ERROR;   /* thread_pool may be TX_NULL (use own pool) */
 
     logger_init();
     log_puts("\r\n=== TonnereXL: entered app_main ===\r\n");
@@ -52,7 +52,6 @@ UINT app_main(const app_config_t *cfg) {
     if (st != TX_SUCCESS) {
         log_printf("app_threads_create failed: %u\r\n", st);
         return st;
-    }
-    log_puts("TonnereXL port started\r\n");
+    }    log_puts("TonnereXL port started\r\n");
     return TX_SUCCESS;
 }

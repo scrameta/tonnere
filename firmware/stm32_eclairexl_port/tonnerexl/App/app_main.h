@@ -18,7 +18,11 @@ extern "C" {
 #endif
 
 typedef struct {
-    TX_BYTE_POOL *thread_pool;   /* pool app threads allocate stacks from */
+    TX_BYTE_POOL *thread_pool;   /* pool app threads allocate stacks from, or
+                                  * TX_NULL to use the port's own internal pool
+                                  * (recommended — avoids depending on the
+                                  * CubeMX TX_APP_MEM_POOL_SIZE being large
+                                  * enough). */
 } app_config_t;
 
 /* Initialise the port and start its threads. Returns TX_SUCCESS or an error.
