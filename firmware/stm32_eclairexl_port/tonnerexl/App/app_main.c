@@ -44,8 +44,8 @@ UINT app_main(const app_config_t *cfg) {
 
     /* Enable the interrupt sources the threads consume. */
     fpga_irq_enable((uint16_t)((1u << IRQ_SIO_CMD_BIT) |
-                               (1u << IRQ_UART_RX_BIT) |
-                               (1u << IRQ_UART_TX_BIT) |
+                               (1u << IRQ_SIO_RX_BIT) |
+                               (1u << IRQ_SIO_TX_BIT) |
                                (1u << IRQ_POTGO_BIT)));
 
     UINT st = app_threads_create(cfg->thread_pool);

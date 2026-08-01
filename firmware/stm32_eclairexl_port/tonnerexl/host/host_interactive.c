@@ -263,7 +263,7 @@ static void show_help(void) {
     printf(
       "\nCommands:\n"
       "  k <text>   inject keypresses (each char -> KBCODE, press+release)\n"
-      "  s <b>      inject console key: start|select|option|reset (physical)\n"
+      "  s <b>      inject console key: start|select|option (physical)\n"
       "  i          show state (registers, matrix, console, irq)\n"
       "  m <path>   mount a disk-image file as the SD card (blank if missing)\n"
       "  u          unmount SD image (writes changes back to the file)\n"
@@ -301,7 +301,6 @@ static void handle_line(char *line) {
         if      (!strncmp(arg,"start",5))  bit = 1u<<CONSOLE_START_BIT;
         else if (!strncmp(arg,"select",6)) bit = 1u<<CONSOLE_SELECT_BIT;
         else if (!strncmp(arg,"option",6)) bit = 1u<<CONSOLE_OPTION_BIT;
-        else if (!strncmp(arg,"reset",5))  bit = 1u<<CONSOLE_RESET_BIT;
         else { printf("  unknown console key\n"); break; }
         /* simulate a physical press the menu can observe, then release */
         fake_fpga_set_console_phys(bit);

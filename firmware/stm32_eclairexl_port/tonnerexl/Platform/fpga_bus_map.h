@@ -22,7 +22,7 @@
 /* Region offsets within the FSMC window (bytes). TODO(mark): confirm. */
 #define FPGA_WIN_REGS    0x00000000u   /* 16-bit register file            */
 #define FPGA_WIN_ATARI   0x00010000u   /* 64 KB live Atari address space  */
-#define FPGA_WIN_UART    0x00020000u   /* SIO UART FIFOs                   */
+#define FPGA_WIN_SIO     0x00020000u   /* SIO handler (6 regs, byte FIFO) */
 
 #define FPGA_WIN_ATARI_BYTES  0x10000u /* 64 KB */
 
@@ -34,9 +34,9 @@
 #define FPGA_ATARI_ADDR \
     ((volatile uint16_t *)(FPGA_BUS_BASE + FPGA_WIN_ATARI))
 
-/* SIO UART register absolute address, given its logical index. */
-#define FPGA_UART_ADDR(idx) \
-    ((volatile uint16_t *)(FPGA_BUS_BASE + FPGA_WIN_UART + ((uint32_t)(idx) * 2u)))
+/* SIO handler register absolute address, given its logical index. */
+#define FPGA_SIO_ADDR(idx) \
+    ((volatile uint16_t *)(FPGA_BUS_BASE + FPGA_WIN_SIO + ((uint32_t)(idx) * 2u)))
 
 /* ------------------------------------------------------------------ */
 /* Register indices                                                    */
@@ -49,19 +49,23 @@ enum fpga_reg_index {
     REG_CONTROL,
     REG_RAMCONFIG,
     REG_PERFORMANCE,
-    REG_TURBO_DRIVE,
     REG_CART,
     REG_VIDEO,
-    /* keyboard (W) + console */
+    /* keyboard (W) */
     REG_KBD0,
     REG_KBD1,
     REG_KBD2,
     REG_KBD3,
+    REG_KBD_SPECIAL,      /* W: shift/ctrl/break (KR2 non-matrix keys) */
+    /* console keys (Start/Select/Option) — inject/phys */
     REG_CONSOLE_INJECT,   /* W */
     REG_CONSOLE_PHYS,     /* R */
-    /* controllers (W) */
-    REG_JOY01,
-    REG_JOY23,
+    /* joysticks — inject/phys (digital) */
+    REG_JOY01,            /* W: inject joy 0+1 */
+    REG_JOY23,            /* W: inject joy 2+3 */
+    REG_JOY01_PHYS,       /* R: physical joy ports 0+1 */
+    REG_JOY23_PHYS,       /* R: physical joy ports 2+3 */
+    /* paddles (W, STM32 ADC values) */
     REG_PADDLE01,
     REG_PADDLE23,
     /* freezer debug (W) */
@@ -82,30 +86,31 @@ enum fpga_reg_index {
 /* ------------------------------------------------------------------ */
 /* SIO UART register indices (separate region)                         */
 /* ------------------------------------------------------------------ */
-enum fpga_uart_index {
-    UART_TX = 0,          /* W  bits 7:0 enqueue                        */
-    UART_TX_FIFO,         /* R  full@9 empty@8 count7:0                 */
-    UART_RX,              /* R  data7:0 div14:8; advances RX FIFO       */
-    UART_RX_FIFO,         /* R  full@9 empty@8 count7:0                 */
-    UART_DIVISOR,         /* RW tx div / rx div                         */
-    UART_FRAMING_ERR,     /* R  serial@0 siocmd@1; read clears          */
-    UART_COUNT
+/* SIO handler register map — matches sio_handler.vhdl (addr 0-5). */
+enum fpga_sio_index {
+    SIO_TX = 0,           /* W  bits 7:0 transmit byte                    */
+    SIO_TX_FIFO,          /* R  full@9 empty@8 count7:0                   */
+    SIO_RX,               /* R  data 14:0; reading advances RX FIFO       */
+    SIO_RX_FIFO,          /* R  full@9 empty@8 count7:0                   */
+    SIO_DIVISOR,          /* W  divisor (applied after tx done); R rx div */
+    SIO_FRAMING_ERR,      /* R  serial@0 command@1; auto-clear on read    */
+    SIO_COUNT
 };
 
-/* UART FIFO status bits. */
-#define UART_FIFO_EMPTY   (1u << 8)
-#define UART_FIFO_FULL    (1u << 9)
-#define UART_FIFO_COUNT_M 0x00ffu
+/* SIO FIFO status bits. */
+#define SIO_FIFO_EMPTY   (1u << 8)
+#define SIO_FIFO_FULL    (1u << 9)
+#define SIO_FIFO_COUNT_M 0x00ffu
 
 /* ------------------------------------------------------------------ */
 /* Bitfields                                                           */
 /* ------------------------------------------------------------------ */
 /* CONTROL */
-#define CTRL_PAUSE_BIT        0
-#define CTRL_WARM_RESET_BIT   1
-#define CTRL_COLD_RESET_BIT   2   /* strobe */
-#define CTRL_FREEZER_EN_BIT   3
-#define CTRL_ATARI800_BIT     4
+#define CTRL_RESET_BIT        0   /* 6502 reset, LEVEL (SW toggles low/high) */
+#define CTRL_PAUSE_BIT        1
+#define CTRL_FREEZER_EN_BIT   2
+#define CTRL_ATARI800_BIT     3
+/* No cold/warm distinction: RAM clear is done via FSMC->RAM DMA writes. */
 
 /* RAMCONFIG */
 #define RAMCFG_SEL_SHIFT      0
@@ -115,10 +120,6 @@ enum fpga_uart_index {
 #define PERF_SPEED_SHIFT      0
 #define PERF_SPEED_MASK       0x3fu  /* 6502 speed/turbo select */
 #define PERF_VBL_RESTRICT_BIT 8
-
-/* TURBO_DRIVE */
-#define TURBO_DRIVE_SHIFT     0
-#define TURBO_DRIVE_MASK      0x07u
 
 /* CART */
 #define CART_SEL_SHIFT        0
@@ -135,7 +136,12 @@ enum fpga_uart_index {
 #define CONSOLE_START_BIT     0
 #define CONSOLE_SELECT_BIT    1
 #define CONSOLE_OPTION_BIT    2
-#define CONSOLE_RESET_BIT     3
+/* (reset is CTRL_RESET_BIT in CONTROL, not a console key) */
+
+/* KBD_SPECIAL: the KR2 non-matrix keys (shift/ctrl/break). */
+#define KBD_SPECIAL_SHIFT_BIT   0
+#define KBD_SPECIAL_CTRL_BIT    1
+#define KBD_SPECIAL_BREAK_BIT   2
 
 /* JOYxx: joystick A in bits 4:0, joystick B in bits 12:8 */
 #define JOY_A_SHIFT           0
@@ -158,8 +164,8 @@ enum fpga_uart_index {
 
 /* IRQ controller source bits */
 #define IRQ_SIO_CMD_BIT       0
-#define IRQ_UART_RX_BIT       1
-#define IRQ_UART_TX_BIT       2
+#define IRQ_SIO_RX_BIT       1
+#define IRQ_SIO_TX_BIT       2
 #define IRQ_POTGO_BIT         3
 #define IRQ_DMA_DONE_BIT      4
 

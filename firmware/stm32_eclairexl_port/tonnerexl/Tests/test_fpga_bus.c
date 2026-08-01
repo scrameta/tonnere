@@ -14,6 +14,7 @@ size_t fake_fpga_drain_tx(uint8_t *out, size_t max);
 void   fake_fpga_raise_irq(uint16_t bits);
 void   fake_fpga_set_console_phys(uint16_t bits);
 uint16_t fake_fpga_get_reg(enum fpga_reg_index idx);
+void   fake_fpga_set_reg(enum fpga_reg_index idx, uint16_t v);
 
 static void test_identity(void) {
     CHECK(fpga_bus_init() == FPGA_OK);
@@ -42,8 +43,10 @@ static void test_machine_control(void) {
     CHECK(!(fake_fpga_get_reg(REG_CONTROL) & (1u<<CTRL_PAUSE_BIT)));
     CHECK(fake_fpga_get_reg(REG_CONTROL) & (1u<<CTRL_ATARI800_BIT));
     /* cold reset strobe returns to 0 */
-    fpga_core_cold_reset_strobe();
-    CHECK(!(fake_fpga_get_reg(REG_CONTROL) & (1u<<CTRL_COLD_RESET_BIT)));
+    fpga_core_set_reset(1);
+    CHECK(fake_fpga_get_reg(REG_CONTROL) & (1u<<CTRL_RESET_BIT));
+    fpga_core_set_reset(0);
+    CHECK(!(fake_fpga_get_reg(REG_CONTROL) & (1u<<CTRL_RESET_BIT)));
     /* performance packs speed + vbl-restrict */
     fpga_set_performance(0x2A, 1);
     uint16_t p = fake_fpga_get_reg(REG_PERFORMANCE);
@@ -56,9 +59,6 @@ static void test_machine_control(void) {
     CHECK(v & (1u<<VIDEO_PAL_BIT));
     CHECK(!(v & (1u<<VIDEO_SCANLINES_BIT)));
     CHECK(v & (1u<<VIDEO_CSYNC_BIT));
-    /* turbo drive is its own register */
-    fpga_set_turbo_drive(0x5);
-    CHECK_EQ_U32(fake_fpga_get_reg(REG_TURBO_DRIVE) & TURBO_DRIVE_MASK, 0x5);
 }
 
 static void test_keyboard_matrix(void) {
@@ -91,8 +91,8 @@ static void test_console_inject_phys(void) {
     CHECK_EQ_U32(fake_fpga_get_reg(REG_CONSOLE_INJECT),
                  (1u<<CONSOLE_START_BIT)|(1u<<CONSOLE_OPTION_BIT));
     /* phys is a separate read source */
-    fake_fpga_set_console_phys(1u<<CONSOLE_RESET_BIT);
-    CHECK(fpga_console_phys_read() & (1u<<CONSOLE_RESET_BIT));
+    fake_fpga_set_console_phys(1u<<CONSOLE_SELECT_BIT);
+    CHECK(fpga_console_phys_read() & (1u<<CONSOLE_SELECT_BIT));
     /* inject and phys don't alias */
     CHECK(!(fpga_console_phys_read() & (1u<<CONSOLE_START_BIT)));
 }
@@ -114,6 +114,21 @@ static void test_joy_paddle(void) {
     uint16_t pd = fake_fpga_get_reg(REG_PADDLE01);
     CHECK_EQ_U32(pd & PADDLE_AXIS_MASK, 0x12);
     CHECK_EQ_U32((pd >> PADDLE_B_SHIFT) & PADDLE_AXIS_MASK, 0x34);
+    /* joystick phys read is a separate register from inject */
+    fake_fpga_set_reg(REG_JOY01_PHYS, 0x0005);
+    CHECK_EQ_U32(fpga_joy_phys_read(0), 0x0005);
+    CHECK_EQ_U32(fpga_joy_phys_read(1), 0x0000);
+    /* inject didn't disturb phys */
+    CHECK_EQ_U32(fake_fpga_get_reg(REG_JOY01) & 0xff, j & 0xff);
+}
+
+static void test_kbd_special(void) {
+    fpga_bus_init();
+    fpga_kbd_special(1, 0, 1);   /* shift + break, no ctrl */
+    uint16_t v = fake_fpga_get_reg(REG_KBD_SPECIAL);
+    CHECK(v & (1u<<KBD_SPECIAL_SHIFT_BIT));
+    CHECK(!(v & (1u<<KBD_SPECIAL_CTRL_BIT)));
+    CHECK(v & (1u<<KBD_SPECIAL_BREAK_BIT));
 }
 
 static void test_freezer(void) {
@@ -134,17 +149,17 @@ static void test_irq_controller(void) {
     fpga_irq_enable((1u<<IRQ_SIO_CMD_BIT) | (1u<<IRQ_POTGO_BIT));
     CHECK_EQ_U32(fpga_irq_enabled(), (1u<<IRQ_SIO_CMD_BIT)|(1u<<IRQ_POTGO_BIT));
     /* raise POTGO + UART_RX; only enabled bits are visible in pending */
-    fake_fpga_raise_irq((1u<<IRQ_POTGO_BIT) | (1u<<IRQ_UART_RX_BIT));
+    fake_fpga_raise_irq((1u<<IRQ_POTGO_BIT) | (1u<<IRQ_SIO_RX_BIT));
     uint16_t p = fpga_irq_pending();
     CHECK(p & (1u<<IRQ_POTGO_BIT));
-    CHECK(!(p & (1u<<IRQ_UART_RX_BIT)));   /* not enabled -> masked out */
+    CHECK(!(p & (1u<<IRQ_SIO_RX_BIT)));   /* not enabled -> masked out */
     /* W1C: clearing POTGO removes it, leaves others */
     fpga_irq_clear(1u<<IRQ_POTGO_BIT);
     CHECK(!(fpga_irq_pending() & (1u<<IRQ_POTGO_BIT)));
     /* enable UART_RX now; the earlier-raised bit becomes visible */
-    fpga_irq_enable((1u<<IRQ_UART_RX_BIT));
-    CHECK(fpga_irq_pending() & (1u<<IRQ_UART_RX_BIT));
-    fpga_irq_clear(1u<<IRQ_UART_RX_BIT);
+    fpga_irq_enable((1u<<IRQ_SIO_RX_BIT));
+    CHECK(fpga_irq_pending() & (1u<<IRQ_SIO_RX_BIT));
+    fpga_irq_clear(1u<<IRQ_SIO_RX_BIT);
     CHECK_EQ_U32(fpga_irq_pending(), 0);
 }
 
@@ -185,6 +200,7 @@ void run_fpga_bus_tests(void) {
     RUN(test_keyboard_matrix);
     RUN(test_console_inject_phys);
     RUN(test_joy_paddle);
+    RUN(test_kbd_special);
     RUN(test_freezer);
     RUN(test_irq_controller);
     RUN(test_atari_copy_even_odd);

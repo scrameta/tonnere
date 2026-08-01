@@ -12,7 +12,7 @@
 
 typedef struct {
     uint16_t reg[REG_COUNT];
-    uint16_t uart[UART_COUNT];
+    uint16_t sio[SIO_COUNT];
     uint8_t  atari[FPGA_WIN_ATARI_BYTES];
 
     /* keyboard shadow (64 bits) */
@@ -63,10 +63,8 @@ void fpga_reg_rmw(enum fpga_reg_index idx, uint16_t mask, uint16_t value) {
 static void bit_set(enum fpga_reg_index idx, int bit, int on) {
     fpga_reg_rmw(idx, (uint16_t)(1u<<bit), on?(uint16_t)(1u<<bit):0);
 }
+void fpga_core_set_reset(int on)       { bit_set(REG_CONTROL, CTRL_RESET_BIT, on); }
 void fpga_core_set_pause(int on)       { bit_set(REG_CONTROL, CTRL_PAUSE_BIT, on); }
-void fpga_core_set_warm_reset(int on)  { bit_set(REG_CONTROL, CTRL_WARM_RESET_BIT, on); }
-void fpga_core_cold_reset_strobe(void) { bit_set(REG_CONTROL, CTRL_COLD_RESET_BIT, 1);
-                                         bit_set(REG_CONTROL, CTRL_COLD_RESET_BIT, 0); }
 void fpga_core_set_freezer(int on)     { bit_set(REG_CONTROL, CTRL_FREEZER_EN_BIT, on); }
 void fpga_core_set_atari800(int on)    { bit_set(REG_CONTROL, CTRL_ATARI800_BIT, on); }
 void fpga_set_ramconfig(uint16_t sel)  { fpga_reg_write(REG_RAMCONFIG, (uint16_t)(sel & RAMCFG_SEL_MASK)); }
@@ -75,7 +73,6 @@ void fpga_set_performance(uint16_t speed, int vbl) {
     if (vbl) v |= (uint16_t)(1u<<PERF_VBL_RESTRICT_BIT);
     fpga_reg_write(REG_PERFORMANCE, v);
 }
-void fpga_set_turbo_drive(uint16_t sel){ fpga_reg_write(REG_TURBO_DRIVE, (uint16_t)(sel & TURBO_DRIVE_MASK)); }
 void fpga_set_cart(uint16_t c)         { fpga_reg_write(REG_CART, (uint16_t)(c & CART_SEL_MASK)); }
 void fpga_set_video(uint16_t mode, int pal, int scan, int csync) {
     uint16_t v = (uint16_t)(mode & VIDEO_MODE_MASK);
@@ -100,6 +97,13 @@ void fpga_kbd_clear_all(void) { memset(g.kbd_shadow, 0, sizeof g.kbd_shadow); }
 void fpga_kbd_flush(void) {
     fpga_kbd_matrix_write(g.kbd_shadow[0], g.kbd_shadow[1], g.kbd_shadow[2], g.kbd_shadow[3]);
 }
+void fpga_kbd_special(int shift, int ctrl, int brk) {
+    uint16_t v = 0;
+    if (shift) v |= (uint16_t)(1u<<KBD_SPECIAL_SHIFT_BIT);
+    if (ctrl)  v |= (uint16_t)(1u<<KBD_SPECIAL_CTRL_BIT);
+    if (brk)   v |= (uint16_t)(1u<<KBD_SPECIAL_BREAK_BIT);
+    fpga_reg_write(REG_KBD_SPECIAL, v);
+}
 
 /* ---- console ---- */
 void     fpga_console_inject(uint16_t bits) { fpga_reg_write(REG_CONSOLE_INJECT, bits); }
@@ -110,6 +114,9 @@ void fpga_joy_write(int pair, uint16_t a, uint16_t b) {
     uint16_t v = (uint16_t)(((a & JOY_FIELD_MASK) << JOY_A_SHIFT) |
                             ((b & JOY_FIELD_MASK) << JOY_B_SHIFT));
     fpga_reg_write(pair ? REG_JOY23 : REG_JOY01, v);
+}
+uint16_t fpga_joy_phys_read(int pair) {
+    return fpga_reg_read(pair ? REG_JOY23_PHYS : REG_JOY01_PHYS);
 }
 void fpga_paddle_write(int pair, uint8_t a, uint8_t b) {
     uint16_t v = (uint16_t)((uint16_t)a | ((uint16_t)b << PADDLE_B_SHIFT));
@@ -160,13 +167,13 @@ int fpga_sio_putc(uint8_t c){
     g.tx_fifo[g.tx_head & 0xffu] = c; g.tx_head++;
     return 1;
 }
-void fpga_sio_set_divisor(uint8_t d){ g.uart[UART_DIVISOR] = d; }
+void fpga_sio_set_divisor(uint8_t d){ g.sio[SIO_DIVISOR] = d; }
 uint16_t fpga_sio_framing_errors(void){ uint16_t e=g.framing_errors; g.framing_errors=0; return e; }
 
 /* ---- test-only hooks ---- */
 void fake_fpga_inject_rx(const uint8_t *data, size_t n){
     for (size_t i=0;i<n;i++){ g.rx_fifo[g.rx_head & 0xffu]=data[i]; g.rx_head++; }
-    g.irq_pending |= (uint16_t)(1u << IRQ_UART_RX_BIT);
+    g.irq_pending |= (uint16_t)(1u << IRQ_SIO_RX_BIT);
 }
 size_t fake_fpga_drain_tx(uint8_t *out, size_t max){
     size_t n=0; while(n<max && tx_count()){ out[n++]=g.tx_fifo[g.tx_tail & 0xffu]; g.tx_tail++; }
@@ -175,6 +182,7 @@ size_t fake_fpga_drain_tx(uint8_t *out, size_t max){
 void fake_fpga_raise_irq(uint16_t bits){ g.irq_pending |= bits; }
 void fake_fpga_set_console_phys(uint16_t bits){ g.console_phys = bits; }
 uint16_t fake_fpga_get_reg(enum fpga_reg_index idx){ return g.reg[idx]; }
+void fake_fpga_set_reg(enum fpga_reg_index idx, uint16_t v){ g.reg[idx]=v; }
 const uint8_t* fake_fpga_atari_ptr(void){ return g.atari; }
 
 #endif /* FPGA_BUS_FAKE */

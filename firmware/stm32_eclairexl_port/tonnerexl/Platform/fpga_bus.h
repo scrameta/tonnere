@@ -39,14 +39,12 @@ void     fpga_reg_write(enum fpga_reg_index idx, uint16_t value);
 void     fpga_reg_rmw(enum fpga_reg_index idx, uint16_t mask, uint16_t value);
 
 /* ---- machine control (typed) ---- */
+void fpga_core_set_reset(int on);           /* 6502 reset, level — toggle low/high */
 void fpga_core_set_pause(int on);
-void fpga_core_set_warm_reset(int on);
-void fpga_core_cold_reset_strobe(void);     /* pulse the cold-reset strobe */
 void fpga_core_set_freezer(int on);
 void fpga_core_set_atari800(int on);
 void fpga_set_ramconfig(uint16_t sel);
 void fpga_set_performance(uint16_t speed, int vbl_restrict);
-void fpga_set_turbo_drive(uint16_t sel);
 void fpga_set_cart(uint16_t cart_type);
 void fpga_set_video(uint16_t mode, int pal, int scanlines, int csync);
 
@@ -57,13 +55,16 @@ void fpga_kbd_matrix_write(uint16_t kbd0, uint16_t kbd1, uint16_t kbd2, uint16_t
 void fpga_kbd_set(uint8_t kbcode, int pressed);
 void fpga_kbd_clear_all(void);
 void fpga_kbd_flush(void);                  /* push shadow to KBD0..3 */
+/* Shift/Ctrl/Break — the KR2 non-matrix keys (KBD_SPECIAL bits). */
+void fpga_kbd_special(int shift, int ctrl, int brk);
 
 /* ---- console keys ---- */
 void     fpga_console_inject(uint16_t bits);   /* CONSOLE_START_BIT etc. */
 uint16_t fpga_console_phys_read(void);         /* physical switch state */
 
-/* ---- joysticks (digital, firmware-injected) ---- */
-void fpga_joy_write(int pair /*0=JOY01,1=JOY23*/, uint16_t a_field, uint16_t b_field);
+/* ---- joysticks (digital, inject/phys like console) ---- */
+void     fpga_joy_write(int pair /*0=JOY01,1=JOY23*/, uint16_t a_field, uint16_t b_field);
+uint16_t fpga_joy_phys_read(int pair /*0=JOY01,1=JOY23*/);   /* physical ports */
 
 /* ---- paddles (analog, from STM32 ADCs) ---- */
 void fpga_paddle_write(int pair /*0=PADDLE01,1=PADDLE23*/, uint8_t axis_a, uint8_t axis_b);

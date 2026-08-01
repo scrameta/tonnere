@@ -38,7 +38,7 @@ void drive_thread_entry(ULONG arg) {
     for (;;) {
         ULONG flags = 0;
         /* Highest priority: wake on SIO command or UART RX from the FPGA IRQ. */
-        tx_event_flags_get(&g_fpga_events, EVT_SIO_CMD | EVT_UART_RX,
+        tx_event_flags_get(&g_fpga_events, EVT_SIO_CMD | EVT_SIO_RX,
                            TX_OR_CLEAR, &flags, TX_WAIT_FOREVER);
         drive_service_step();
     }

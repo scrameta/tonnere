@@ -20,8 +20,8 @@ static void unlock(void) { if (s_inited) tx_mutex_put(&s_bus_mutex); }
 
 static inline uint16_t rd(enum fpga_reg_index idx) { return *FPGA_REG_ADDR(idx); }
 static inline void     wr(enum fpga_reg_index idx, uint16_t v) { *FPGA_REG_ADDR(idx) = v; }
-static inline uint16_t urd(enum fpga_uart_index i) { return *FPGA_UART_ADDR(i); }
-static inline void     uwr(enum fpga_uart_index i, uint16_t v) { *FPGA_UART_ADDR(i) = v; }
+static inline uint16_t urd(enum fpga_sio_index i) { return *FPGA_SIO_ADDR(i); }
+static inline void     uwr(enum fpga_sio_index i, uint16_t v) { *FPGA_SIO_ADDR(i) = v; }
 
 fpga_status_t fpga_bus_init(void) {
     if (!s_inited) { tx_mutex_create(&s_bus_mutex, "fpga_bus", TX_INHERIT); s_inited = 1; }
@@ -41,10 +41,8 @@ void     fpga_reg_rmw(enum fpga_reg_index idx, uint16_t mask, uint16_t value) {
 static void bit_set(enum fpga_reg_index idx, int bit, int on) {
     fpga_reg_rmw(idx, (uint16_t)(1u<<bit), on?(uint16_t)(1u<<bit):0);
 }
+void fpga_core_set_reset(int on)       { bit_set(REG_CONTROL, CTRL_RESET_BIT, on); }
 void fpga_core_set_pause(int on)       { bit_set(REG_CONTROL, CTRL_PAUSE_BIT, on); }
-void fpga_core_set_warm_reset(int on)  { bit_set(REG_CONTROL, CTRL_WARM_RESET_BIT, on); }
-void fpga_core_cold_reset_strobe(void) { bit_set(REG_CONTROL, CTRL_COLD_RESET_BIT, 1);
-                                         bit_set(REG_CONTROL, CTRL_COLD_RESET_BIT, 0); }
 void fpga_core_set_freezer(int on)     { bit_set(REG_CONTROL, CTRL_FREEZER_EN_BIT, on); }
 void fpga_core_set_atari800(int on)    { bit_set(REG_CONTROL, CTRL_ATARI800_BIT, on); }
 void fpga_set_ramconfig(uint16_t sel)  { fpga_reg_write(REG_RAMCONFIG, (uint16_t)(sel & RAMCFG_SEL_MASK)); }
@@ -53,7 +51,6 @@ void fpga_set_performance(uint16_t speed, int vbl) {
     if (vbl) v |= (uint16_t)(1u<<PERF_VBL_RESTRICT_BIT);
     fpga_reg_write(REG_PERFORMANCE, v);
 }
-void fpga_set_turbo_drive(uint16_t sel){ fpga_reg_write(REG_TURBO_DRIVE, (uint16_t)(sel & TURBO_DRIVE_MASK)); }
 void fpga_set_cart(uint16_t c)         { fpga_reg_write(REG_CART, (uint16_t)(c & CART_SEL_MASK)); }
 void fpga_set_video(uint16_t mode, int pal, int scan, int csync) {
     uint16_t v = (uint16_t)(mode & VIDEO_MODE_MASK);
@@ -77,6 +74,13 @@ void fpga_kbd_clear_all(void) { memset(s_kbd_shadow, 0, sizeof s_kbd_shadow); }
 void fpga_kbd_flush(void) {
     fpga_kbd_matrix_write(s_kbd_shadow[0], s_kbd_shadow[1], s_kbd_shadow[2], s_kbd_shadow[3]);
 }
+void fpga_kbd_special(int shift, int ctrl, int brk) {
+    uint16_t v = 0;
+    if (shift) v |= (uint16_t)(1u<<KBD_SPECIAL_SHIFT_BIT);
+    if (ctrl)  v |= (uint16_t)(1u<<KBD_SPECIAL_CTRL_BIT);
+    if (brk)   v |= (uint16_t)(1u<<KBD_SPECIAL_BREAK_BIT);
+    fpga_reg_write(REG_KBD_SPECIAL, v);
+}
 
 void     fpga_console_inject(uint16_t bits) { fpga_reg_write(REG_CONSOLE_INJECT, bits); }
 uint16_t fpga_console_phys_read(void)       { return fpga_reg_read(REG_CONSOLE_PHYS); }
@@ -85,6 +89,9 @@ void fpga_joy_write(int pair, uint16_t a, uint16_t b) {
     uint16_t v = (uint16_t)(((a & JOY_FIELD_MASK) << JOY_A_SHIFT) |
                             ((b & JOY_FIELD_MASK) << JOY_B_SHIFT));
     fpga_reg_write(pair ? REG_JOY23 : REG_JOY01, v);
+}
+uint16_t fpga_joy_phys_read(int pair) {
+    return fpga_reg_read(pair ? REG_JOY23_PHYS : REG_JOY01_PHYS);
 }
 void fpga_paddle_write(int pair, uint8_t a, uint8_t b) {
     uint16_t v = (uint16_t)((uint16_t)a | ((uint16_t)b << PADDLE_B_SHIFT));
@@ -132,20 +139,20 @@ uint16_t fpga_irq_enabled(void)         { return fpga_reg_read(REG_IRQ_ENABLE); 
 uint16_t fpga_irq_pending(void)         { return fpga_reg_read(REG_IRQ_PENDING); }
 void     fpga_irq_clear(uint16_t bits)  { fpga_reg_write(REG_IRQ_CLEAR, bits); } /* W1C */
 
-int fpga_sio_rx_empty(void) { return (urd(UART_RX_FIFO) & UART_FIFO_EMPTY) != 0; }
-int fpga_sio_tx_full(void)  { return (urd(UART_TX_FIFO) & UART_FIFO_FULL) != 0; }
-uint16_t fpga_sio_tx_count(void) { return urd(UART_TX_FIFO) & UART_FIFO_COUNT_M; }
+int fpga_sio_rx_empty(void) { return (urd(SIO_RX_FIFO) & SIO_FIFO_EMPTY) != 0; }
+int fpga_sio_tx_full(void)  { return (urd(SIO_TX_FIFO) & SIO_FIFO_FULL) != 0; }
+uint16_t fpga_sio_tx_count(void) { return urd(SIO_TX_FIFO) & SIO_FIFO_COUNT_M; }
 int fpga_sio_getc(uint8_t *out) {
     if (fpga_sio_rx_empty()) return 0;
-    *out = (uint8_t)(urd(UART_RX) & 0xffu);
+    *out = (uint8_t)(urd(SIO_RX) & 0xffu);
     return 1;
 }
 int fpga_sio_putc(uint8_t c) {
     if (fpga_sio_tx_full()) return 0;
-    uwr(UART_TX, c);
+    uwr(SIO_TX, c);
     return 1;
 }
-void fpga_sio_set_divisor(uint8_t d) { uwr(UART_DIVISOR, d); }
-uint16_t fpga_sio_framing_errors(void) { return urd(UART_FRAMING_ERR) & 0x3u; }
+void fpga_sio_set_divisor(uint8_t d) { uwr(SIO_DIVISOR, d); }
+uint16_t fpga_sio_framing_errors(void) { return urd(SIO_FRAMING_ERR) & 0x3u; }
 
 #endif /* FPGA_BUS_STM32 */

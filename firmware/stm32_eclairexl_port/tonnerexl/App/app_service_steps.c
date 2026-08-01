@@ -12,14 +12,14 @@
  * then clear the handled sources (W1C). Real ATR/ATX protocol SM ports here. */
 void drive_service_step(void) {
     uint16_t pending = fpga_irq_pending();
-    if (pending & (1u << IRQ_UART_RX_BIT)) {
+    if (pending & (1u << IRQ_SIO_RX_BIT)) {
         uint8_t b;
         while (fpga_sio_getc(&b)) {
             /* TODO(port): feed b into the SIO command/frame state machine. */
         }
     }
     /* clear the SIO-related sources we handled */
-    fpga_irq_clear((uint16_t)((1u<<IRQ_SIO_CMD_BIT) | (1u<<IRQ_UART_RX_BIT) | (1u<<IRQ_UART_TX_BIT)));
+    fpga_irq_clear((uint16_t)((1u<<IRQ_SIO_CMD_BIT) | (1u<<IRQ_SIO_RX_BIT) | (1u<<IRQ_SIO_TX_BIT)));
 }
 
 /* Paddle poll, paced by POTGO IRQ: on POTGO, read STM32 ADCs and write the
@@ -57,8 +57,10 @@ void sdlife_service_step(void) {
  * hardware Reset can drive a menu action. Real menu ports here in Phase 4. */
 void menu_service_step(void) {
     uint16_t phys = fpga_console_phys_read();
-    if (phys & (1u << CONSOLE_RESET_BIT)) {
-        /* TODO(port): physical Reset pressed -> menu action. */
-    }
+    (void)phys;
+    /* TODO(port): observe physical console keys (Start/Select/Option) for menu
+     * navigation. Physical Reset is no longer a console key — the RESET key
+     * drives the 6502 reset line directly; if the menu needs to react to it,
+     * expose it via a dedicated signal/IRQ from the RTL. */
     /* TODO(port): menu state machine, drawing to Atari memory window. */
 }

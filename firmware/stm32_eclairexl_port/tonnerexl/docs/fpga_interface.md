@@ -1,310 +1,240 @@
 # TonnereXL — STM32 ↔ FPGA interface contract
 
-**Status:** DRAFT v0.2 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
+**Status:** DRAFT v0.3 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
 
-This document is the *authoritative contract* between the STM32F407 firmware and
-the FPGA FSMC adaptor. The firmware `fpga_bus` HAL implements exactly what is
-written here; the RTL Mark writes must match it. Where the RTL cannot match a
-field, change *this document first*, bump the version, then change both sides.
-Anything marked **TODO(mark)** is a value the RTL/board decides and the firmware
-currently assumes.
+Authoritative contract between the STM32F407 firmware and the FPGA FSMC adaptor.
+The firmware `fpga_bus` HAL implements exactly what is written here; the RTL must
+match it. To change a field, change *this document first*, bump the version, then
+both sides. **TODO(mark)** marks values the RTL/board decides.
 
-## What changed from v0.1
+## Changes v0.2 → v0.3 (from RTL-implementation review)
 
-v0.1 preserved the ZPU's 32-bit register numbering and split every register into
-two 16-bit halves. v0.2 abandons that: the map is now a **native 16-bit,
-purpose-named** register set designed for a fresh FSMC adaptor. Consequences:
-
-- No cross-half read/modify/write, no read-latching, no commit-on-high — the
-  entire half-split machinery is gone. Every register is a plain 16-bit access.
-- No 32-bit register needs atomic access. Values that were >16 bits split into
-  independent narrower registers (keyboard matrix = 4 regs, paddles = 2 axes per
-  reg) or are read-only identity words.
-- Dropped: the FPGA-side µs timers and LFSR (STM32 has `tx_time_get()`, DWT
-  CYCCNT, and hardware RNG); the SPI/SD path (SDIO); the PLL words (I2C/si5351);
-  keyboard-type and hotkey registers (USB→matrix mapping is STM32-side); the
-  SD-status register (SD is entirely STM32-side; a fake-SD-on-FPGA may add its
-  own status later).
-- Added: a proper interrupt controller (enable / pending / clear).
-
----
+- **Joysticks now inject/phys** like console: added `JOY01_PHYS`/`JOY23_PHYS`
+  read registers. Physical joystick ports are wired to the FPGA (`inout`); the
+  FPGA ORs injected + physical into PORTA/PORTB → GTIA, and firmware can read the
+  raw physical state.
+- **Resets collapsed.** The only real difference between warm and cold start is
+  RAM contents, and CONSOLE-reset duplicated CONTROL-reset. Now a **single reset
+  level bit** in CONTROL (firmware toggles low/high). RAM clear is done by
+  FSMC→RAM DMA writes, not a reset variant. Dropped: warm/cold distinction,
+  cold-reset strobe, CONSOLE reset key.
+- **TURBO_DRIVE dropped.** The SIO handler lives *in* the FSMC adaptor RTL and
+  negotiates turbo in-protocol; no register needed.
+- **Shift/Ctrl/Break** are NOT in the 64-key matrix (they're the KR2 column,
+  handled separately in the RTL keyboard-response logic). New `KBD_SPECIAL`
+  register holds these 3 bits, kept separate from console keys (console keys and
+  physical keyboard keys are distinct on the Atari).
+- **SIO region** renamed from "UART" to "SIO handler" — it *is* the in-RTL SIO
+  handler (`sio_handler.vhdl`), a 6-register byte-FIFO block. Interface unchanged.
 
 ## 1. Physical bus
 
 | Property | Value | Notes |
 | --- | --- | --- |
-| Interface | FSMC/FMC Bank1, NE1 | Base `0x6000_0000`. Matches Mark's RAM test wiring. |
+| Interface | FSMC/FMC Bank1, NE1 | Base `0x6000_0000`. |
 | Data width | 16-bit | Native; no register exceeds 16 bits. |
-| Access type | Async SRAM, NWAIT-capable | Adaptor may assert wait for slow reads. |
-| IRQ | one FPGA→STM32 line | EXTI, level-preferred. **TODO(mark): pin.** See §6. |
+| Access type | Async SRAM, NWAIT-capable | |
+| IRQ | one FPGA→STM32 line | PG12, EXTI15_10, level-preferred. |
 
 `FPGA_BUS_BASE` is a single compile-time constant in `Platform/fpga_bus_map.h`.
 
----
-
 ## 2. Address model
 
-Two regions in the FSMC window:
+Three regions in the FSMC window:
 
-| Region | Firmware constant | Purpose |
+| Region | Constant | Purpose |
 | --- | --- | --- |
-| Register file | `FPGA_WIN_REGS` | The 16-bit registers of §3–§6. Register *n* at `base + FPGA_WIN_REGS + 2*n`. |
-| Atari memory | `FPGA_WIN_ATARI` | 64 KB live Atari address space, indexed directly (ROM/cart/save-state). |
-| SIO UART | `FPGA_WIN_UART` | SIO byte-stream FIFOs (§7). |
+| Register file | `FPGA_WIN_REGS` (+0x0_0000) | The 16-bit registers of §3–§6. |
+| Atari memory | `FPGA_WIN_ATARI` (+0x1_0000) | 64 KB live Atari space, direct-indexed. |
+| SIO handler | `FPGA_WIN_SIO` (+0x2_0000) | SIO handler registers (§7). |
 
-**TODO(mark):** confirm the FSMC offsets of these three regions. Firmware
-defaults are in `fpga_bus_map.h`; matching the RTL is a localised edit there.
-
-The Atari window is reached directly: firmware indexes it as 16-bit cells via
-`fpga_atari_read/write`, which bound-check against 64 KB. No address/data port
-indirection.
+**TODO(mark):** confirm the region offsets; firmware defaults in `fpga_bus_map.h`.
 
 ### 2.1 Exact addresses (firmware defaults)
 
-Base `FPGA_BUS_BASE = 0x6000_0000` (FSMC Bank1 NE1). Region bases:
-`REGS = +0x0_0000`, `ATARI = +0x1_0000`, `UART = +0x2_0000`.
+Base `0x6000_0000`. Register *n* at byte `0x6000_0000 + 2*n`.
 
 **IMPORTANT — 16-bit FSMC addressing.** On a 16-bit FSMC bus the STM32 does NOT
-drive external `A0`; the FSMC right-shifts its internal byte address by one so
-the external address bus carries a *16-bit-word* index. So the byte offsets
-below (what the CPU/firmware sees) map to **external word addresses = offset/2**
-on the FPGA's address pins. Equivalently: register index *n* appears at external
-word address *n*. Decode the FPGA side in word units; do not expect A0.
+drive external `A0`; the external address bus carries a 16-bit-word index. So the
+byte offsets below map to **external word addresses = offset/2 = register index
+n** on the FPGA's address pins. Decode in word units; do not expect A0. Region
+select is byte-address bits [17:16]: REGS=`00`, ATARI=`01`, SIO=`10`.
 
-Register file (firmware byte address = `0x6000_0000 + 2*index`):
+Register file:
 
 | idx | byte off | FSMC byte addr | ext word | acc | register |
 | ---:| ---: | --- | ---: | --- | --- |
-| 0  | 0x00 | 0x6000_0000 | 0x00 | R   | IFACE_MAGIC |
-| 1  | 0x02 | 0x6000_0002 | 0x01 | R   | IFACE_VERSION |
-| 2  | 0x04 | 0x6000_0004 | 0x02 | W   | CONTROL |
-| 3  | 0x06 | 0x6000_0006 | 0x03 | W   | RAMCONFIG |
-| 4  | 0x08 | 0x6000_0008 | 0x04 | W   | PERFORMANCE |
-| 5  | 0x0A | 0x6000_000A | 0x05 | W   | TURBO_DRIVE |
-| 6  | 0x0C | 0x6000_000C | 0x06 | W   | CART |
-| 7  | 0x0E | 0x6000_000E | 0x07 | W   | VIDEO |
-| 8  | 0x10 | 0x6000_0010 | 0x08 | W   | KBD0 |
-| 9  | 0x12 | 0x6000_0012 | 0x09 | W   | KBD1 |
-| 10 | 0x14 | 0x6000_0014 | 0x0A | W   | KBD2 |
-| 11 | 0x16 | 0x6000_0016 | 0x0B | W   | KBD3 |
+| 0 | 0x00 | 0x6000_0000 | 0x00 | R   | IFACE_MAGIC |
+| 1 | 0x02 | 0x6000_0002 | 0x01 | R   | IFACE_VERSION |
+| 2 | 0x04 | 0x6000_0004 | 0x02 | W   | CONTROL |
+| 3 | 0x06 | 0x6000_0006 | 0x03 | W   | RAMCONFIG |
+| 4 | 0x08 | 0x6000_0008 | 0x04 | W   | PERFORMANCE |
+| 5 | 0x0A | 0x6000_000A | 0x05 | W   | CART |
+| 6 | 0x0C | 0x6000_000C | 0x06 | W   | VIDEO |
+| 7 | 0x0E | 0x6000_000E | 0x07 | W   | KBD0 |
+| 8 | 0x10 | 0x6000_0010 | 0x08 | W   | KBD1 |
+| 9 | 0x12 | 0x6000_0012 | 0x09 | W   | KBD2 |
+| 10 | 0x14 | 0x6000_0014 | 0x0A | W   | KBD3 |
+| 11 | 0x16 | 0x6000_0016 | 0x0B | W   | KBD_SPECIAL |
 | 12 | 0x18 | 0x6000_0018 | 0x0C | W   | CONSOLE_INJECT |
 | 13 | 0x1A | 0x6000_001A | 0x0D | R   | CONSOLE_PHYS |
 | 14 | 0x1C | 0x6000_001C | 0x0E | W   | JOY01 |
 | 15 | 0x1E | 0x6000_001E | 0x0F | W   | JOY23 |
-| 16 | 0x20 | 0x6000_0020 | 0x10 | W   | PADDLE01 |
-| 17 | 0x22 | 0x6000_0022 | 0x11 | W   | PADDLE23 |
-| 18 | 0x24 | 0x6000_0024 | 0x12 | W   | FREEZE_ADDR |
-| 19 | 0x26 | 0x6000_0026 | 0x13 | W   | FREEZE_DATA_CTRL |
-| 20 | 0x28 | 0x6000_0028 | 0x14 | RW  | IRQ_ENABLE |
-| 21 | 0x2A | 0x6000_002A | 0x15 | R   | IRQ_PENDING |
-| 22 | 0x2C | 0x6000_002C | 0x16 | W1C | IRQ_CLEAR |
-| 23 | 0x2E | 0x6000_002E | 0x17 | RW  | DEBUG0 |
-| 24 | 0x30 | 0x6000_0030 | 0x18 | RW  | DEBUG1 |
-| 25 | 0x32 | 0x6000_0032 | 0x19 | RW  | DEBUG2 |
-| 26 | 0x34 | 0x6000_0034 | 0x1A | RW  | DEBUG3 |
+| 16 | 0x20 | 0x6000_0020 | 0x10 | R   | JOY01_PHYS |
+| 17 | 0x22 | 0x6000_0022 | 0x11 | R   | JOY23_PHYS |
+| 18 | 0x24 | 0x6000_0024 | 0x12 | W   | PADDLE01 |
+| 19 | 0x26 | 0x6000_0026 | 0x13 | W   | PADDLE23 |
+| 20 | 0x28 | 0x6000_0028 | 0x14 | W   | FREEZE_ADDR |
+| 21 | 0x2A | 0x6000_002A | 0x15 | W   | FREEZE_DATA_CTRL |
+| 22 | 0x2C | 0x6000_002C | 0x16 | RW  | IRQ_ENABLE |
+| 23 | 0x2E | 0x6000_002E | 0x17 | R   | IRQ_PENDING |
+| 24 | 0x30 | 0x6000_0030 | 0x18 | W1C | IRQ_CLEAR |
+| 25 | 0x32 | 0x6000_0032 | 0x19 | RW  | DEBUG0 |
+| 26 | 0x34 | 0x6000_0034 | 0x1A | RW  | DEBUG1 |
+| 27 | 0x36 | 0x6000_0036 | 0x1B | RW  | DEBUG2 |
+| 28 | 0x38 | 0x6000_0038 | 0x1C | RW  | DEBUG3 |
 
-SIO UART (firmware byte address = `0x6002_0000 + 2*index`):
+SIO handler (byte address = `0x6002_0000 + 2*index`) — matches `sio_handler.vhdl`:
 
 | idx | byte off | FSMC byte addr | ext word | acc | register |
 | ---:| ---: | --- | ---: | --- | --- |
-| 0 | 0x00 | 0x6002_0000 | 0x00 | W  | UART_TX |
-| 1 | 0x02 | 0x6002_0002 | 0x01 | R  | UART_TX_FIFO |
-| 2 | 0x04 | 0x6002_0004 | 0x02 | R  | UART_RX |
-| 3 | 0x06 | 0x6002_0006 | 0x03 | R  | UART_RX_FIFO |
-| 4 | 0x08 | 0x6002_0008 | 0x04 | RW | UART_DIVISOR |
-| 5 | 0x0A | 0x6002_000A | 0x05 | R  | UART_FRAMING_ERR |
+| 0 | 0x00 | 0x6002_0000 | 0x00 | W | SIO_TX (transmit byte) |
+| 1 | 0x02 | 0x6002_0002 | 0x01 | R | SIO_TX_FIFO (full@9 empty@8 count7:0) |
+| 2 | 0x04 | 0x6002_0004 | 0x02 | R | SIO_RX (data14:0; read advances) |
+| 3 | 0x06 | 0x6002_0006 | 0x03 | R | SIO_RX_FIFO (full@9 empty@8 count7:0) |
+| 4 | 0x08 | 0x6002_0008 | 0x04 | W | SIO_DIVISOR (applied after tx done) |
+| 5 | 0x0A | 0x6002_000A | 0x05 | R | SIO_FRAMING_ERR (serial@0 command@1, auto-clear) |
 
-Atari window: `0x6001_0000 .. 0x6001_FFFF` (64 KB), 16-bit cells, external word
-addresses `0x0000 .. 0x7FFF` for the 32K words spanning 64 KB.
+Atari window: `0x6001_0000 .. 0x6001_FFFF` (64 KB), 16-bit cells.
 
-**RTL region decode** (byte-address view; use the equivalent word bits): the
-three regions differ in byte-address bits [17:16] — REGS = `00`, ATARI = `01`,
-UART = `10`. Within REGS/UART, the low bits select the register index. These
-offsets are firmware defaults held as single constants (`FPGA_WIN_*` in
-`fpga_bus_map.h`); if your decode is cleaner with different region spacing,
-change those constants and the firmware follows.
+## 3. Register map
 
----
+### Identity (R)
+`IFACE_MAGIC` (strawman `0x584C`, **TODO(mark)**), `IFACE_VERSION` (`0x0001`).
 
-## 3. Register map (native 16-bit)
+### Machine control (W)
 
-Register indices are logical; their FSMC offset is `FPGA_WIN_REGS + 2*index`.
-Access column is from the **firmware's** point of view (W = firmware writes,
-R = firmware reads). Most registers are firmware→FPGA outputs.
+| Reg | Bits |
+| --- | --- |
+| `CONTROL` | reset@0 (**level** — SW toggles low/high), pause@1, freezer-enable@2, atari800-mode@3 |
+| `RAMCONFIG` | RAM config (bits 2:0) |
+| `PERFORMANCE` | 6502 speed/turbo (bits 5:0), VBL-restrict-turbo@8 |
+| `CART` | cartridge type (bits 5:0) |
+| `VIDEO` | mode (2:0), PAL@4, scanlines@5, composite-sync@6 |
 
-### Identity (read-only)
+`CONTROL.reset` drives the 6502 reset line directly (this is the RESET key /
+system reset). There is no separate cold/warm bit — a cold start is
+"clear RAM via DMA, then pulse reset"; a warm start is "pulse reset".
 
-| Reg | Acc | Meaning |
-| --- | --- | --- |
-| `IFACE_MAGIC` | R | Interface magic. Firmware checks at boot. **TODO(mark): value** (strawman `0x584C`). |
-| `IFACE_VERSION` | R | Interface version (strawman `0x0001`). Mismatch → firmware safe-mode. |
+### Keyboard (W)
 
-### Machine control (firmware writes)
+| Reg | Meaning |
+| --- | --- |
+| `KBD0`–`KBD3` | 64-key matrix, bit *n* = KBCODE *n* (**TODO(mark): confirm scan order**) |
+| `KBD_SPECIAL` | shift@0, ctrl@1, break@2 — the KR2 non-matrix keys |
 
-| Reg | Acc | Bits |
-| --- | --- | --- |
-| `CONTROL` | W | pause core@0, warm-reset@1, cold-reset-strobe@2, freezer-enable@3, atari800-mode@4 |
-| `RAMCONFIG` | W | RAM configuration selection (bits 2:0, room to grow) |
-| `PERFORMANCE` | W | 6502 speed/turbo select (bits 5:0), VBL-restrict-turbo@8 |
-| `TURBO_DRIVE` | W | turbo-drive selection — owned by the SIO handler, kept separate |
-| `CART` | W | cartridge type/selection (bits 5:0, room to grow) |
-| `VIDEO` | W | video mode (bits 2:0), PAL/NTSC@4, scanlines@5, composite-sync@6 |
+Shift/Ctrl/Break drive the RTL's `KEYBOARD_SHIFT/CONTROL/BREAK` signals, which
+the keyboard-response logic asserts on scan columns `00`(break)/`10`(shift)/
+`11`(ctrl). They are NOT matrix positions.
 
-### Keyboard (firmware writes, no readback)
+### Console keys — inject/phys (Start/Select/Option)
 
 | Reg | Acc | Meaning |
 | --- | --- | --- |
-| `KBD0` | W | Atari 800XL key matrix bits 15:0 |
-| `KBD1` | W | key matrix bits 31:16 |
-| `KBD2` | W | key matrix bits 47:32 |
-| `KBD3` | W | key matrix bits 63:48 |
-| `CONSOLE_INJECT` | W | inject console keys: Start@0, Select@1, Option@2, Reset@3 |
-| `CONSOLE_PHYS` | R | physical console/Reset switch state (same bit layout) — see §5 |
+| `CONSOLE_INJECT` | W | inject Start@0/Select@1/Option@2 |
+| `CONSOLE_PHYS` | R | physical console switch state (same layout) |
 
-The 64 matrix bits are laid out in KBCODE scan order (bit *n* = KBCODE *n*),
-**including Break and both Shift keys** at their real matrix positions.
-**TODO(mark): confirm the KBCODE→bit assignment against the RTL's matrix scan.**
-Firmware uses the standard 800XL matrix table (see `fpga_bus_map.h` comment).
+FPGA ORs injected + physical into GTIA. (Reset is NOT a console key — see CONTROL.)
 
-### Controllers
+### Joysticks — inject/phys (digital)
 
 | Reg | Acc | Meaning |
 | --- | --- | --- |
-| `JOY01` | W | digital joystick 0 (bits 4:0) + joystick 1 (bits 12:8); each = 4 dir + 1 trigger |
-| `JOY23` | W | digital joystick 2 + joystick 3 (same layout) |
-| `PADDLE01` | W | analog axis 0 (bits 7:0) + axis 1 (bits 15:8), from STM32 ADCs |
-| `PADDLE23` | W | analog axis 2 + axis 3 |
+| `JOY01` | W | inject joystick 0 (bits 4:0) + joystick 1 (bits 12:8); each 4 dir + 1 trigger |
+| `JOY23` | W | inject joystick 2 + joystick 3 |
+| `JOY01_PHYS` | R | physical joystick ports 0 + 1 (same layout) |
+| `JOY23_PHYS` | R | physical joystick ports 2 + 3 |
 
-Digital joystick inputs are physically wired to the FPGA and injected by
-firmware here; analog paddle values are read by the STM32's ADCs and written
-here. Paddle recharge/charge-cycle timing is handled STM32-side in hardware; the
-FPGA needs no POTGO-reset plumbing. See §6 for POTGO IRQ pacing.
+Physical joystick ports are wired to the FPGA (`inout`). The FPGA ORs injected +
+physical into PORTA/PORTB → GTIA (mirroring the console inject/phys model), and
+firmware can read the raw physical port state — so USB joysticks (injected from
+the STM32) and real Atari joysticks coexist.
 
-### Freezer debug (firmware writes)
+### Paddles (W)
+`PADDLE01`, `PADDLE23` — two 8-bit axes each, from STM32 ADCs. See §6 (POTGO).
 
-| Reg | Acc | Meaning |
-| --- | --- | --- |
-| `FREEZE_ADDR` | W | 16-bit freezer debug address |
-| `FREEZE_DATA_CTRL` | W | data bits 7:0, read-strobe@8, write-strobe@9, data-match-mode@10 |
+### Freezer debug (W)
+`FREEZE_ADDR` (16-bit), `FREEZE_DATA_CTRL` (data 7:0, read@8, write@9, match@10).
 
-### Debug scratch (read/write, no hardware meaning)
+### Debug scratch (RW)
+`DEBUG0`–`DEBUG3` — no hardware meaning, for bring-up.
 
-| Reg | Acc | Meaning |
-| --- | --- | --- |
-| `DEBUG0`–`DEBUG3` | RW | general-purpose scratch, readable/writable both sides, for bring-up |
+## 5. Inject vs physical (console + joysticks)
 
----
+Console keys and joysticks each have two sources: the FPGA's physical inputs and
+firmware injection. Firmware writes the `*_INJECT`/`JOYxx` register to assert;
+reads the `*_PHYS` register for real input state. The FPGA ORs them before GTIA.
 
-## 4. (reserved)
-
-*The half-word access rules that occupied this section in v0.1 are deleted — the
-map is native 16-bit and needs none of them.*
-
----
-
-## 5. CONSOLE inject vs physical
-
-The console keys (Start/Select/Option) and the Reset line have **two sources**:
-the FPGA's physical switch inputs, and firmware injection (e.g. a menu action or
-a USB-key-mapped console press). These are kept as two registers:
-
-- `CONSOLE_INJECT` (W): firmware asserts a console key / Reset by setting its bit.
-- `CONSOLE_PHYS` (R): firmware reads the **real physical switch state**, so it can
-  react to a hardware Reset or console press (e.g. a physical Reset returning to
-  the menu).
-
-The FPGA **ORs** the injected bits with the physical switches before driving GTIA
-(console keys) and the system reset line (Reset). This matches the OR-combining
-the EclaireXL top level already does for console/trigger sources.
-
-**RTL must:** OR `CONSOLE_INJECT` with the debounced physical switches into GTIA
-and the reset line; expose the raw physical switch state at `CONSOLE_PHYS`.
-
----
+**RTL must:** OR the injected registers with the debounced physical inputs into
+GTIA/PORTA/PORTB; expose raw physical state at the `*_PHYS` registers.
 
 ## 6. Interrupt controller
 
-A single FPGA→STM32 line, EXTI, level-preferred. **TODO(mark): GPIO port/pin +
-EXTI line.** Three registers:
+Single FPGA→STM32 line (PG12, EXTI15_10, level-preferred). Three registers:
 
 | Reg | Acc | Meaning |
 | --- | --- | --- |
-| `IRQ_ENABLE` | RW | mask: a source may assert the line only if its bit is set here |
-| `IRQ_PENDING` | R | which enabled sources have fired (ISR reads to demux) |
-| `IRQ_CLEAR` | W1C | write 1 to a bit to clear that pending source |
+| `IRQ_ENABLE` | RW | mask: a source asserts the line only if its bit is set |
+| `IRQ_PENDING` | R | which enabled sources fired (ISR reads to demux) |
+| `IRQ_CLEAR` | W1C | write 1 to clear that pending source |
 
-Clear semantics are **write-1-to-clear** (robust against read races on a shared
-line): the ISR reads `IRQ_PENDING`, handles the set bits, then writes those bits
-back to `IRQ_CLEAR`. The line deasserts once no enabled+pending bit remains.
+**Write-1-to-clear.** ISR reads `IRQ_PENDING`, handles, writes bits to
+`IRQ_CLEAR`. Line deasserts when no enabled+pending bit remains.
 
-### Sources
+Sources: SIO command@0, SIO RX FIFO@1, SIO TX empty@2, POTGO@3, DMA-done@4
+(if used), reserved 15:5.
 
-| Bit | Source | Consumer |
+**POTGO** paces paddles: the FPGA raises it when the Atari starts a POT cycle;
+the STM32 reads its ADCs and writes `PADDLE01`/`PADDLE23` in response.
+
+## 7. SIO handler
+
+The SIO handler lives in the FSMC adaptor RTL (`sio_handler.vhdl`) — a byte-FIFO
+block, addressed at word offsets 0–5 in the SIO region (§2.1). It handles the
+SIO serial line to POKEY directly; firmware drive-emulation exchanges SIO frames
+through these FIFOs. Turbo/high-speed SIO is negotiated in-protocol by the
+handler, so there is no turbo register.
+
+| off | acc | function |
 | --- | --- | --- |
-| 0 | SIO command-line asserted (new SIO frame) | Drive/SIO thread |
-| 1 | SIO UART RX FIFO non-empty / watermark | Drive/SIO thread |
-| 2 | SIO UART TX FIFO empty (frame sent) | Drive/SIO thread |
-| 3 | POTGO strobe (Atari started a new POT cycle) | paddle poll |
-| 4 | DMA complete (only if adaptor-assisted DMA is ever used) | whoever waits |
-| 15:5 | reserved (read 0) | — |
+| 0 | W | transmit byte (bits 7:0) |
+| 1 | R | tx FIFO status: full@9, empty@8, count 7:0 |
+| 2 | R | receive: data 14:0; reading advances the RX FIFO |
+| 3 | R | rx FIFO status: full@9, empty@8, count 7:0 |
+| 4 | W | divisor (applied after transmit completes) |
+| 5 | R | framing error: serial@0, command@1 (auto-clears on read) |
 
-**POTGO** is the paddle pacing source: the FPGA raises this IRQ when the Atari
-issues POTGO, and the STM32's paddle poll runs in response — reads its ADCs and
-writes `PADDLE01`/`PADDLE23` — so paddle values are refreshed in sync with the
-Atari's POT read cycle rather than free-running.
-
-**RTL must:** raise the line while any enabled+pending bit is set (level), and
-deassert once firmware has cleared them via `IRQ_CLEAR`.
-
----
-
-## 7. SIO UART
-
-Unchanged from the ZPU map (already 16-bit native). Byte-stream FIFOs for SIO.
-
-| Reg | Acc | Bits and side effects |
-| --- | --- | --- |
-| `UART_TX` | W | bits 7:0 enqueue a transmit byte |
-| `UART_TX_FIFO` | R | full@9, empty@8, queued-count 7:0 |
-| `UART_RX` | R | data 7:0 (+ captured divisor 14:8); reading advances the RX FIFO |
-| `UART_RX_FIFO` | R | full@9, empty@8, queued-count 7:0 |
-| `UART_DIVISOR` | RW | write pending TX divisor (bits 7:0); read measured RX divisor |
-| `UART_FRAMING_ERR` | R | serial framing@0, SIO-command framing@1; reading clears both |
-
----
+The raw SIO command line is surfaced as IRQ source 0 (SIO command), so firmware
+is notified of a new SIO command frame rather than polling.
 
 ## 8. Atari memory window
 
-The 64 KB live Atari address space is a direct FSMC region (`FPGA_WIN_ATARI`),
-used for ROM/cartridge load and save-state. Firmware indexes it directly as
-16-bit cells via `fpga_atari_read/write`, which bound-check against 64 KB. There
-is no DMA descriptor engine and no >16-bit address register.
-
-If bulk moves ever need adaptor assistance (Mode B), that would add a descriptor
-and use IRQ bit 4 — not required for bring-up and not currently specified.
-
----
+64 KB live Atari address space, direct FSMC region (`0x6001_0000`), indexed as
+16-bit cells via `fpga_atari_read/write` (bounds-checked). Used for ROM/cart load,
+save-state, and RAM clear (write zeroes) for cold start. No DMA descriptor engine.
 
 ## 9. Identity / version
 
-`IFACE_MAGIC` / `IFACE_VERSION` are read at startup. Firmware checks the magic
-matches and the version is compatible; mismatch → safe-mode (diagnostic menu
-only, no drive emulation). Both are read-only, so no atomicity concern.
-
+`IFACE_MAGIC` / `IFACE_VERSION` read at startup; mismatch → firmware safe-mode.
 ```
-FPGA_IFACE_MAGIC   = 0x584C   /* 'XL' — TODO(mark): finalise */
+FPGA_IFACE_MAGIC   = 0x584C   /* TODO(mark): finalise */
 FPGA_IFACE_VERSION = 0x0001
 ```
 
----
+## 10. TODO(mark) the RTL pins down
 
-## 10. Summary of TODO(mark) decisions the RTL pins down
-
-1. FSMC offsets of the register file, Atari window, and SIO UART region (§2).
-2. IRQ GPIO pin + EXTI line (§6).
-3. Final `IFACE_MAGIC` value (§9).
-4. KBCODE→bit assignment for the 64-key matrix (§3, keyboard).
-5. CD/WP GPIO pins are **firmware-side** now (SD is STM32-side); not an RTL item.
-
-All resolved defaults live as named constants in `fpga_bus_map.h`, so matching
-the RTL later is a localised edit.
+1. Region offsets of REGS / Atari / SIO (§2).
+2. IRQ pin — PG12/EXTI15_10 (firmware default set).
+3. `IFACE_MAGIC` value (§9).
+4. KBCODE→bit assignment for the 64-key matrix (§3).
+5. Reset polarity (does `CONTROL.reset=1` assert or deassert the 6502 reset line).

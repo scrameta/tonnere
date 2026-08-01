@@ -28,8 +28,8 @@ extern TX_QUEUE             g_input_queue;   /* decoded key/joy events     */
 
 /* FPGA event flag bits (mirror contract §6 IRQ sources). */
 #define EVT_SIO_CMD    (1u << 0)
-#define EVT_UART_RX    (1u << 1)
-#define EVT_UART_TX    (1u << 2)
+#define EVT_SIO_RX    (1u << 1)
+#define EVT_SIO_TX    (1u << 2)
 #define EVT_POTGO      (1u << 3)
 #define EVT_DMA_DONE   (1u << 4)
 
