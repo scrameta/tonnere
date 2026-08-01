@@ -41,8 +41,88 @@ static UCHAR        app_pool_mem[64*1024];
 
 /* ---- SD-card image, seam (i): a file-backed FileX RAM media ---- */
 VOID _fx_ram_driver(FX_MEDIA *media_ptr);
+
+/*
+ * host_block_driver — a FileX media driver that mounts a REAL disk image.
+ *
+ * FileX's stock _fx_ram_driver rejects any boot sector whose jump instruction
+ * isn't EB 34 90 / EB 76 90 (what FileX's own formatter writes). Real images
+ * from mkfs.fat / Windows use EB 3C 90, so the RAM driver fails them with
+ * FX_BOOT_ERROR (0x01) even though the filesystem is perfectly valid. This
+ * driver does plain sector read/write/flush against the in-RAM image with no
+ * such check, so we can mount actual SD-card images. Sector size is taken from
+ * the media control block (FileX fills it from the boot sector), defaulting to
+ * 512 for the initial boot read.
+ */
+#include "fx_api.h"
+static UCHAR *s_blk_image;         /* the image bytes */
+static ULONG  s_blk_bytes;
+static ULONG  s_blk_part_off;      /* partition start (sectors), 0 if none */
+
+/* FileX helper: given sector 0, work out whether it's an MBR and where the
+ * partition starts. Same call the ST on-target driver uses. */
+UINT _fx_partition_offset_calculate(void *partition_sector, UINT partition,
+                                    ULONG *partition_start, ULONG *partition_size);
+
+static void host_block_driver(FX_MEDIA *media_ptr) {
+    ULONG ssz = media_ptr->fx_media_bytes_per_sector;
+    if (ssz == 0) ssz = 512;       /* boot read happens before ssz is known */
+
+    switch (media_ptr->fx_media_driver_request) {
+    case FX_DRIVER_BOOT_READ: {
+        /* Read sector 0, then — exactly like ST's fx_stm32_sd_driver — check
+         * whether it's an MBR partition table and, if so, read the real boot
+         * sector from the partition start. This makes the host mirror the board
+         * and handles dd-imaged (partitioned) SD cards, not just bare FS. No
+         * jump-instruction validation (that was the RAM driver's bug). */
+        _fx_utility_memory_copy(s_blk_image, media_ptr->fx_media_driver_buffer, 512);
+        ULONG pstart = 0, psize = 0;
+        UINT s = _fx_partition_offset_calculate(media_ptr->fx_media_driver_buffer, 0,
+                                                &pstart, &psize);
+        if (s != FX_SUCCESS) { media_ptr->fx_media_driver_status = FX_IO_ERROR; break; }
+        s_blk_part_off = pstart;   /* remember for subsequent sector I/O */
+        if (pstart) {
+            _fx_utility_memory_copy(s_blk_image + pstart*512,
+                                    media_ptr->fx_media_driver_buffer, 512);
+        }
+        media_ptr->fx_media_driver_status = FX_SUCCESS;
+        break;
+    }
+    case FX_DRIVER_BOOT_WRITE: {
+        _fx_utility_memory_copy(media_ptr->fx_media_driver_buffer,
+                                s_blk_image + s_blk_part_off*512, 512);
+        media_ptr->fx_media_driver_status = FX_SUCCESS;
+        break;
+    }
+    case FX_DRIVER_READ: {
+        ULONG off = (media_ptr->fx_media_driver_logical_sector +
+                     media_ptr->fx_media_hidden_sectors + s_blk_part_off) * ssz;
+        _fx_utility_memory_copy(s_blk_image + off, media_ptr->fx_media_driver_buffer,
+                                media_ptr->fx_media_driver_sectors * ssz);
+        media_ptr->fx_media_driver_status = FX_SUCCESS;
+        break;
+    }
+    case FX_DRIVER_WRITE: {
+        ULONG off = (media_ptr->fx_media_driver_logical_sector +
+                     media_ptr->fx_media_hidden_sectors + s_blk_part_off) * ssz;
+        _fx_utility_memory_copy(media_ptr->fx_media_driver_buffer, s_blk_image + off,
+                                media_ptr->fx_media_driver_sectors * ssz);
+        media_ptr->fx_media_driver_status = FX_SUCCESS;
+        break;
+    }
+    case FX_DRIVER_FLUSH:
+    case FX_DRIVER_ABORT:
+    case FX_DRIVER_INIT:
+    case FX_DRIVER_UNINIT:
+        media_ptr->fx_media_driver_status = FX_SUCCESS;
+        break;
+    default:
+        media_ptr->fx_media_driver_status = FX_IO_ERROR;
+        break;
+    }
+}
 static FX_MEDIA  s_sd_media;
-static UCHAR     s_sd_media_mem[512];
+static UCHAR     s_sd_media_mem[512*8];   /* FileX sector cache (8 sectors) */
 static UCHAR    *s_sd_image;          /* the "card" contents in RAM        */
 static long      s_sd_image_bytes;
 static char      s_sd_image_path[256];
@@ -79,13 +159,18 @@ static int sd_mount(const char *path) {
     static int fx_inited = 0;
     if (!fx_inited) { fx_system_initialize(); fx_inited = 1; }
 
+    /* point the block driver at the loaded image */
+    s_blk_image = s_sd_image;
+    s_blk_bytes = (ULONG)want;
+
     if (fresh) {
-        UINT s = fx_media_format(&s_sd_media, _fx_ram_driver, s_sd_image,
+        /* blank image: let FileX format it (writes its own boot sector) */
+        UINT s = fx_media_format(&s_sd_media, host_block_driver, s_sd_image,
                                  s_sd_media_mem, sizeof s_sd_media_mem,
                                  "SDCARD", 2, 512, 0, (ULONG)(want/512), 512, 1, 1, 1);
         if (s != FX_SUCCESS) { printf("  format failed: 0x%02X\n", s); free(s_sd_image); return -1; }
     }
-    UINT s = fx_media_open(&s_sd_media, "sd", _fx_ram_driver, s_sd_image,
+    UINT s = fx_media_open(&s_sd_media, "sd", host_block_driver, s_sd_image,
                            s_sd_media_mem, sizeof s_sd_media_mem);
     if (s != FX_SUCCESS) { printf("  open failed: 0x%02X\n", s); free(s_sd_image); return -1; }
 
