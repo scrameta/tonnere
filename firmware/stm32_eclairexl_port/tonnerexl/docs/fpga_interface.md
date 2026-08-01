@@ -59,6 +59,71 @@ The Atari window is reached directly: firmware indexes it as 16-bit cells via
 `fpga_atari_read/write`, which bound-check against 64 KB. No address/data port
 indirection.
 
+### 2.1 Exact addresses (firmware defaults)
+
+Base `FPGA_BUS_BASE = 0x6000_0000` (FSMC Bank1 NE1). Region bases:
+`REGS = +0x0_0000`, `ATARI = +0x1_0000`, `UART = +0x2_0000`.
+
+**IMPORTANT — 16-bit FSMC addressing.** On a 16-bit FSMC bus the STM32 does NOT
+drive external `A0`; the FSMC right-shifts its internal byte address by one so
+the external address bus carries a *16-bit-word* index. So the byte offsets
+below (what the CPU/firmware sees) map to **external word addresses = offset/2**
+on the FPGA's address pins. Equivalently: register index *n* appears at external
+word address *n*. Decode the FPGA side in word units; do not expect A0.
+
+Register file (firmware byte address = `0x6000_0000 + 2*index`):
+
+| idx | byte off | FSMC byte addr | ext word | acc | register |
+| ---:| ---: | --- | ---: | --- | --- |
+| 0  | 0x00 | 0x6000_0000 | 0x00 | R   | IFACE_MAGIC |
+| 1  | 0x02 | 0x6000_0002 | 0x01 | R   | IFACE_VERSION |
+| 2  | 0x04 | 0x6000_0004 | 0x02 | W   | CONTROL |
+| 3  | 0x06 | 0x6000_0006 | 0x03 | W   | RAMCONFIG |
+| 4  | 0x08 | 0x6000_0008 | 0x04 | W   | PERFORMANCE |
+| 5  | 0x0A | 0x6000_000A | 0x05 | W   | TURBO_DRIVE |
+| 6  | 0x0C | 0x6000_000C | 0x06 | W   | CART |
+| 7  | 0x0E | 0x6000_000E | 0x07 | W   | VIDEO |
+| 8  | 0x10 | 0x6000_0010 | 0x08 | W   | KBD0 |
+| 9  | 0x12 | 0x6000_0012 | 0x09 | W   | KBD1 |
+| 10 | 0x14 | 0x6000_0014 | 0x0A | W   | KBD2 |
+| 11 | 0x16 | 0x6000_0016 | 0x0B | W   | KBD3 |
+| 12 | 0x18 | 0x6000_0018 | 0x0C | W   | CONSOLE_INJECT |
+| 13 | 0x1A | 0x6000_001A | 0x0D | R   | CONSOLE_PHYS |
+| 14 | 0x1C | 0x6000_001C | 0x0E | W   | JOY01 |
+| 15 | 0x1E | 0x6000_001E | 0x0F | W   | JOY23 |
+| 16 | 0x20 | 0x6000_0020 | 0x10 | W   | PADDLE01 |
+| 17 | 0x22 | 0x6000_0022 | 0x11 | W   | PADDLE23 |
+| 18 | 0x24 | 0x6000_0024 | 0x12 | W   | FREEZE_ADDR |
+| 19 | 0x26 | 0x6000_0026 | 0x13 | W   | FREEZE_DATA_CTRL |
+| 20 | 0x28 | 0x6000_0028 | 0x14 | RW  | IRQ_ENABLE |
+| 21 | 0x2A | 0x6000_002A | 0x15 | R   | IRQ_PENDING |
+| 22 | 0x2C | 0x6000_002C | 0x16 | W1C | IRQ_CLEAR |
+| 23 | 0x2E | 0x6000_002E | 0x17 | RW  | DEBUG0 |
+| 24 | 0x30 | 0x6000_0030 | 0x18 | RW  | DEBUG1 |
+| 25 | 0x32 | 0x6000_0032 | 0x19 | RW  | DEBUG2 |
+| 26 | 0x34 | 0x6000_0034 | 0x1A | RW  | DEBUG3 |
+
+SIO UART (firmware byte address = `0x6002_0000 + 2*index`):
+
+| idx | byte off | FSMC byte addr | ext word | acc | register |
+| ---:| ---: | --- | ---: | --- | --- |
+| 0 | 0x00 | 0x6002_0000 | 0x00 | W  | UART_TX |
+| 1 | 0x02 | 0x6002_0002 | 0x01 | R  | UART_TX_FIFO |
+| 2 | 0x04 | 0x6002_0004 | 0x02 | R  | UART_RX |
+| 3 | 0x06 | 0x6002_0006 | 0x03 | R  | UART_RX_FIFO |
+| 4 | 0x08 | 0x6002_0008 | 0x04 | RW | UART_DIVISOR |
+| 5 | 0x0A | 0x6002_000A | 0x05 | R  | UART_FRAMING_ERR |
+
+Atari window: `0x6001_0000 .. 0x6001_FFFF` (64 KB), 16-bit cells, external word
+addresses `0x0000 .. 0x7FFF` for the 32K words spanning 64 KB.
+
+**RTL region decode** (byte-address view; use the equivalent word bits): the
+three regions differ in byte-address bits [17:16] — REGS = `00`, ATARI = `01`,
+UART = `10`. Within REGS/UART, the low bits select the register index. These
+offsets are firmware defaults held as single constants (`FPGA_WIN_*` in
+`fpga_bus_map.h`); if your decode is cleaner with different region spacing,
+change those constants and the firmware follows.
+
 ---
 
 ## 3. Register map (native 16-bit)
