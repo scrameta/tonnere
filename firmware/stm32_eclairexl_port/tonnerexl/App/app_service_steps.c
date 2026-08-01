@@ -8,18 +8,37 @@
 #include "app_threads.h"
 #include "fpga_bus.h"
 
-/* Drive/SIO: on an IRQ, demux via the interrupt controller, drain SIO bytes,
- * then clear the handled sources (W1C). Real ATR/ATX protocol SM ports here. */
+/* Drive/SIO: on an IRQ, demux via the interrupt controller, then drain SIO.
+ * Real ATR/ATX protocol SM ports here.
+ *
+ * Edge-IRQ ordering matters: clear the pending bits BEFORE draining the RX FIFO.
+ * The RX IRQ is a single rising edge on empty->non-empty (contract §6). If we
+ * cleared after draining, a byte arriving between the drain finishing and the
+ * clear would set a fresh edge that the clear then wipes — and since the FIFO
+ * stays non-empty, no new edge ever comes, stranding that byte. Clearing first
+ * means such a byte's edge stays latched for the next wake. We then drain until
+ * the FIFO reports empty (read-until-empty rule, §6) to catch bytes already
+ * queued. */
 void drive_service_step(void) {
     uint16_t pending = fpga_irq_pending();
-    if (pending & (1u << IRQ_SIO_RX_BIT)) {
+
+    /* clear first (edge-IRQ safe) */
+    fpga_irq_clear((uint16_t)((1u<<IRQ_SIO_CMD_BIT) | (1u<<IRQ_SIO_RX_BIT) | (1u<<IRQ_SIO_TX_BIT)));
+
+    if (pending & (1u << IRQ_SIO_CMD_BIT)) {
+        /* TODO(port): a new SIO command frame is starting. */
+    }
+    if (pending & ((1u << IRQ_SIO_RX_BIT) | (1u << IRQ_SIO_CMD_BIT))) {
+        /* Drain until empty regardless of which bit woke us — a command frame
+         * also brings bytes, and one edge may cover several bytes. */
         uint8_t b;
         while (fpga_sio_getc(&b)) {
             /* TODO(port): feed b into the SIO command/frame state machine. */
         }
     }
-    /* clear the SIO-related sources we handled */
-    fpga_irq_clear((uint16_t)((1u<<IRQ_SIO_CMD_BIT) | (1u<<IRQ_SIO_RX_BIT) | (1u<<IRQ_SIO_TX_BIT)));
+    if (pending & (1u << IRQ_SIO_TX_BIT)) {
+        /* TODO(port): transmit of the queued frame completed. */
+    }
 }
 
 /* Paddle poll, paced by POTGO IRQ: on POTGO, read STM32 ADCs and write the

@@ -191,8 +191,32 @@ Single FPGA→STM32 line (PG12, EXTI15_10, level-preferred). Three registers:
 **Write-1-to-clear.** ISR reads `IRQ_PENDING`, handles, writes bits to
 `IRQ_CLEAR`. Line deasserts when no enabled+pending bit remains.
 
-Sources: SIO command@0, SIO RX FIFO@1, SIO TX empty@2, POTGO@3, DMA-done@4
-(if used), reserved 15:5.
+**Edge-triggered.** Every source latches into `IRQ_PENDING` on the **rising edge
+of one signal** — a single edge, not both edges, not a level. After a reset,
+pending is clear and each source needs a fresh rising edge to fire.
+
+Sources (each = rising edge of the named signal):
+
+| Bit | Rising edge of | Meaning |
+| --- | --- | --- |
+| 0 | SIO command line | new SIO command frame beginning |
+| 1 | SIO RX not-empty (empty→non-empty) | a byte arrived in the RX FIFO |
+| 2 | SIO TX empty (drain→empty) | transmit finished (FIFO drained) |
+| 3 | POTGO | Atari started a POT cycle (paddle pacing) |
+| 4 | DMA-done | (only if adaptor-assisted DMA is ever used) |
+| 15:5 | — | reserved (read 0) |
+
+**RX read-until-empty rule (load-bearing).** Because bit 1 is a *single* rising
+edge on empty→non-empty, multiple bytes arriving close together may produce only
+one edge (the FIFO went non-empty once and stayed non-empty). So on each RX wake
+the firmware MUST drain the FIFO until `SIO_RX_FIFO` reports empty — it cannot
+assume one IRQ equals one byte. (`drive_service_step` does `while
+(fpga_sio_getc())`, satisfying this.)
+
+The IRQ says *when* to look; the FIFO status registers (`SIO_TX_FIFO`,
+`SIO_RX_FIFO`) say *what state* — poll them for counts/full/empty detail. If the
+opposite transition is ever needed (e.g. TX empty→non-empty, or RX
+non-empty→empty), add it as a separate IRQ bit (5–15 are free).
 
 **POTGO** paces paddles: the FPGA raises it when the Atari starts a POT cycle;
 the STM32 reads its ADCs and writes `PADDLE01`/`PADDLE23` in response.
