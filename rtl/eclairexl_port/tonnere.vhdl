@@ -421,7 +421,11 @@ architecture vhdl of tonnere is
   -- pokey keyboard
   SIGNAL KEYBOARD_SCAN : std_logic_vector(5 downto 0);
   SIGNAL KEYBOARD_RESPONSE : std_logic_vector(1 downto 0);
-  signal atari_keyboard : std_logic_vector(63 downto 0);
+
+  signal KEYBOARD_MATRIX : std_logic_vector(63 downto 0);
+  signal KEYBOARD_SHIFT : std_logic;
+  signal KEYBOARD_CONTROL : std_logic;
+  signal KEYBOARD_BREAK : std_logic;
 
   -- gtia consol keys
   SIGNAL CONSOL_START_INT : std_logic;
@@ -477,20 +481,42 @@ architecture vhdl of tonnere is
   signal SNOOP_DATA : std_logic_vector(31 downto 0);
   signal SNOOP_DATA_READY : std_logic;
 
+  signal stm_pokey_enable : std_logic;
+  signal stm_sio_txd : std_logic;
+  signal stm_sio_rxd : std_logic;
+  signal stm_sio_command : std_logic;
+
+  -- STM32/FSMC adaptor memory interface
   signal ZPU_ADDR_ROM : std_logic_vector(15 downto 0);
   signal ZPU_ROM_DATA : std_logic_vector(31 downto 0);
 
-  signal ZPU_OUT1 : std_logic_vector(31 downto 0);
-  signal ZPU_OUT2 : std_logic_vector(31 downto 0);
-  signal ZPU_OUT3 : std_logic_vector(31 downto 0);
-  signal ZPU_OUT4 : std_logic_vector(31 downto 0);
-  signal ZPU_OUT6 : std_logic_vector(31 downto 0);
-  signal ZPU_OUT7 : std_logic_vector(31 downto 0);
+  -- STM32/FSMC adaptor control and status registers
+  signal CONTROL : std_logic_vector(15 downto 0);
+  signal RAMCONFIG : std_logic_vector(2 downto 0);
+  signal PERFORMANCE : std_logic_vector(8 downto 0);
+  signal CART : std_logic_vector(5 downto 0);
+  signal VIDEO : std_logic_vector(6 downto 0);
 
-  signal zpu_pokey_enable : std_logic;
-  signal zpu_sio_txd : std_logic;
-  signal zpu_sio_rxd : std_logic;
-  signal zpu_sio_command : std_logic;
+  signal CONSOLE_INJECT : std_logic_vector(2 downto 0);
+  signal CONSOLE_PHYS : std_logic_vector(3 downto 0);
+
+  signal JOY0_INJECT : std_logic_vector(4 downto 0);
+  signal JOY1_INJECT : std_logic_vector(4 downto 0);
+  signal JOY2_INJECT : std_logic_vector(4 downto 0);
+  signal JOY3_INJECT : std_logic_vector(4 downto 0);
+
+  signal JOY_DIR_INT : std_logic_vector(7 downto 0);
+  signal JOY2_DIR_INT : std_logic_vector(15 downto 8);
+  signal JOY_TRIG_INT : std_logic_vector(1 downto 0);
+  signal JOY2_TRIG_INT : std_logic_vector(3 downto 2);
+
+  signal FREEZE_ADDR : std_logic_vector(15 downto 0);
+  signal FREEZE_DATA_CTRL : std_logic_vector(15 downto 0);
+
+  signal DEBUG0 : std_logic_vector(31 downto 0);
+  signal DEBUG1 : std_logic_vector(31 downto 0);
+  signal DEBUG2 : std_logic_vector(31 downto 0);
+  signal DEBUG3 : std_logic_vector(31 downto 0);
 
   SIGNAL FKEYS : std_logic_vector(11 downto 0);
 
@@ -503,7 +529,6 @@ architecture vhdl of tonnere is
   SIGNAL speed_6502 : std_logic_vector(5 downto 0);
   signal turbo_vblank_only : std_logic;
   signal emulated_cartridge_select : std_logic_vector(5 downto 0);
-  signal key_type : std_logic;
   signal atari800mode : std_logic;
 
   -- GPIO / paddles
@@ -533,18 +558,6 @@ architecture vhdl of tonnere is
   signal freezer_enable : std_logic;
   signal freezer_activate : std_logic;
   signal freezer_state : std_logic_vector(2 downto 0);
-
-  -- ps2
-  signal PS2_KEYS : STD_LOGIC_VECTOR(511 downto 0);
-  signal PS2_KEYS_NEXT : STD_LOGIC_VECTOR(511 downto 0);
-
-  -- usb  (TODO(tonnere): no USB hardware; tied off below)
-  signal CLK_USB : std_logic;
-  signal USBWireVPin  : std_logic_vector(1 downto 0);
-  signal USBWireVMin  : std_logic_vector(1 downto 0);
-  signal USBWireVPout : std_logic_vector(1 downto 0);
-  signal USBWireVMout : std_logic_vector(1 downto 0);
-  signal USBWireOE_n  : std_logic_vector(1 downto 0);
 
   -- CONFIG
   SIGNAL ROM_IN_RAM : STD_LOGIC;
@@ -579,12 +592,7 @@ architecture vhdl of tonnere is
   signal rdy : std_logic;
   signal an : std_logic_vector(2 downto 0);
 
-  -- ZPU PLL bus (TODO(tonnere): no runtime PLL reconfig; left open)
-  signal zpu_pll_addr : std_logic_vector(7 downto 2);
-  signal zpu_pll_data : std_logic_vector(31 downto 0);
-  signal zpu_pll_write : std_logic;
-
-  -- video settings (from zpu_out6)
+  -- video settings (from STM32 VIDEO register)
   signal pal : std_logic;
   signal scandouble : std_logic;
   signal scanlines : std_logic;
@@ -694,12 +702,7 @@ begin
   ---------------------------------------------------------------------------
   -- FPGA GPIO: only one usable pin on Tonnere; gpio_debug dropped.
   FPGA_GPIO <= (others=>'Z');           -- TODO(tonnere): expose debug if wanted
-  FPGA_IRQ  <= 'Z';                      -- TODO(tonnere): STM32 IRQ line
   ESP_MISO  <= 'Z';                      -- TODO(tonnere): ESP32 SPI slave
-
-  -- FSMC (STM32) bus: not used by the ported core yet.
-  FSMC_D    <= (others=>'Z');            -- TODO(tonnere): STM32 <-> FPGA bus
-  FSMC_NWAIT<= '1';
 
   -- Second SRAM chip and (for now) SRAM1: the ported core uses SDRAM only.
   -- SRAM1 unused (atari RAM is on SRAM2). SRAM2 is driven by the sram instance.
@@ -816,17 +819,14 @@ PORTA_gen:
     JOY_DIR(I) <= '0' when PORTA_DIR_OUT(I)='1' and PORTA_OUT(I)='0' else 'Z';
   end generate;
   -- Combine both joystick ports into PORTA_IN (UDLR etc.) - TODO(tonnere) verify bit order
-  PORTA_IN <= JOY_DIR;
+  PORTA_IN <= JOY_DIR_INT;
 
   -- PORTB is XL/XE memory-control / not on joystick pins; keep internal.
   PORTB_IN <= PORTB_OUT;
-
-  -- Paddles: Eclaire read POTIN pins. Tonnere has no dedicated POT pins wired.
-  POT_IN <= (others=>'0');               -- TODO(tonnere): paddle inputs
-  -- POTRESET has no pin on Tonnere; POT_RESET stays internal.
+  -- TODO, what happened to JOY2?
 
   -- Triggers
-  GTIA_TRIG <= JOY2_TRIG(3 downto 2) & JOY_TRIG(1 downto 0);  -- TODO(tonnere) verify order
+  GTIA_TRIG <= JOY2_TRIG_INT(3 downto 2) & JOY_TRIG_INT(1 downto 0);  -- TODO(tonnere) verify order
   ANTIC_LIGHTPEN <= and_reduce(GTIA_TRIG);
 
   ---------------------------------------------------------------------------
@@ -847,9 +847,9 @@ PORTA_gen:
   CA2_in <= SIO_MOTOR;
 
   ASIO_RXD <= SIO_DATA_IN;
-  SIO_DATA_IN <= '0' when (zpu_sio_txd)='0' else 'Z';
-  zpu_sio_rxd <= ASIO_TXD;
-  zpu_sio_command <= CB2_OUT when CB2_DIR_OUT='1' else '1';
+  SIO_DATA_IN <= '0' when (stm_sio_txd)='0' else 'Z';
+  stm_sio_rxd <= ASIO_TXD;
+  stm_sio_command <= CB2_OUT when CB2_DIR_OUT='1' else '1';
   SIO_DATA_OUT <= ASIO_TXD when ASIO_TXD='0' else 'Z';
 
   -- Unused SIO on Tonnere
@@ -971,42 +971,36 @@ PORTA_gen:
       R => VIDEO_R
     );
 
+    ---------------------------------------------------------------------------
+  -- STM32 keyboard matrix -> POKEY keyboard response
   ---------------------------------------------------------------------------
-  -- USB HOST  (TODO(tonnere): no USB hardware). Tie off wires; keep core port.
-  ---------------------------------------------------------------------------
-  USBWireVMin <= (others=>'1');
-  USBWireVPin <= (others=>'1');
-  CLK_USB     <= CLK;    -- TODO(tonnere): dedicated USB clock if ever added
+  -- Provide results as if the STM32 keyboard matrix were a POKEY key grid.
+  process(KEYBOARD_SCAN, KEYBOARD_MATRIX, KEYBOARD_CONTROL, KEYBOARD_SHIFT, KEYBOARD_BREAK)
+  begin
+    KEYBOARD_RESPONSE <= (others => '1');
+
+    if KEYBOARD_MATRIX(to_integer(unsigned(not KEYBOARD_SCAN))) = '1' then
+      KEYBOARD_RESPONSE(0) <= '0';
+    end if;
+
+    if KEYBOARD_SCAN(5 downto 4) = "00" and KEYBOARD_BREAK = '1' then
+      KEYBOARD_RESPONSE(1) <= '0';
+    end if;
+
+    if KEYBOARD_SCAN(5 downto 4) = "10" and KEYBOARD_SHIFT = '1' then
+      KEYBOARD_RESPONSE(1) <= '0';
+    end if;
+
+    if KEYBOARD_SCAN(5 downto 4) = "11" and KEYBOARD_CONTROL = '1' then
+      KEYBOARD_RESPONSE(1) <= '0';
+    end if;
+  end process;
+
+  -- No function-key source is currently connected.
+  FKEYS <= (others => '1');
 
   ---------------------------------------------------------------------------
-  -- PS2 -> POKEY keyboard  (PS2 tied high, as Eclaire; console via ps2 path)
-  ---------------------------------------------------------------------------
-  keyboard_map1 : entity work.ps2_to_atari800
-    GENERIC MAP ( ps2_enable => 1, direct_enable => 1 )
-    PORT MAP (
-      CLK => CLK,
-      RESET_N => RESET_N,
-      PS2_CLK => '1',                    -- No PS2 on Tonnere
-      PS2_DAT => '1',
-      INPUT => zpu_out4,
-      KEY_TYPE => key_type,
-      ATARI_KEYBOARD_OUT => atari_keyboard,
-      KEYBOARD_SCAN => KEYBOARD_SCAN,
-      KEYBOARD_RESPONSE => KEYBOARD_RESPONSE,
-      CONSOL_START => CONSOL_START_INT,
-      CONSOL_SELECT => CONSOL_SELECT_INT,
-      CONSOL_OPTION => CONSOL_OPTION_INT,
-      FKEYS => FKEYS,
-      FREEZER_ACTIVATE => freezer_activate,
-      PS2_KEYS_NEXT_OUT => ps2_keys_next,
-      PS2_KEYS => ps2_keys
-    );
-  -- TODO(tonnere): real CONSOL_START/SELECT/OPTION/RESET input pins are
-  -- currently ignored (kept as top-level inputs, unused). OR them in here
-  -- if the physical console keys should work alongside the ZPU/USB path.
-
-  ---------------------------------------------------------------------------
-  -- MACHINE RESET request handling (from ZPU), as Eclaire
+  -- MACHINE RESET request handling (from STM32), as Eclaire
   ---------------------------------------------------------------------------
   process(reset_atari_request,atari800mode,fkeys)
   begin
@@ -1055,7 +1049,7 @@ PORTA_gen:
       CB2_IN => CB2_IN,
       CB2_OUT => CB2_OUT,
       CB2_DIR_OUT => CB2_DIR_OUT,
-      PORTA_IN => PORTA_IN and not("0000"&ps2_keys(16#174#)&ps2_keys(16#16B#)&ps2_keys(16#172#)&ps2_keys(16#175#)) and not(zpu_out3(0)&zpu_out3(1)&zpu_out3(2)&zpu_out3(3)&zpu_out2(0)&zpu_out2(1)&zpu_out2(2)&zpu_out2(3)),
+      PORTA_IN => PORTA_IN,
       PORTA_DIR_OUT => PORTA_DIR_OUT,
       PORTA_OUT => PORTA_OUT,
       PORTB_IN => PORTB_IN,
@@ -1096,7 +1090,7 @@ PORTA_gen:
       CONSOL_OPTION => CONSOL_OPTION_INT,
       CONSOL_SELECT => CONSOL_SELECT_INT,
       CONSOL_START => CONSOL_START_INT,
-      GTIA_TRIG => GTIA_TRIG and not("000"&ps2_keys(16#127#)) and not("00"&zpu_out3(4)&zpu_out2(4)),
+      GTIA_TRIG => GTIA_TRIG,
       ANTIC_LIGHTPEN => ANTIC_LIGHTPEN,
       SDRAM_REQUEST => SDRAM_REQUEST,
       SDRAM_REQUEST_COMPLETE => SDRAM_REQUEST_COMPLETE,
@@ -1140,105 +1134,135 @@ PORTA_gen:
       memory_ready_antic_out => memory_ready_antic_out,
       memory_ready_cpu_out => memory_ready_cpu_out,
       shared_enable_out => shared_enable_out,
-      freezer_debug_addr => zpu_out7(15 downto 0),
-      freezer_debug_data => zpu_out7(23 downto 16),
-      freezer_debug_read => zpu_out7(24),
-      freezer_debug_write => zpu_out7(25),
-      freezer_debug_data_match => zpu_out7(26)
+      freezer_debug_addr => FREEZE_ADDR,
+      freezer_debug_data => FREEZE_DATA_CTRL(7 downto 0),
+      freezer_debug_read => FREEZE_DATA_CTRL(8),
+      freezer_debug_write => FREEZE_DATA_CTRL(9),
+      freezer_debug_data_match => FREEZE_DATA_CTRL(10)
     );
 
   ROM_IN_RAM <= '1' when GENERIC_INTERNAL_ROM=0 else '0';
 
-  ---------------------------------------------------------------------------
-  -- ZPU  (config / SD / DMA). SPI master left OPEN (no SD/flash on Tonnere).
-  -- USB kept (usb=>2) with wires tied off above.
-  ---------------------------------------------------------------------------
-  zpu : entity work.zpucore
+  -- FSMC (STM32) bus: not used by the ported core yet.
+  dma_32bit_write_enable <= '0'; -- 16-bit FSMC bus, no 32-bit access
+
+      -- SPI master : SD not present on Tonnere; SELECT1 drives the EPCQ via SFL.
+--      ZPU_SPI_DI => spi_flash_di,          -- flash MISO (via SFL). (was sd_dat0 AND flash_di on Eclaire)
+--      ZPU_SPI_CLK => spi_clk,
+--      ZPU_SPI_DO => spi_do,
+--      ZPU_SPI_SELECT0 => open,             -- TODO(tonnere): SD card select if ever wired
+--      ZPU_SPI_SELECT1 => spi_flash_select,
+  spi_flash_select <= '0'; -- Tie off for now since we will use STM32 flash. Potentially we may use it so left sfl for now. In theory STM can directly write to the flash ic too...
+
+  fsmc_adapt1 : entity work.fsmc_adaptor
     GENERIC MAP (
-      platform => 1,
-      spi_clock_div => 2,
-      memory => 8192,
-      usb => 2,
-      nMHz_clock_div => 48
+      platform => 1
     )
     PORT MAP (
       CLK => CLK,
       RESET_N => RESET_N and sdram_reset_n,
-      ZPU_ADDR_FETCH => dma_addr_fetch,
-      ZPU_DATA_OUT => dma_write_data,
-      ZPU_FETCH => dma_fetch,
-      ZPU_32BIT_WRITE_ENABLE => dma_32bit_write_enable,
-      ZPU_16BIT_WRITE_ENABLE => dma_16bit_write_enable,
-      ZPU_8BIT_WRITE_ENABLE => dma_8bit_write_enable,
-      ZPU_READ_ENABLE => dma_read_enable,
-      ZPU_MEMORY_READY => dma_memory_ready,
-      ZPU_MEMORY_DATA => snoop_data,
-      ZPU_ADDR_ROM => zpu_addr_rom,
-      ZPU_ROM_DATA => zpu_rom_data,
-      -- settings bus (PLL reconfig) - TODO(tonnere): no runtime reconfig
-      ZPU_PLL_WRITE => zpu_pll_write,
-      ZPU_PLL_DATA => zpu_pll_data,
-      ZPU_PLL_ADDR => zpu_pll_addr,
-      -- SPI master : SD not present on Tonnere; SELECT1 drives the EPCQ via SFL.
-      ZPU_SPI_DI => spi_flash_di,          -- flash MISO (via SFL). (was sd_dat0 AND flash_di on Eclaire)
-      ZPU_SPI_CLK => spi_clk,
-      ZPU_SPI_DO => spi_do,
-      ZPU_SPI_SELECT0 => open,             -- TODO(tonnere): SD card select if ever wired
-      ZPU_SPI_SELECT1 => spi_flash_select,
-      -- built-in Pokey / SIO to Atari
-      ZPU_POKEY_ENABLE => zpu_pokey_enable,
-      ZPU_SIO_TXD => zpu_sio_txd,
-      ZPU_SIO_RXD => zpu_sio_rxd,
-      ZPU_SIO_COMMAND => zpu_sio_command,
-      ZPU_SIO_CLK => ASIO_CLOCKOUT,
+
+      STM_ADDR_FETCH => dma_addr_fetch,
+      STM_DATA_OUT => dma_write_data,
+      STM_FETCH => dma_fetch,
+      STM_16BIT_WRITE_ENABLE => dma_16bit_write_enable,
+      STM_8BIT_WRITE_ENABLE => dma_8bit_write_enable,
+      STM_READ_ENABLE => dma_read_enable,
+      STM_MEMORY_READY => dma_memory_ready,
+      STM_MEMORY_DATA => snoop_data,
+      STM_ADDR_ROM => zpu_addr_rom,
+      STM_ROM_DATA => zpu_rom_data,
+
+      -- built-in Pokey / SIO to Atari -> potentially handled by Fujinet-alike on ESP32 instead later? Wire up STM so it can anyway.
+      STM_POKEY_ENABLE => stm_pokey_enable,
+      STM_SIO_TXD => stm_sio_txd,
+      STM_SIO_RXD => stm_sio_rxd,
+      STM_SIO_COMMAND => stm_sio_command,
+      STM_SIO_CLK => ASIO_CLOCKOUT,
+
+      -- Sit on STM FSMC bus
+      -- NB: async to fpga clocks
+      FSMC_A     => FSMC_A,
+      FSMC_D     => FSMC_D,
+      FSMC_NBL   => FSMC_NBL,
+      FSMC_NE    => FSMC_NE,
+      FSMC_NOE   => FSMC_NOE,
+      FSMC_NWE   => FSMC_NWE,
+      FSMC_NWAIT => FSMC_NWAIT,
+      FSMC_IRQ   => FPGA_IRQ,
+
       -- external control
-      ZPU_IN1 => X"000"&
-        '1'&'1'&                          -- sd_writeprotect, sd_detect: no card
-        (atari_keyboard(28))&ps2_keys(16#5A#)&ps2_keys(16#174#)&ps2_keys(16#16B#)&ps2_keys(16#172#)&ps2_keys(16#175#)&
-        FKEYS,
-      ZPU_IN2 => X"00000000",
-      ZPU_IN3 => atari_keyboard(31 downto 0),
-      ZPU_IN4 => atari_keyboard(63 downto 32),
-      ZPU_OUT1 => zpu_out1,
-      ZPU_OUT2 => zpu_out2,
-      ZPU_OUT3 => zpu_out3,
-      ZPU_OUT4 => zpu_out4,
-      ZPU_OUT5 => open,
-      ZPU_OUT6 => zpu_out6,
-      ZPU_OUT7 => zpu_out7,
-      -- USB host (tied off)
-      CLK_nMHz => CLK_USB,
-      CLK_USB => CLK_USB,
-      USBWireVPin => USBWireVPin,
-      USBWireVMin => USBWireVMin,
-      USBWireVPout => USBWireVPout,
-      USBWireVMout => USBWireVMout,
-      USBWireOE_n => USBWireOE_n
+      -- dedicated regs
+      CONTROL => CONTROL,
+      RAMCONFIG => RAMCONFIG,
+      PERFORMANCE => PERFORMANCE,
+      CART => CART,
+      VIDEO => VIDEO,
+
+      KEYBOARD_MATRIX => KEYBOARD_MATRIX,
+      KEYBOARD_SHIFT => KEYBOARD_SHIFT,
+      KEYBOARD_CONTROL => KEYBOARD_CONTROL,
+      KEYBOARD_BREAK => KEYBOARD_BREAK,
+      CONSOLE_INJECT => CONSOLE_INJECT,
+      CONSOLE_PHYS => CONSOLE_PHYS,
+      JOY0_INJECT => JOY0_INJECT,
+      JOY1_INJECT => JOY1_INJECT,
+      JOY2_INJECT => JOY2_INJECT,
+      JOY3_INJECT => JOY3_INJECT,
+      JOY0_PHYS => JOY_TRIG(0)&JOY_DIR(3 downto 0),
+      JOY1_PHYS => JOY_TRIG(1)&JOY_DIR(7 downto 4),
+      JOY2_PHYS => JOY2_TRIG(2) & JOY2_DIR(11 downto 8),
+      JOY3_PHYS => JOY2_TRIG(3) & JOY2_DIR(15 downto 12),
+
+      POT_IN => POT_IN, --ADC on STM drives paddles
+      POT_RESET => POT_RESET, -- To allow an IRQ to reset the pots
+
+      FREEZE_ADDR => FREEZE_ADDR,
+      FREEZE_DATA_CTRL => FREEZE_DATA_CTRL,
+
+      DEBUG0 => DEBUG0,
+      DEBUG1 => DEBUG1,
+      DEBUG2 => DEBUG2,
+      DEBUG3 => DEBUG3
     );
+  -- From STM
+  reset_atari_request <= CONTROL(0) or not(CONSOL_RESET);
+  pause_atari <= CONTROL(1);
+  freezer_enable <= CONTROL(2);
+  atari800mode <= CONTROL(3);
 
-  -- ZPU_OUT1 decode (verbatim from Eclaire)
-  pause_atari <= zpu_out1(0);
-  reset_atari_request <= zpu_out1(1);
-  speed_6502 <= zpu_out1(7 downto 2);
-  ram_select <= zpu_out1(10 downto 8);
-  atari800mode <= zpu_out1(11);
-  emulated_cartridge_select <= zpu_out1(22 downto 17);
-  freezer_enable <= zpu_out1(25);
-  key_type <= zpu_out1(26);
-  turbo_vblank_only <= zpu_out1(31);
+  ram_select <= RAMCONFIG;
 
-  -- ZPU_OUT6 decode (video)
-  video_mode <= "001"; --zpu_out6(2 downto 0); TODO - put back FIXME!
-  PAL <= zpu_out6(4);
-  scanlines <= zpu_out6(5);
-  csync <= zpu_out6(6);
+  speed_6502 <= PERFORMANCE(5 downto 0);
+  turbo_vblank_only <= PERFORMANCE(8);
 
-  zpu_rom1 : entity work.zpu_rom
-    port map ( clock => clk, address => zpu_addr_rom(15 downto 2), q => zpu_rom_data );
+  emulated_cartridge_select <= CART;
 
-  enable_179_clock_div_zpu_pokey : entity work.enable_divider
+  video_mode <= "001"; --VIDEO(2 downto 0) TODO - put back FIXME!
+  PAL <= video(4);
+  scanlines <= VIDEO(5);
+  csync <= VIDEO(6);
+
+  -- To STM
+  CONSOLE_PHYS(0) <= CONSOL_START;
+  CONSOLE_PHYS(1) <= CONSOL_SELECT;
+  CONSOLE_PHYS(2) <= CONSOL_OPTION;
+  CONSOLE_PHYS(3) <= CONSOL_RESET;
+
+  -- Merge STM and FPGA lines
+  CONSOL_START_INT <= CONSOLE_INJECT(0) or CONSOL_START;
+  CONSOL_SELECT_INT <= CONSOLE_INJECT(1) or CONSOL_SELECT;
+  CONSOL_OPTION_INT <= CONSOLE_INJECT(2) or CONSOL_OPTION;
+
+  JOY_DIR_INT <= JOY_DIR and (JOY1_INJECT(3 downto 0) & JOY0_INJECT(3 downto 0));
+  JOY2_DIR_INT <= JOY2_DIR and (JOY3_INJECT(3 downto 0) & JOY2_INJECT(3 downto 0));
+
+  JOY_TRIG_INT <= JOY_TRIG and (JOY1_INJECT(4) & JOY0_INJECT(4));
+  JOY2_TRIG_INT <= JOY2_TRIG and (JOY3_INJECT(4) & JOY2_INJECT(4));
+
+  enable_179_clock_div_stm_pokey : entity work.enable_divider
     generic map ( COUNT => 32 )
-    port map ( clk=>clk, reset_n=>reset_n, enable_in=>'1', enable_out=>zpu_pokey_enable );
+    port map ( clk=>clk, reset_n=>reset_n, enable_in=>'1', enable_out=>stm_pokey_enable );
 
   ---------------------------------------------------------------------------
   -- SERIAL FLASH LOADER (EPCQ) - post-config access to config flash via ASMI.
@@ -1256,17 +1280,17 @@ PORTA_gen:
     port map (
       asmi_access_granted => '0',
       asmi_access_request => open,
-      asdo_in             => spi_do,   -- bit0 = MOSI; bits 1-3 unused
+      asdo_in             => 'Z', --spi_do,   -- bit0 = MOSI; bits 1-3 unused
       --data_oe             => "0001",            -- only bit0 driven
       data0_out            => sfl_data_out,
-      dclk_in             => spi_clk,
-      ncso_in             => spi_flash_select,
-      noe_in              => '0' -- TODO
+      dclk_in             => 'Z', --spi_clk,
+      ncso_in             => 'Z', --spi_flash_select,
+      noe_in              => 'Z' --'0' -- TODO
     );
   spi_flash_di <= sfl_data_out;              -- flash MISO
 
   ---------------------------------------------------------------------------
-  -- AUDIO : core PCM -> I2S -> PCM5102A  (Tonnere-specific; no hq_dac)
+  -- AUDIO : core PCM -> I2S -> PCM5102A 
   ---------------------------------------------------------------------------
   AUDIO_L_PCM_SIGNED <= signed(not(AUDIO_L_PCM(15))&AUDIO_L_PCM(14 downto 0));
   AUDIO_R_PCM_SIGNED <= signed(not(AUDIO_R_PCM(15))&AUDIO_R_PCM(14 downto 0));
