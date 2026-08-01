@@ -40,3 +40,16 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [0] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) }
 };
 #endif
+
+const key_override_t page_down_override = ko_make_with_layers_negmods_and_options(MOD_MASK_CTRL, KC_DOWN, KC_PGDN, ~0, 0, ko_option_no_reregister_trigger);
+const key_override_t page_up_override = ko_make_with_layers_negmods_and_options(MOD_MASK_CTRL, KC_UP, KC_PGUP, ~0, 0, ko_option_no_reregister_trigger);
+const key_override_t hone_override = ko_make_with_layers_negmods_and_options(MOD_MASK_CTRL, KC_LEFT, KC_HOME, ~0, 0, ko_option_no_reregister_trigger);
+const key_override_t end_override = ko_make_with_layers_negmods_and_options(MOD_MASK_CTRL, KC_RIGHT, KC_END, ~0, 0, ko_option_no_reregister_trigger);
+
+// This globally defines all key overrides to be used
+const key_override_t *key_overrides[] = {
+	&page_down_override,
+	&page_up_override,
+	&hone_override,
+	&end_override
+};

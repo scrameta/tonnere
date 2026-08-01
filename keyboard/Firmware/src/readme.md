@@ -8,7 +8,9 @@
 
 Make example for this keyboard (after setting up your QMK build environment):
 
+```
 qmk compile -kb decent/megaxe -km default
+```
 
 Flashing example for this keyboard:
 
@@ -22,35 +24,43 @@ See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_to
 
 Press the escape key or the button on the back of the Pi while connecting the keyboard.
 
+If the keyboard has previously been flashed with a version of this firmware, it can be put into bootloader mode by pressing both shift keys and 'B'.
+The keyboard then appears as a disk volume and can be flashed by dragging and dropping the new `.uf2` firmware file onto its root.
+
 ## Special commands
 
-[Control]+[Atari] + 1: Toggle RGB lighting
-[Control]+[Atari] + Up: Next RGB effect
-[Control]+[Atari] + Down: Previous RGB effect
-[Control]+[Atari] + X: Change RGB hue
-[Control]+[Atari] + S: Lower RGB brightness
-[Control]+[Atari] + W: Raise RGB brightness
-[Control]+[Atari] + Left: Lower RGB animation speed
-[Control]+[Atari] + Right: Raise RGB animation speed
+`[Control]+[Atari] + 1`: Toggle RGB lighting
+`[Control]+[Atari] + Up`: Next RGB effect
+`[Control]+[Atari] + Down`: Previous RGB effect
+`[Control]+[Atari] + X`: Change RGB hue
+`[Control]+[Atari] + S`: Lower RGB brightness
+`[Control]+[Atari] + W`: Raise RGB brightness
+`[Control]+[Atari] + Left`: Lower RGB animation speed
+`[Control]+[Atari] + Right`: Raise RGB animation speed
 
-[Both shifts] + B: go into bootloader mode without unplugging the keyboard
-[Both shifts] + \: delete configuration data
+`[Both shifts] + B`: go into bootloader mode without unplugging the keyboard
+`[Both shifts] + \`: delete configuration data
 
 ## Layout
-```C
-/*
-    *      /─────/─────/─────/─────/─────/─────/─────/─────/─────/
-    *     /F1   /F2   /F3   /F4   /Help /Start/Slect/Optin/Reset/
-    *    /─────/─────/─────/─────/─────/─────/─────/─────/─────/
-    * ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───────┐
-    * │Esc│ 1!│ 2@│ 3#│ 4%│ 5%│ 6^│ 7&│ 8*│ 9(│ 0)│ - │ = │ Backsp│
-    * ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─────┤
-    * │ Tab │ Q │ W │ E │ R │ T │ Y │ U │ I │ O │ P │ [{│ ]}│  \| │
-    * ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴─────┤
-    * │ Caps │ A │ S │ D │ F │ G │ H │ J │ K │ L │ ;:│ '"│  Enter │
-    * ├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤
-    * │ Shift  │ Z │ X │ C │ V │ B │ N │ M │ ,<│ .>│ /?│    Shift │
-    * ├────┬───┴┬──┴─┬─┴───┴───┴───┴───┴───┴──┬┴───┼───┴┬────┬────┤
-    * │Ctrl│ GUI│ Brk│                        │  ← │  ↑ │  ↓ │  → │
-    * └────┴────┴────┴────────────────────────┴────┴────┴────┴────┘
-*/
+
+```
+     /─────/─────/─────/─────/─────/─────/─────/─────/─────/
+    /F1   /F2   /F3   /F4   /Help /Start/Slect/Optin/Reset/
+   /─────/─────/─────/─────/─────/─────/─────/─────/─────/
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───────┐
+│Esc│ 1!│ 2@│ 3#│ 4%│ 5%│ 6^│ 7&│ 8*│ 9(│ 0)│ - │ = │ Backsp│
+├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─────┤
+│ Tab │ Q │ W │ E │ R │ T │ Y │ U │ I │ O │ P │ [{│ ]}│  \| │
+├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴─────┤
+│ Caps │ A │ S │ D │ F │ G │ H │ J │ K │ L │ ;:│ '"│  Enter │
+├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤
+│ Shift  │ Z │ X │ C │ V │ B │ N │ M │ ,<│ .>│ /?│    Shift │
+├────┬───┴┬──┴─┬─┴───┴───┴───┴───┴───┴──┬┴───┼───┴┬────┬────┤
+│Ctrl│ GUI│ Brk│                        │  ← │  ↑ │  ↓ │  → │
+└────┴────┴────┴────────────────────────┴────┴────┴────┴────┘
+```
+
+`[Control] + ←`: Home
+`[Control] + →`: End
+`[Control] + ↑`: PgUp
+`[Control] + ↓`: PgDn

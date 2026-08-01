@@ -17,17 +17,17 @@
     },
     "prototype_zone_fills": false,
     "selection_filter": {
-      "dimensions": false,
+      "dimensions": true,
       "footprints": true,
       "graphics": true,
-      "keepouts": false,
+      "keepouts": true,
       "lockedItems": false,
-      "otherItems": false,
-      "pads": false,
+      "otherItems": true,
+      "pads": true,
       "text": true,
-      "tracks": false,
-      "vias": false,
-      "zones": false
+      "tracks": true,
+      "vias": true,
+      "zones": true
     },
     "visible_items": [
       "vias",
@@ -63,7 +63,7 @@
     "ssh_key": ""
   },
   "meta": {
-    "filename": "MegaXE-plate.kicad_prl",
+    "filename": "Badge.kicad_prl",
     "version": 5
   },
   "net_inspector_panel": {
@@ -92,8 +92,8 @@
       9
     ],
     "col_widths": [
-      148,
-      138,
+      162,
+      147,
       91,
       67,
       91,
