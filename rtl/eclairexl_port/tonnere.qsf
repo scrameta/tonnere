@@ -437,18 +437,16 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to SIO_MOTOR
 
 
 
+
+
+
+
 set_global_assignment -name VHDL_FILE sram.vhdl
-set_global_assignment -name QIP_FILE zpu_rom.qip
 set_global_assignment -name QIP_FILE components/fifo_cyclone10LP/fifo_transmit.qip
 set_global_assignment -name SOURCE_FILE components/fifo_cyclone10LP/fifo_transmit.cmp
 set_global_assignment -name QIP_FILE components/fifo_cyclone10LP/fifo_receive.qip
 set_global_assignment -name SOURCE_FILE components/fifo_cyclone10LP/fifo_receive.cmp
 set_global_assignment -name VHDL_FILE components/i2c_master.vhd
-set_global_assignment -name VHDL_FILE zpu/zpupkg.vhd
-set_global_assignment -name VHDL_FILE zpu/zpucore.vhd
-set_global_assignment -name VHDL_FILE zpu/zpu_glue.vhdl
-set_global_assignment -name VHDL_FILE zpu/zpu_core.vhd
-set_global_assignment -name VHDL_FILE zpu/zpu_config_regs.vhdl
 set_global_assignment -name VHDL_FILE zpu/sio_handler.vhdl
 set_global_assignment -name VHDL_FILE components/scandoubler.vhdl
 set_global_assignment -name VHDL_FILE hdmi/scandoubler_hdmi.vhdl
@@ -530,6 +528,7 @@ set_global_assignment -name VHDL_FILE encoder.vhd
 set_global_assignment -name QIP_FILE altddio_out1.qip
 set_global_assignment -name VHDL_FILE i2smaster.vhdl
 set_global_assignment -name VHDL_FILE ddr_pattern_gen.vhd
+set_global_assignment -name VHDL_FILE fsmc_adaptor.vhdl
 set_global_assignment -name VHDL_FILE sdm_dac_video.vhd
 set_global_assignment -name VHDL_FILE tonnere.vhdl
 set_global_assignment -name QIP_FILE pll_video.qip
@@ -538,67 +537,570 @@ set_global_assignment -name QIP_FILE pixel_fifo.qip
 set_global_assignment -name QIP_FILE pll_aud.qip
 set_global_assignment -name QIP_FILE pll_hdmi.qip
 set_global_assignment -name QIP_FILE pll_atari.qip
-set_global_assignment -name VERILOG_FILE usbhostslave/directcontrol.v
-set_global_assignment -name VERILOG_FILE usbhostslave/dpMem_dc.v
-set_global_assignment -name VERILOG_FILE usbhostslave/endpMux.v
-set_global_assignment -name VERILOG_FILE usbhostslave/fifoMux.v
-set_global_assignment -name VERILOG_FILE usbhostslave/fifoRTL.v
-set_global_assignment -name VERILOG_FILE usbhostslave/getpacket.v
-set_global_assignment -name VERILOG_FILE usbhostslave/hctxportarbiter.v
-set_global_assignment -name VERILOG_FILE usbhostslave/hostcontroller.v
-set_global_assignment -name VERILOG_FILE usbhostslave/hostSlaveMux.v
-set_global_assignment -name VERILOG_FILE usbhostslave/hostSlaveMuxBI.v
-set_global_assignment -name VERILOG_FILE usbhostslave/lineControlUpdate.v
-set_global_assignment -name VERILOG_FILE usbhostslave/processRxBit.v
-set_global_assignment -name VERILOG_FILE usbhostslave/processRxByte.v
-set_global_assignment -name VERILOG_FILE usbhostslave/processTxByte.v
-set_global_assignment -name VERILOG_FILE usbhostslave/readUSBWireData.v
-set_global_assignment -name VERILOG_FILE usbhostslave/RxFifo.v
-set_global_assignment -name VERILOG_FILE usbhostslave/RxFifoBI.v
-set_global_assignment -name VERILOG_FILE usbhostslave/rxStatusMonitor.v
-set_global_assignment -name VERILOG_FILE usbhostslave/sctxportarbiter.v
-set_global_assignment -name VERILOG_FILE usbhostslave/sendpacket.v
-set_global_assignment -name VERILOG_FILE usbhostslave/sendpacketarbiter.v
-set_global_assignment -name VERILOG_FILE usbhostslave/sendpacketcheckpreamble.v
-set_global_assignment -name VERILOG_FILE usbhostslave/siereceiver.v
-set_global_assignment -name VERILOG_FILE usbhostslave/SIETransmitter.v
-set_global_assignment -name VERILOG_FILE usbhostslave/slavecontroller.v
-set_global_assignment -name VERILOG_FILE usbhostslave/slaveDirectcontrol.v
-set_global_assignment -name VERILOG_FILE usbhostslave/slaveGetpacket.v
-set_global_assignment -name VERILOG_FILE usbhostslave/slaveRxStatusMonitor.v
-set_global_assignment -name VERILOG_FILE usbhostslave/slaveSendpacket.v
-set_global_assignment -name VERILOG_FILE usbhostslave/sofcontroller.v
-set_global_assignment -name VERILOG_FILE usbhostslave/softransmit.v
-set_global_assignment -name VERILOG_FILE usbhostslave/speedCtrlMux.v
-set_global_assignment -name VERILOG_FILE usbhostslave/timescale.v
-set_global_assignment -name VERILOG_FILE usbhostslave/TxFifo.v
-set_global_assignment -name VERILOG_FILE usbhostslave/TxFifoBI.v
-set_global_assignment -name VERILOG_FILE usbhostslave/updateCRC16.v
-set_global_assignment -name VERILOG_FILE usbhostslave/updateCRC5.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbConstants_h.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHost.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostControl.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostControl_h.v
-set_global_assignment -name VERILOG_FILE usbhostslave/USBHostControlBI.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostCyc2Wrap.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostCyc2Wrap_usb1t11.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostSlave.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostSlave_h.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostSlaveAvalonWrap.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbHostSlaveCyc2Wrap.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbSerialInterfaceEngine.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbSerialInterfaceEngine_h.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbSlave.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbSlaveControl.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbSlaveControl_h.v
-set_global_assignment -name VERILOG_FILE usbhostslave/USBSlaveControlBI.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbSlaveCyc2Wrap.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbSlaveCyc2Wrap_usb1t11.v
-set_global_assignment -name VERILOG_FILE usbhostslave/usbTxWireArbiter.v
-set_global_assignment -name VERILOG_FILE usbhostslave/wishBoneBI.v
-set_global_assignment -name VERILOG_FILE usbhostslave/wishBoneBus_h.v
-set_global_assignment -name VERILOG_FILE usbhostslave/writeUSBWireData.v
 set_global_assignment -name QSYS_FILE sfl.qsys
-
-
+set_global_assignment -name QIP_FILE fsmc_fifo.qip
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334528" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=1024" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=1024" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "atari800core:atari800|CLK" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "atari800core:atari800|DMA_16BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "atari800core:atari800|DMA_32BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "atari800core:atari800|DMA_8BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "atari800core:atari800|DMA_ADDR[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "atari800core:atari800|DMA_ADDR[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "atari800core:atari800|DMA_ADDR[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "atari800core:atari800|DMA_ADDR[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "atari800core:atari800|DMA_ADDR[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "atari800core:atari800|DMA_ADDR[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "atari800core:atari800|DMA_ADDR[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "atari800core:atari800|DMA_ADDR[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "atari800core:atari800|DMA_ADDR[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "atari800core:atari800|DMA_ADDR[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "atari800core:atari800|DMA_ADDR[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "atari800core:atari800|DMA_ADDR[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "atari800core:atari800|DMA_ADDR[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "atari800core:atari800|DMA_ADDR[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "atari800core:atari800|DMA_ADDR[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "atari800core:atari800|DMA_ADDR[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "atari800core:atari800|DMA_ADDR[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "atari800core:atari800|DMA_ADDR[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "atari800core:atari800|DMA_ADDR[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "atari800core:atari800|DMA_ADDR[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "atari800core:atari800|DMA_ADDR[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "atari800core:atari800|DMA_ADDR[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "atari800core:atari800|DMA_ADDR[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "atari800core:atari800|DMA_ADDR[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "atari800core:atari800|DMA_FETCH" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "atari800core:atari800|DMA_READ_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "atari800core:atari800|DMA_WRITE_DATA[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "atari800core:atari800|DMA_WRITE_DATA[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "atari800core:atari800|DMA_WRITE_DATA[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "atari800core:atari800|DMA_WRITE_DATA[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "atari800core:atari800|DMA_WRITE_DATA[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "atari800core:atari800|DMA_WRITE_DATA[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "atari800core:atari800|DMA_WRITE_DATA[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "atari800core:atari800|DMA_WRITE_DATA[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "atari800core:atari800|DMA_WRITE_DATA[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "atari800core:atari800|DMA_WRITE_DATA[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "atari800core:atari800|DMA_WRITE_DATA[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "atari800core:atari800|DMA_WRITE_DATA[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "atari800core:atari800|DMA_WRITE_DATA[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "atari800core:atari800|DMA_WRITE_DATA[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "atari800core:atari800|DMA_WRITE_DATA[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "atari800core:atari800|DMA_WRITE_DATA[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "atari800core:atari800|DMA_WRITE_DATA[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "atari800core:atari800|DMA_WRITE_DATA[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "atari800core:atari800|DMA_WRITE_DATA[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "atari800core:atari800|DMA_WRITE_DATA[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "atari800core:atari800|DMA_WRITE_DATA[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "atari800core:atari800|DMA_WRITE_DATA[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "atari800core:atari800|DMA_WRITE_DATA[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "atari800core:atari800|DMA_WRITE_DATA[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "atari800core:atari800|DMA_WRITE_DATA[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "atari800core:atari800|DMA_WRITE_DATA[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "atari800core:atari800|DMA_WRITE_DATA[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "atari800core:atari800|DMA_WRITE_DATA[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "atari800core:atari800|DMA_WRITE_DATA[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "atari800core:atari800|DMA_WRITE_DATA[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "atari800core:atari800|DMA_WRITE_DATA[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "atari800core:atari800|DMA_WRITE_DATA[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "atari800core:atari800|MEMORY_READY_DMA" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "atari800core:atari800|DMA_16BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "atari800core:atari800|DMA_32BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "atari800core:atari800|DMA_8BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "atari800core:atari800|DMA_ADDR[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "atari800core:atari800|DMA_ADDR[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "atari800core:atari800|DMA_ADDR[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "atari800core:atari800|DMA_ADDR[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "atari800core:atari800|DMA_ADDR[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "atari800core:atari800|DMA_ADDR[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "atari800core:atari800|DMA_ADDR[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "atari800core:atari800|DMA_ADDR[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "atari800core:atari800|DMA_ADDR[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "atari800core:atari800|DMA_ADDR[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "atari800core:atari800|DMA_ADDR[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "atari800core:atari800|DMA_ADDR[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "atari800core:atari800|DMA_ADDR[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "atari800core:atari800|DMA_ADDR[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "atari800core:atari800|DMA_ADDR[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "atari800core:atari800|DMA_ADDR[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "atari800core:atari800|DMA_ADDR[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "atari800core:atari800|DMA_ADDR[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "atari800core:atari800|DMA_ADDR[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "atari800core:atari800|DMA_ADDR[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "atari800core:atari800|DMA_ADDR[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "atari800core:atari800|DMA_ADDR[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "atari800core:atari800|DMA_ADDR[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "atari800core:atari800|DMA_ADDR[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "atari800core:atari800|DMA_FETCH" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "atari800core:atari800|DMA_READ_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "atari800core:atari800|DMA_WRITE_DATA[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "atari800core:atari800|DMA_WRITE_DATA[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "atari800core:atari800|DMA_WRITE_DATA[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "atari800core:atari800|DMA_WRITE_DATA[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "atari800core:atari800|DMA_WRITE_DATA[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "atari800core:atari800|DMA_WRITE_DATA[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "atari800core:atari800|DMA_WRITE_DATA[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "atari800core:atari800|DMA_WRITE_DATA[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "atari800core:atari800|DMA_WRITE_DATA[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "atari800core:atari800|DMA_WRITE_DATA[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "atari800core:atari800|DMA_WRITE_DATA[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "atari800core:atari800|DMA_WRITE_DATA[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "atari800core:atari800|DMA_WRITE_DATA[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "atari800core:atari800|DMA_WRITE_DATA[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "atari800core:atari800|DMA_WRITE_DATA[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "atari800core:atari800|DMA_WRITE_DATA[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "atari800core:atari800|DMA_WRITE_DATA[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "atari800core:atari800|DMA_WRITE_DATA[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "atari800core:atari800|DMA_WRITE_DATA[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "atari800core:atari800|DMA_WRITE_DATA[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "atari800core:atari800|DMA_WRITE_DATA[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "atari800core:atari800|DMA_WRITE_DATA[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "atari800core:atari800|DMA_WRITE_DATA[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "atari800core:atari800|DMA_WRITE_DATA[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "atari800core:atari800|DMA_WRITE_DATA[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "atari800core:atari800|DMA_WRITE_DATA[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "atari800core:atari800|DMA_WRITE_DATA[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "atari800core:atari800|DMA_WRITE_DATA[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "atari800core:atari800|DMA_WRITE_DATA[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "atari800core:atari800|DMA_WRITE_DATA[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "atari800core:atari800|DMA_WRITE_DATA[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "atari800core:atari800|DMA_WRITE_DATA[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "atari800core:atari800|MEMORY_READY_DMA" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "atari800core:atari800|PBI_SNOOP_DATA[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "atari800core:atari800|PBI_SNOOP_DATA[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "atari800core:atari800|PBI_SNOOP_DATA[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "atari800core:atari800|PBI_SNOOP_DATA[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "atari800core:atari800|PBI_SNOOP_DATA[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "atari800core:atari800|PBI_SNOOP_DATA[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to "atari800core:atari800|PBI_SNOOP_DATA[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to "atari800core:atari800|PBI_SNOOP_DATA[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to "atari800core:atari800|PBI_SNOOP_DATA[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to "atari800core:atari800|PBI_SNOOP_DATA[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to "atari800core:atari800|PBI_SNOOP_DATA[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "atari800core:atari800|PBI_SNOOP_DATA[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "atari800core:atari800|PBI_SNOOP_DATA[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to "atari800core:atari800|PBI_SNOOP_DATA[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to "atari800core:atari800|PBI_SNOOP_DATA[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to "atari800core:atari800|PBI_SNOOP_DATA[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to "atari800core:atari800|PBI_SNOOP_DATA[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to "atari800core:atari800|PBI_SNOOP_DATA[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to "atari800core:atari800|PBI_SNOOP_DATA[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to "atari800core:atari800|PBI_SNOOP_DATA[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to "atari800core:atari800|PBI_SNOOP_DATA[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to "atari800core:atari800|PBI_SNOOP_DATA[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to "atari800core:atari800|PBI_SNOOP_DATA[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to "atari800core:atari800|PBI_SNOOP_DATA[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to "atari800core:atari800|PBI_SNOOP_DATA[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to "atari800core:atari800|PBI_SNOOP_DATA[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to "atari800core:atari800|PBI_SNOOP_DATA[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to "atari800core:atari800|PBI_SNOOP_DATA[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to "atari800core:atari800|PBI_SNOOP_DATA[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to "atari800core:atari800|PBI_SNOOP_DATA[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to "atari800core:atari800|PBI_SNOOP_DATA[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to "atari800core:atari800|PBI_SNOOP_DATA[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to "fsmc_adaptor:fsmc_adapt1|fsmc_fifo:fsmc_fifo1|rdempty" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to "fsmc_adaptor:fsmc_adapt1|fsmc_fifo:fsmc_fifo1|rdreq" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "atari800core:atari800|PBI_SNOOP_DATA[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "atari800core:atari800|PBI_SNOOP_DATA[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "atari800core:atari800|PBI_SNOOP_DATA[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "atari800core:atari800|PBI_SNOOP_DATA[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "atari800core:atari800|PBI_SNOOP_DATA[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "atari800core:atari800|PBI_SNOOP_DATA[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to "atari800core:atari800|PBI_SNOOP_DATA[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to "atari800core:atari800|PBI_SNOOP_DATA[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to "atari800core:atari800|PBI_SNOOP_DATA[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to "atari800core:atari800|PBI_SNOOP_DATA[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to "atari800core:atari800|PBI_SNOOP_DATA[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "atari800core:atari800|PBI_SNOOP_DATA[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "atari800core:atari800|PBI_SNOOP_DATA[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to "atari800core:atari800|PBI_SNOOP_DATA[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to "atari800core:atari800|PBI_SNOOP_DATA[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to "atari800core:atari800|PBI_SNOOP_DATA[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to "atari800core:atari800|PBI_SNOOP_DATA[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to "atari800core:atari800|PBI_SNOOP_DATA[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to "atari800core:atari800|PBI_SNOOP_DATA[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to "atari800core:atari800|PBI_SNOOP_DATA[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to "atari800core:atari800|PBI_SNOOP_DATA[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to "atari800core:atari800|PBI_SNOOP_DATA[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to "atari800core:atari800|PBI_SNOOP_DATA[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to "atari800core:atari800|PBI_SNOOP_DATA[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to "atari800core:atari800|PBI_SNOOP_DATA[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to "atari800core:atari800|PBI_SNOOP_DATA[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to "atari800core:atari800|PBI_SNOOP_DATA[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to "atari800core:atari800|PBI_SNOOP_DATA[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to "atari800core:atari800|PBI_SNOOP_DATA[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to "atari800core:atari800|PBI_SNOOP_DATA[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to "atari800core:atari800|PBI_SNOOP_DATA[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to "atari800core:atari800|PBI_SNOOP_DATA[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to "fsmc_adaptor:fsmc_adapt1|fsmc_fifo:fsmc_fifo1|rdempty" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to "fsmc_adaptor:fsmc_adapt1|fsmc_fifo:fsmc_fifo1|rdreq" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to "sdram_statemachine:sdram_adaptor|BYTE_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to "sdram_statemachine:sdram_adaptor|COMPLETE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to "sdram_statemachine:sdram_adaptor|DATA_IN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to "sdram_statemachine:sdram_adaptor|DATA_IN[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to "sdram_statemachine:sdram_adaptor|DATA_IN[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to "sdram_statemachine:sdram_adaptor|DATA_IN[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to "sdram_statemachine:sdram_adaptor|DATA_IN[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to "sdram_statemachine:sdram_adaptor|DATA_IN[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to "sdram_statemachine:sdram_adaptor|DATA_IN[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to "sdram_statemachine:sdram_adaptor|DATA_IN[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to "sdram_statemachine:sdram_adaptor|DATA_IN[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to "sdram_statemachine:sdram_adaptor|DATA_IN[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to "sdram_statemachine:sdram_adaptor|DATA_IN[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to "sdram_statemachine:sdram_adaptor|DATA_IN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to "sdram_statemachine:sdram_adaptor|DATA_IN[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to "sdram_statemachine:sdram_adaptor|DATA_IN[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to "sdram_statemachine:sdram_adaptor|DATA_IN[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to "sdram_statemachine:sdram_adaptor|DATA_IN[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to "sdram_statemachine:sdram_adaptor|DATA_IN[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "sdram_statemachine:sdram_adaptor|DATA_IN[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "sdram_statemachine:sdram_adaptor|DATA_IN[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "sdram_statemachine:sdram_adaptor|DATA_IN[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "sdram_statemachine:sdram_adaptor|DATA_IN[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to "sdram_statemachine:sdram_adaptor|DATA_IN[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to "sdram_statemachine:sdram_adaptor|DATA_IN[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[121] -to "sdram_statemachine:sdram_adaptor|DATA_IN[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[122] -to "sdram_statemachine:sdram_adaptor|DATA_IN[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[123] -to "sdram_statemachine:sdram_adaptor|DATA_IN[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[124] -to "sdram_statemachine:sdram_adaptor|DATA_IN[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[125] -to "sdram_statemachine:sdram_adaptor|DATA_IN[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[126] -to "sdram_statemachine:sdram_adaptor|DATA_IN[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[127] -to "sdram_statemachine:sdram_adaptor|DATA_IN[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[128] -to "sdram_statemachine:sdram_adaptor|DATA_IN[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[129] -to "sdram_statemachine:sdram_adaptor|DATA_IN[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[130] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[131] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[132] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[133] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[134] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[135] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[136] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[137] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[138] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[139] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[140] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[141] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[142] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[143] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[144] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[145] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[146] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[147] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[148] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[149] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[150] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[151] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[152] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[153] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[154] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[155] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[156] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[157] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[158] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[159] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[160] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[161] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[162] -to "sdram_statemachine:sdram_adaptor|LONGWORD_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[163] -to "sdram_statemachine:sdram_adaptor|READ_EN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[164] -to "sdram_statemachine:sdram_adaptor|REQUEST" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[165] -to "sdram_statemachine:sdram_adaptor|WORD_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[166] -to "sdram_statemachine:sdram_adaptor|WRITE_EN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to "sdram_statemachine:sdram_adaptor|BYTE_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to "sdram_statemachine:sdram_adaptor|COMPLETE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to "sdram_statemachine:sdram_adaptor|DATA_IN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to "sdram_statemachine:sdram_adaptor|DATA_IN[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to "sdram_statemachine:sdram_adaptor|DATA_IN[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to "sdram_statemachine:sdram_adaptor|DATA_IN[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to "sdram_statemachine:sdram_adaptor|DATA_IN[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to "sdram_statemachine:sdram_adaptor|DATA_IN[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to "sdram_statemachine:sdram_adaptor|DATA_IN[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to "sdram_statemachine:sdram_adaptor|DATA_IN[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to "sdram_statemachine:sdram_adaptor|DATA_IN[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to "sdram_statemachine:sdram_adaptor|DATA_IN[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to "sdram_statemachine:sdram_adaptor|DATA_IN[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to "sdram_statemachine:sdram_adaptor|DATA_IN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to "sdram_statemachine:sdram_adaptor|DATA_IN[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to "sdram_statemachine:sdram_adaptor|DATA_IN[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to "sdram_statemachine:sdram_adaptor|DATA_IN[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to "sdram_statemachine:sdram_adaptor|DATA_IN[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to "sdram_statemachine:sdram_adaptor|DATA_IN[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "sdram_statemachine:sdram_adaptor|DATA_IN[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "sdram_statemachine:sdram_adaptor|DATA_IN[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "sdram_statemachine:sdram_adaptor|DATA_IN[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "sdram_statemachine:sdram_adaptor|DATA_IN[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to "sdram_statemachine:sdram_adaptor|DATA_IN[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to "sdram_statemachine:sdram_adaptor|DATA_IN[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[121] -to "sdram_statemachine:sdram_adaptor|DATA_IN[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[122] -to "sdram_statemachine:sdram_adaptor|DATA_IN[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[123] -to "sdram_statemachine:sdram_adaptor|DATA_IN[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[124] -to "sdram_statemachine:sdram_adaptor|DATA_IN[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[125] -to "sdram_statemachine:sdram_adaptor|DATA_IN[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[126] -to "sdram_statemachine:sdram_adaptor|DATA_IN[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[127] -to "sdram_statemachine:sdram_adaptor|DATA_IN[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[128] -to "sdram_statemachine:sdram_adaptor|DATA_IN[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[129] -to "sdram_statemachine:sdram_adaptor|DATA_IN[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[130] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[131] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[132] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[133] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[134] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[135] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[136] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[137] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[138] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[139] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[140] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[141] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[142] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[143] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[144] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[145] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[146] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[147] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[148] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[149] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[150] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[151] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[152] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[153] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[154] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[155] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[156] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[157] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[158] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[159] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[160] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[161] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[162] -to "sdram_statemachine:sdram_adaptor|LONGWORD_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[163] -to "sdram_statemachine:sdram_adaptor|READ_EN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[164] -to "sdram_statemachine:sdram_adaptor|REQUEST" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[165] -to "sdram_statemachine:sdram_adaptor|WORD_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[166] -to "sdram_statemachine:sdram_adaptor|WRITE_EN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[0] -to "atari800core:atari800|DMA_16BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[1] -to "atari800core:atari800|DMA_32BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[2] -to "atari800core:atari800|DMA_8BIT_WRITE_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[3] -to "atari800core:atari800|DMA_ADDR[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[4] -to "atari800core:atari800|DMA_ADDR[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[5] -to "atari800core:atari800|DMA_ADDR[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[6] -to "atari800core:atari800|DMA_ADDR[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[7] -to "atari800core:atari800|DMA_ADDR[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[8] -to "atari800core:atari800|DMA_ADDR[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[9] -to "atari800core:atari800|DMA_ADDR[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[10] -to "atari800core:atari800|DMA_ADDR[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[11] -to "atari800core:atari800|DMA_ADDR[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[12] -to "atari800core:atari800|DMA_ADDR[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[13] -to "atari800core:atari800|DMA_ADDR[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[14] -to "atari800core:atari800|DMA_ADDR[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[15] -to "atari800core:atari800|DMA_ADDR[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[16] -to "atari800core:atari800|DMA_ADDR[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[17] -to "atari800core:atari800|DMA_ADDR[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[18] -to "atari800core:atari800|DMA_ADDR[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[19] -to "atari800core:atari800|DMA_ADDR[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[20] -to "atari800core:atari800|DMA_ADDR[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[21] -to "atari800core:atari800|DMA_ADDR[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[22] -to "atari800core:atari800|DMA_ADDR[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[23] -to "atari800core:atari800|DMA_ADDR[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[24] -to "atari800core:atari800|DMA_ADDR[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[25] -to "atari800core:atari800|DMA_ADDR[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[26] -to "atari800core:atari800|DMA_ADDR[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[27] -to "atari800core:atari800|DMA_FETCH" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[28] -to "atari800core:atari800|DMA_READ_ENABLE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[29] -to "atari800core:atari800|DMA_WRITE_DATA[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[30] -to "atari800core:atari800|DMA_WRITE_DATA[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[31] -to "atari800core:atari800|DMA_WRITE_DATA[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[32] -to "atari800core:atari800|DMA_WRITE_DATA[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[33] -to "atari800core:atari800|DMA_WRITE_DATA[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[34] -to "atari800core:atari800|DMA_WRITE_DATA[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[35] -to "atari800core:atari800|DMA_WRITE_DATA[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[36] -to "atari800core:atari800|DMA_WRITE_DATA[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[37] -to "atari800core:atari800|DMA_WRITE_DATA[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[38] -to "atari800core:atari800|DMA_WRITE_DATA[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[39] -to "atari800core:atari800|DMA_WRITE_DATA[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[40] -to "atari800core:atari800|DMA_WRITE_DATA[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[41] -to "atari800core:atari800|DMA_WRITE_DATA[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[42] -to "atari800core:atari800|DMA_WRITE_DATA[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[43] -to "atari800core:atari800|DMA_WRITE_DATA[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[44] -to "atari800core:atari800|DMA_WRITE_DATA[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[45] -to "atari800core:atari800|DMA_WRITE_DATA[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[46] -to "atari800core:atari800|DMA_WRITE_DATA[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[47] -to "atari800core:atari800|DMA_WRITE_DATA[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[48] -to "atari800core:atari800|DMA_WRITE_DATA[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[49] -to "atari800core:atari800|DMA_WRITE_DATA[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[50] -to "atari800core:atari800|DMA_WRITE_DATA[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[51] -to "atari800core:atari800|DMA_WRITE_DATA[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[52] -to "atari800core:atari800|DMA_WRITE_DATA[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[53] -to "atari800core:atari800|DMA_WRITE_DATA[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[54] -to "atari800core:atari800|DMA_WRITE_DATA[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[55] -to "atari800core:atari800|DMA_WRITE_DATA[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[56] -to "atari800core:atari800|DMA_WRITE_DATA[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[57] -to "atari800core:atari800|DMA_WRITE_DATA[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[58] -to "atari800core:atari800|DMA_WRITE_DATA[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[59] -to "atari800core:atari800|DMA_WRITE_DATA[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[60] -to "atari800core:atari800|DMA_WRITE_DATA[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[61] -to "atari800core:atari800|MEMORY_READY_DMA" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[62] -to "atari800core:atari800|PBI_SNOOP_DATA[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[63] -to "atari800core:atari800|PBI_SNOOP_DATA[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[64] -to "atari800core:atari800|PBI_SNOOP_DATA[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[65] -to "atari800core:atari800|PBI_SNOOP_DATA[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[66] -to "atari800core:atari800|PBI_SNOOP_DATA[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[67] -to "atari800core:atari800|PBI_SNOOP_DATA[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[68] -to "atari800core:atari800|PBI_SNOOP_DATA[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[69] -to "atari800core:atari800|PBI_SNOOP_DATA[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[70] -to "atari800core:atari800|PBI_SNOOP_DATA[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[71] -to "atari800core:atari800|PBI_SNOOP_DATA[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[72] -to "atari800core:atari800|PBI_SNOOP_DATA[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[73] -to "atari800core:atari800|PBI_SNOOP_DATA[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[74] -to "atari800core:atari800|PBI_SNOOP_DATA[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[75] -to "atari800core:atari800|PBI_SNOOP_DATA[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[76] -to "atari800core:atari800|PBI_SNOOP_DATA[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[77] -to "atari800core:atari800|PBI_SNOOP_DATA[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[78] -to "atari800core:atari800|PBI_SNOOP_DATA[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[79] -to "atari800core:atari800|PBI_SNOOP_DATA[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[80] -to "atari800core:atari800|PBI_SNOOP_DATA[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[81] -to "atari800core:atari800|PBI_SNOOP_DATA[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[82] -to "atari800core:atari800|PBI_SNOOP_DATA[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[83] -to "atari800core:atari800|PBI_SNOOP_DATA[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[84] -to "atari800core:atari800|PBI_SNOOP_DATA[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[85] -to "atari800core:atari800|PBI_SNOOP_DATA[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[86] -to "atari800core:atari800|PBI_SNOOP_DATA[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[87] -to "atari800core:atari800|PBI_SNOOP_DATA[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[88] -to "atari800core:atari800|PBI_SNOOP_DATA[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[89] -to "atari800core:atari800|PBI_SNOOP_DATA[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[90] -to "atari800core:atari800|PBI_SNOOP_DATA[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[91] -to "atari800core:atari800|PBI_SNOOP_DATA[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[92] -to "atari800core:atari800|PBI_SNOOP_DATA[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[93] -to "atari800core:atari800|PBI_SNOOP_DATA[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[94] -to "fsmc_adaptor:fsmc_adapt1|fsmc_fifo:fsmc_fifo1|rdempty" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[95] -to "fsmc_adaptor:fsmc_adapt1|fsmc_fifo:fsmc_fifo1|rdreq" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[96] -to "sdram_statemachine:sdram_adaptor|BYTE_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[97] -to "sdram_statemachine:sdram_adaptor|COMPLETE" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[98] -to "sdram_statemachine:sdram_adaptor|DATA_IN[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[99] -to "sdram_statemachine:sdram_adaptor|DATA_IN[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[100] -to "sdram_statemachine:sdram_adaptor|DATA_IN[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[101] -to "sdram_statemachine:sdram_adaptor|DATA_IN[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[102] -to "sdram_statemachine:sdram_adaptor|DATA_IN[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[103] -to "sdram_statemachine:sdram_adaptor|DATA_IN[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[104] -to "sdram_statemachine:sdram_adaptor|DATA_IN[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[105] -to "sdram_statemachine:sdram_adaptor|DATA_IN[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[106] -to "sdram_statemachine:sdram_adaptor|DATA_IN[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[107] -to "sdram_statemachine:sdram_adaptor|DATA_IN[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[108] -to "sdram_statemachine:sdram_adaptor|DATA_IN[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[109] -to "sdram_statemachine:sdram_adaptor|DATA_IN[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[110] -to "sdram_statemachine:sdram_adaptor|DATA_IN[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[111] -to "sdram_statemachine:sdram_adaptor|DATA_IN[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[112] -to "sdram_statemachine:sdram_adaptor|DATA_IN[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[113] -to "sdram_statemachine:sdram_adaptor|DATA_IN[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[114] -to "sdram_statemachine:sdram_adaptor|DATA_IN[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[115] -to "sdram_statemachine:sdram_adaptor|DATA_IN[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[116] -to "sdram_statemachine:sdram_adaptor|DATA_IN[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[117] -to "sdram_statemachine:sdram_adaptor|DATA_IN[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[118] -to "sdram_statemachine:sdram_adaptor|DATA_IN[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[119] -to "sdram_statemachine:sdram_adaptor|DATA_IN[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[120] -to "sdram_statemachine:sdram_adaptor|DATA_IN[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[121] -to "sdram_statemachine:sdram_adaptor|DATA_IN[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[122] -to "sdram_statemachine:sdram_adaptor|DATA_IN[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[123] -to "sdram_statemachine:sdram_adaptor|DATA_IN[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[124] -to "sdram_statemachine:sdram_adaptor|DATA_IN[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[125] -to "sdram_statemachine:sdram_adaptor|DATA_IN[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[126] -to "sdram_statemachine:sdram_adaptor|DATA_IN[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[127] -to "sdram_statemachine:sdram_adaptor|DATA_IN[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[128] -to "sdram_statemachine:sdram_adaptor|DATA_IN[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[129] -to "sdram_statemachine:sdram_adaptor|DATA_IN[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[130] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[131] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[132] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[133] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[134] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[135] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[136] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[137] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[138] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[139] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[140] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[141] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[142] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[143] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[144] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[145] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[146] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[147] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[148] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[149] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[150] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[151] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[152] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[153] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[154] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[155] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[156] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[157] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[158] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[159] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[160] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[161] -to "sdram_statemachine:sdram_adaptor|DATA_OUT[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[162] -to "sdram_statemachine:sdram_adaptor|LONGWORD_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[163] -to "sdram_statemachine:sdram_adaptor|READ_EN" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[164] -to "sdram_statemachine:sdram_adaptor|REQUEST" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[165] -to "sdram_statemachine:sdram_adaptor|WORD_ACCESS" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[166] -to "sdram_statemachine:sdram_adaptor|WRITE_EN" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=167" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=167" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=167" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=693" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=168" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_GAP_RECORD=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_MODE=TRANSITIONAL" -section_id auto_signaltap_0
+set_global_assignment -name SLD_FILE db/video_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
