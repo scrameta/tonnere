@@ -1,11 +1,22 @@
 # TonnereXL — STM32 ↔ FPGA interface contract
 
-**Status:** DRAFT v0.3 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
+**Status:** DRAFT v0.4 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
 
 Authoritative contract between the STM32F407 firmware and the FPGA FSMC adaptor.
 The firmware `fpga_bus` HAL implements exactly what is written here; the RTL must
 match it. To change a field, change *this document first*, bump the version, then
 both sides. **TODO(mark)** marks values the RTL/board decides.
+
+## Changes v0.3 → v0.4 (addressing)
+
+Replaced the flat three-region byte-offset map with an **aperture-banked**
+scheme (§2), because the physical space (2 GiB) far exceeds the STM32's 16 MB
+FSMC reach. FSMC A22..A19 select between two banked RAM apertures (8 MB + 7 MB,
+each with an 8-bit extension register giving physical A29..A22) and a fixed
+1 MB region (`A22..A19 = 1111`) that is never banked and holds the registers,
+SIO handler, and Atari window — so the aperture extension registers can never be
+banked out of reach. Added `APERTURE1_EXT`/`APERTURE2_EXT`. Addresses are now
+quoted in word units; memory sizes in bytes.
 
 ## Changes v0.2 → v0.3 (from RTL-implementation review)
 
@@ -40,72 +51,149 @@ both sides. **TODO(mark)** marks values the RTL/board decides.
 
 ## 2. Address model
 
-Three regions in the FSMC window:
+Addresses in this document are **word addresses** (what the FPGA decodes on its
+23 FSMC address lines). Memory *sizes* are given in bytes (what people expect);
+the bus is 16-bit, so 1 word = 2 bytes.
 
-| Region | Constant | Purpose |
+### 2.0 Two views of the bus
+
+- **STM32 side:** FSMC Bank1 NE1 at CPU base `0x6000_0000`. Firmware pointers are
+  `0x6000_0000 + byte offset`.
+- **FPGA side:** when NE1 is asserted the FPGA sees only the offset within the
+  bank, on 23 word-address lines **FSMC A22..A0** (8M words = 16 MB byte reach).
+  The `0x6000_0000` base never reaches the FPGA. On a 16-bit bus the STM32 does
+  not drive external A0; FSMC A0 already means "word 1", so decode in word units.
+
+### 2.1 The aperture-banked physical map
+
+The FPGA has a flat physical space of **word addresses A0–A29** (1 Giword =
+2 GiB byte) holding all RAM and the registers:
+
+| Physical (word) | Size (byte) | Contents |
 | --- | --- | --- |
-| Register file | `FPGA_WIN_REGS` (+0x0_0000) | The 16-bit registers of §3–§6. |
-| Atari memory | `FPGA_WIN_ATARI` (+0x1_0000) | 64 KB live Atari space, direct-indexed. |
-| SIO handler | `FPGA_WIN_SIO` (+0x2_0000) | SIO handler registers (§7). |
+| `0x0000_0000 …` | 256 MiB | SDRAM |
+| next | 32 MiB | SRAM1 |
+| next | 32 MiB | SRAM2 |
+| … | | (room to grow) |
+| `0x3FF8_0000 … 0x3FFF_FFFF` | top 1 MiB | **Fixed region**: registers + SIO + Atari 64 KB window (see §2.3) |
 
-**TODO(mark):** confirm the region offsets; firmware defaults in `fpga_bus_map.h`.
+The STM32's 23 FSMC lines (16 MB reach) can't see 2 GiB directly, so the big RAM
+is reached through **banked apertures**. FSMC A22..A19 select the aperture; each
+aperture supplies the high physical bits (A29..A22) from an 8-bit **extension
+register**, and FSMC A21..A0 give the offset within it:
 
-### 2.1 Exact addresses (firmware defaults)
+| FSMC A22..A19 | Aperture | Intra-window (FSMC) | Window size | High phys bits |
+| --- | --- | --- | --- | --- |
+| `0xxx` | **Aperture 1** | A21..A0 | 4M word / 8 MB | `EXT1[7:0]` → phys A29..A22 |
+| `1000`–`1110` | **Aperture 2** | A21..A0 (top 1/8 removed) | 3.5M word / 7 MB | `EXT2[7:0]` → phys A29..A22 |
+| `1111` | **Fixed region** | A18..A0 | 512K word / 1 MB | fixed at top of map — NOT banked |
 
-Base `0x6000_0000`. Register *n* at byte `0x6000_0000 + 2*n`.
+Physical word address formed for a RAM access:
 
-**IMPORTANT — 16-bit FSMC addressing.** On a 16-bit FSMC bus the STM32 does NOT
-drive external `A0`; the external address bus carries a 16-bit-word index. So the
-byte offsets below map to **external word addresses = offset/2 = register index
-n** on the FPGA's address pins. Decode in word units; do not expect A0. Region
-select is byte-address bits [17:16]: REGS=`00`, ATARI=`01`, SIO=`10`.
+```
+Aperture 1 (A22=0):        phys = EXT1[7:0] & FSMC_A21..A0
+Aperture 2 (A22=1,≠1111):  phys = EXT2[7:0] & FSMC_A21..A0
+Fixed     (A22..A19=1111): phys = (top-of-map) & FSMC_A18..A0
+```
 
-Register file:
+**Two apertures** let the STM32 keep two windows open at once (e.g. source and
+destination of a copy) without re-banking between accesses. The STM32 working
+set is ≤ 2 MB (usually < 256 KB), so a single aperture position covers any one
+chunk and re-banking is infrequent.
 
-| idx | byte off | FSMC byte addr | ext word | acc | register |
-| ---:| ---: | --- | ---: | --- | --- |
-| 0 | 0x00 | 0x6000_0000 | 0x00 | R   | IFACE_MAGIC |
-| 1 | 0x02 | 0x6000_0002 | 0x01 | R   | IFACE_VERSION |
-| 2 | 0x04 | 0x6000_0004 | 0x02 | W   | CONTROL |
-| 3 | 0x06 | 0x6000_0006 | 0x03 | W   | RAMCONFIG |
-| 4 | 0x08 | 0x6000_0008 | 0x04 | W   | PERFORMANCE |
-| 5 | 0x0A | 0x6000_000A | 0x05 | W   | CART |
-| 6 | 0x0C | 0x6000_000C | 0x06 | W   | VIDEO |
-| 7 | 0x0E | 0x6000_000E | 0x07 | W   | KBD0 |
-| 8 | 0x10 | 0x6000_0010 | 0x08 | W   | KBD1 |
-| 9 | 0x12 | 0x6000_0012 | 0x09 | W   | KBD2 |
-| 10 | 0x14 | 0x6000_0014 | 0x0A | W   | KBD3 |
-| 11 | 0x16 | 0x6000_0016 | 0x0B | W   | KBD_SPECIAL |
-| 12 | 0x18 | 0x6000_0018 | 0x0C | W   | CONSOLE_INJECT |
-| 13 | 0x1A | 0x6000_001A | 0x0D | R   | CONSOLE_PHYS |
-| 14 | 0x1C | 0x6000_001C | 0x0E | W   | JOY01 |
-| 15 | 0x1E | 0x6000_001E | 0x0F | W   | JOY23 |
-| 16 | 0x20 | 0x6000_0020 | 0x10 | R   | JOY01_PHYS |
-| 17 | 0x22 | 0x6000_0022 | 0x11 | R   | JOY23_PHYS |
-| 18 | 0x24 | 0x6000_0024 | 0x12 | W   | PADDLE01 |
-| 19 | 0x26 | 0x6000_0026 | 0x13 | W   | PADDLE23 |
-| 20 | 0x28 | 0x6000_0028 | 0x14 | W   | FREEZE_ADDR |
-| 21 | 0x2A | 0x6000_002A | 0x15 | W   | FREEZE_DATA_CTRL |
-| 22 | 0x2C | 0x6000_002C | 0x16 | RW  | IRQ_ENABLE |
-| 23 | 0x2E | 0x6000_002E | 0x17 | R   | IRQ_PENDING |
-| 24 | 0x30 | 0x6000_0030 | 0x18 | W1C | IRQ_CLEAR |
-| 25 | 0x32 | 0x6000_0032 | 0x19 | RW  | DEBUG0 |
-| 26 | 0x34 | 0x6000_0034 | 0x1A | RW  | DEBUG1 |
-| 27 | 0x36 | 0x6000_0036 | 0x1B | RW  | DEBUG2 |
-| 28 | 0x38 | 0x6000_0038 | 0x1C | RW  | DEBUG3 |
+**Why a fixed region (the lockout fix).** If the registers lived only inside a
+banked aperture, banking that aperture away would make the extension registers
+themselves unreachable — with no way back except reset. So the top 1/8 of the
+FSMC map (`A22..A19 = 1111`) is a **fixed, unbanked** window onto the top 1 MB of
+the physical map, where the registers, SIO handler, and Atari window live. That
+window is always reachable, so the aperture extension registers can never lock
+themselves out. This is why the registers + Atari window sit together at the top
+of the physical map — one fixed 1 MB window must cover them all.
 
-SIO handler (byte address = `0x6002_0000 + 2*index`) — matches `sio_handler.vhdl`:
+### 2.2 Aperture extension registers
 
-| idx | byte off | FSMC byte addr | ext word | acc | register |
-| ---:| ---: | --- | ---: | --- | --- |
-| 0 | 0x00 | 0x6002_0000 | 0x00 | W | SIO_TX (transmit byte) |
-| 1 | 0x02 | 0x6002_0002 | 0x01 | R | SIO_TX_FIFO (full@9 empty@8 count7:0) |
-| 2 | 0x04 | 0x6002_0004 | 0x02 | R | SIO_RX (data14:0; read advances) |
-| 3 | 0x06 | 0x6002_0006 | 0x03 | R | SIO_RX_FIFO (full@9 empty@8 count7:0) |
-| 4 | 0x08 | 0x6002_0008 | 0x04 | W | SIO_DIVISOR (applied after tx done) |
-| 5 | 0x0A | 0x6002_000A | 0x05 | R | SIO_FRAMING_ERR (serial@0 command@1, auto-clear) |
+Each aperture's 8 high physical bits come from an extension register in the
+fixed region:
 
-Atari window: `0x6001_0000 .. 0x6001_FFFF` (64 KB), 16-bit cells.
+| Register | Meaning |
+| --- | --- |
+| `APERTURE1_EXT` | phys A29..A22 for Aperture 1 (8 bits) |
+| `APERTURE2_EXT` | phys A29..A22 for Aperture 2 (8 bits) |
+
+Set the extension, then stream the aperture window. The fixed region needs no
+extension register (its target is hardwired).
+
+### 2.3 Fixed-region layout (the top 1 MB, always reachable)
+
+Reached via `A22..A19 = 1111`, offset = FSMC A18..A0. The **top 3 offset bits
+(A18:A16)** select the slot; each slot is 64K words wide (A15:A0):
+
+| A18:A16 | Slot | Within-slot offset | Size |
+| --- | --- | --- | --- |
+| `000` | Atari 64 KB window (§8) | A14:A0 | 32K words / 64 KB |
+| `110` | SIO handler (§7) | A2:A0 | 6 words |
+| `111` | Register file (§3–§6) | A5:A0 | 31 words |
+| others | reserved | — | — |
+
+Slots are generously sized (64K words each) — the Atari window fills half of
+its slot, the SIO handler and register file use a handful of words at the base
+of theirs. Five slots are spare for future growth.
+
+### 2.4 Register indices
+
+Registers are addressed by their index within the register file (word offset
+inside the fixed region). Index *n* below:
+
+| idx | acc | register |
+| ---:| --- | --- |
+| 0 | R | IFACE_MAGIC |
+| 1 | R | IFACE_VERSION |
+| 2 | W | CONTROL |
+| 3 | W | RAMCONFIG |
+| 4 | W | PERFORMANCE |
+| 5 | W | CART |
+| 6 | W | VIDEO |
+| 7 | W | KBD0 |
+| 8 | W | KBD1 |
+| 9 | W | KBD2 |
+| 10 | W | KBD3 |
+| 11 | W | KBD_SPECIAL |
+| 12 | W | CONSOLE_INJECT |
+| 13 | R | CONSOLE_PHYS |
+| 14 | W | JOY01 |
+| 15 | W | JOY23 |
+| 16 | R | JOY01_PHYS |
+| 17 | R | JOY23_PHYS |
+| 18 | W | PADDLE01 |
+| 19 | W | PADDLE23 |
+| 20 | W | FREEZE_ADDR |
+| 21 | W | FREEZE_DATA_CTRL |
+| 22 | RW | IRQ_ENABLE |
+| 23 | R | IRQ_PENDING |
+| 24 | W1C | IRQ_CLEAR |
+| 25 | RW | DEBUG0 |
+| 26 | RW | DEBUG1 |
+| 27 | RW | DEBUG2 |
+| 28 | RW | DEBUG3 |
+| 29 | W | APERTURE1_EXT (phys A29..A22 for aperture 1) |
+| 30 | W | APERTURE2_EXT (phys A29..A22 for aperture 2) |
+
+The extension registers are write-only; firmware shadows their values.
+Firmware: `fpga_aperture_set_ext(aperture, ext)` / `fpga_aperture_get_ext`.
+
+SIO handler (word offsets 0–5 within its part of the fixed region) — matches
+`sio_handler.vhdl`:
+
+| off | acc | register |
+| ---:| --- | --- |
+| 0 | W | SIO_TX (transmit byte) |
+| 1 | R | SIO_TX_FIFO (full@9 empty@8 count7:0) |
+| 2 | R | SIO_RX (data14:0; read advances) |
+| 3 | R | SIO_RX_FIFO (full@9 empty@8 count7:0) |
+| 4 | W | SIO_DIVISOR (applied after tx done) |
+| 5 | R | SIO_FRAMING_ERR (serial@0 command@1, auto-clear) |
+
+Atari window: 32K words / 64 KB, 16-bit cells, within the fixed region.
 
 ## 3. Register map
 

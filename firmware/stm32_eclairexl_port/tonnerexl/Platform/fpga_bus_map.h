@@ -1,10 +1,18 @@
 /*
  * fpga_bus_map.h — TonnereXL FSMC/FPGA register map (native 16-bit).
  *
- * v0.2: flat 16-bit, purpose-named. Replaces the ZPU 32-bit-word map and the
- * v0.1 half-split scheme entirely. See docs/fpga_interface.md.
+ * v0.4: aperture-banked addressing. Two banked RAM apertures + a fixed region.
+ * See docs/fpga_interface.md §2.
  *
- * Register index -> FSMC offset = FPGA_WIN_REGS + 2*index.
+ * FSMC A22..A19 select the region:
+ *   A22=0                  -> Aperture 1 (8 MB window, A21..A0)
+ *   A22=1, A22..A19!=1111  -> Aperture 2 (7 MB window)
+ *   A22..A19 = 1111        -> Fixed region (1 MB, never banked)
+ * Within the fixed region, offset bits A18..A16 pick the slot:
+ *   000 -> Atari window,  110 -> SIO handler,  111 -> Register file.
+ * Each aperture's high physical bits A29..A22 come from an 8-bit extension
+ * register (APERTURE1_EXT / APERTURE2_EXT); phys = EXT[7:0] & FSMC_A21..A0.
+ *
  * Values marked TODO(mark) are firmware defaults the RTL/board finalises.
  */
 #ifndef TONNEREXL_FPGA_BUS_MAP_H
@@ -19,10 +27,18 @@
 #define FPGA_BUS_BASE  0x60000000u
 #endif
 
-/* Region offsets within the FSMC window (bytes). TODO(mark): confirm. */
-#define FPGA_WIN_REGS    0x00000000u   /* 16-bit register file            */
-#define FPGA_WIN_ATARI   0x00010000u   /* 64 KB live Atari address space  */
-#define FPGA_WIN_SIO     0x00020000u   /* SIO handler (6 regs, byte FIFO) */
+/* --- Banked RAM apertures (byte offsets within the FSMC window) ---- */
+/* Aperture 1: A22=0,          byte 0x000_0000 .. 0x07F_FFFF (8 MB).    */
+/* Aperture 2: A22=1 (!=1111), byte 0x080_0000 .. 0x0EF_FFFF (7 MB).    */
+#define FPGA_APERTURE1_BASE  0x00000000u
+#define FPGA_APERTURE2_BASE  0x00800000u
+
+/* --- Fixed region slots (byte offsets; never banked) --------------- */
+/* Fixed region = FSMC A22..A19=1111 (word 0x780000 = byte 0xF00000).  */
+/* Slot = offset bits A18..A16: 000 Atari / 110 SIO / 111 Registers.   */
+#define FPGA_WIN_ATARI   0x00F00000u   /* slot 000: 64 KB Atari window  */
+#define FPGA_WIN_SIO     0x00FC0000u   /* slot 110: SIO handler         */
+#define FPGA_WIN_REGS    0x00FE0000u   /* slot 111: 16-bit register file*/
 
 #define FPGA_WIN_ATARI_BYTES  0x10000u /* 64 KB */
 
@@ -37,6 +53,12 @@
 /* SIO handler register absolute address, given its logical index. */
 #define FPGA_SIO_ADDR(idx) \
     ((volatile uint16_t *)(FPGA_BUS_BASE + FPGA_WIN_SIO + ((uint32_t)(idx) * 2u)))
+
+/* Aperture window base as uint16* (for streaming after setting EXT). */
+#define FPGA_APERTURE1_ADDR \
+    ((volatile uint16_t *)(FPGA_BUS_BASE + FPGA_APERTURE1_BASE))
+#define FPGA_APERTURE2_ADDR \
+    ((volatile uint16_t *)(FPGA_BUS_BASE + FPGA_APERTURE2_BASE))
 
 /* ------------------------------------------------------------------ */
 /* Register indices                                                    */
@@ -80,6 +102,11 @@ enum fpga_reg_index {
     REG_DEBUG1,
     REG_DEBUG2,
     REG_DEBUG3,
+    /* Aperture extension registers: 8-bit high physical address (A29..A22)
+     * for each banked RAM aperture. phys = EXT[7:0] & FSMC_A21..A0. Write-only;
+     * firmware shadows the values. See docs/fpga_interface.md §2.2. */
+    REG_APERTURE1_EXT,   /* aperture 1 (A22=0, 8 MB window) */
+    REG_APERTURE2_EXT,   /* aperture 2 (A22=1 !=1111, 7 MB window) */
     REG_COUNT
 };
 

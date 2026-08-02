@@ -156,3 +156,19 @@ void fpga_sio_set_divisor(uint8_t d) { uwr(SIO_DIVISOR, d); }
 uint16_t fpga_sio_framing_errors(void) { return urd(SIO_FRAMING_ERR) & 0x3u; }
 
 #endif /* FPGA_BUS_STM32 */
+
+/* ---- RAM apertures ---- */
+/* Extension registers are write-only on the FPGA, so shadow them here to answer
+ * the get/phys_base queries without reading back bus floats. */
+static uint8_t s_aperture_ext[2];   /* [0]=aperture 1, [1]=aperture 2 */
+void fpga_aperture_set_ext(int aperture, uint8_t ext) {
+    int i = (aperture == 2) ? 1 : 0;
+    s_aperture_ext[i] = ext;
+    fpga_reg_write(i ? REG_APERTURE2_EXT : REG_APERTURE1_EXT, ext);
+}
+uint8_t fpga_aperture_get_ext(int aperture) {
+    return s_aperture_ext[(aperture == 2) ? 1 : 0];
+}
+uint32_t fpga_aperture_phys_base(int aperture) {
+    return ((uint32_t)fpga_aperture_get_ext(aperture)) << 22;
+}

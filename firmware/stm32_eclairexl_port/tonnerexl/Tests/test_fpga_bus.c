@@ -131,6 +131,20 @@ static void test_kbd_special(void) {
     CHECK(v & (1u<<KBD_SPECIAL_BREAK_BIT));
 }
 
+static void test_ram_aperture(void) {
+    fpga_bus_init();
+    /* two independent apertures, each an 8-bit extension = phys A29..A22 */
+    fpga_aperture_set_ext(1, 0x05);
+    fpga_aperture_set_ext(2, 0x42);
+    CHECK_EQ_U32(fpga_aperture_get_ext(1), 0x05);
+    CHECK_EQ_U32(fpga_aperture_get_ext(2), 0x42);
+    CHECK_EQ_U32(fake_fpga_get_reg(REG_APERTURE1_EXT), 0x05);
+    CHECK_EQ_U32(fake_fpga_get_reg(REG_APERTURE2_EXT), 0x42);
+    /* physical base = ext << 22 (window offset 0) */
+    CHECK_EQ_U32(fpga_aperture_phys_base(1), 0x05u << 22);
+    CHECK_EQ_U32(fpga_aperture_phys_base(2), 0x42u << 22);
+}
+
 static void test_freezer(void) {
     fpga_bus_init();
     fpga_freeze_addr(0xBEEF);
@@ -201,6 +215,7 @@ void run_fpga_bus_tests(void) {
     RUN(test_console_inject_phys);
     RUN(test_joy_paddle);
     RUN(test_kbd_special);
+    RUN(test_ram_aperture);
     RUN(test_freezer);
     RUN(test_irq_controller);
     RUN(test_atari_copy_even_odd);

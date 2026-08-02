@@ -73,6 +73,17 @@ void fpga_paddle_write(int pair /*0=PADDLE01,1=PADDLE23*/, uint8_t axis_a, uint8
 void fpga_freeze_addr(uint16_t addr);
 void fpga_freeze_data_ctrl(uint8_t data, int rd, int wr, int match);
 
+/* ---- RAM apertures (banking windows into the big physical RAMs) ---- */
+/* Two banked apertures reach the 2 GiB physical space through 8 MB / 7 MB FSMC
+ * windows. Each aperture's high physical bits (A29..A22) come from an 8-bit
+ * extension register; the physical word address of a window access is
+ * (ext << 22) | FSMC_word_offset. Set the extension, then stream the window
+ * (FPGA_APERTURE1_ADDR / FPGA_APERTURE2_ADDR). aperture is 1 or 2. */
+void    fpga_aperture_set_ext(int aperture, uint8_t ext);
+uint8_t fpga_aperture_get_ext(int aperture);
+/* Convenience: physical word address currently reachable at window offset 0. */
+uint32_t fpga_aperture_phys_base(int aperture);
+
 /* ---- Atari memory window (bounded, direct FSMC indexing) ---- */
 fpga_status_t fpga_atari_write(uint32_t off, const void *src, size_t len);
 fpga_status_t fpga_atari_read(uint32_t off, void *dst, size_t len);

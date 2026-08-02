@@ -186,3 +186,14 @@ void fake_fpga_set_reg(enum fpga_reg_index idx, uint16_t v){ g.reg[idx]=v; }
 const uint8_t* fake_fpga_atari_ptr(void){ return g.atari; }
 
 #endif /* FPGA_BUS_FAKE */
+
+/* ---- RAM apertures ---- */
+void fpga_aperture_set_ext(int aperture, uint8_t ext) {
+    fpga_reg_write(aperture == 2 ? REG_APERTURE2_EXT : REG_APERTURE1_EXT, ext);
+}
+uint8_t fpga_aperture_get_ext(int aperture) {
+    return (uint8_t)(fpga_reg_read(aperture == 2 ? REG_APERTURE2_EXT : REG_APERTURE1_EXT) & 0xffu);
+}
+uint32_t fpga_aperture_phys_base(int aperture) {
+    return ((uint32_t)fpga_aperture_get_ext(aperture)) << 22;
+}
