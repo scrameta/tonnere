@@ -67,15 +67,30 @@ the bus is 16-bit, so 1 word = 2 bytes.
 ### 2.1 The aperture-banked physical map
 
 The FPGA has a flat physical space of **word addresses A0–A29** (1 Giword =
-2 GiB byte) holding all RAM and the registers:
+2 GiB byte) holding all RAM and the registers, split into **64 blocks** of
+2^24 words (32 MB byte) each, selected by physical `A29..A24`. The top block
+(block 63, `A29..A24 = 111111`) is the **fixed region**, further split 8 ways by
+`A21..A19`.
 
-| Physical (word) | Size (byte) | Contents |
-| --- | --- | --- |
-| `0x0000_0000 …` | 256 MiB | SDRAM |
-| next | 32 MiB | SRAM1 |
-| next | 32 MiB | SRAM2 |
-| … | | (room to grow) |
-| `0x3FF8_0000 … 0x3FFF_FFFF` | top 1 MiB | **Fixed region**: registers + SIO + Atari 64 KB window (see §2.3) |
+The STM→FPGA conversion is: `phys(21:0) = FSMC(21:0)`; `phys(29:22) =
+APERTURE1_EXT` if FSMC A22=0, else `APERTURE2_EXT` — **except** when FSMC A22=1
+and FSMC(21:19)=`111`, where `phys(29:24)` is forced all-ones and `phys(23:19)`
+to `00000`, deterministically landing the access at the base of block 63
+regardless of `APERTURE2_EXT`. That determinism is what makes the fixed region
+unbankable: the override ignores the extension register, so the registers can
+never be banked out of reach. Note the override also clears `phys(21:19)` to 0,
+freeing `phys(18:16)` (a straight passthrough of FSMC A18:A16) to select the
+slot within the fixed region — the trigger bits and the slot-select bits are
+deliberately different, so they don't collide.
+
+| Physical word | Size (byte) | Block(s) `A29:A24` | Contents |
+| --- | --- | --- | --- |
+| `0x0000_0000 … 0x07FF_FFFF` | 256 MiB | `000000`–`000111` (8) | SDRAM |
+| `0x0800_0000 …` | 32 MiB | `001000` | SRAM1 |
+| `0x0900_0000 …` | 32 MiB | `001001` | SRAM2 |
+| `0x0A00_0000 …` | 32 MiB | `001010` | ROM |
+| … | | | (room to grow) |
+| `0x3F00_0000 … 0x3FFF_FFFF` | 32 MiB | `111111` (block 63) | **Fixed region**: Atari / SIO / registers (§2.3) |
 
 The STM32's 23 FSMC lines (16 MB reach) can't see 2 GiB directly, so the big RAM
 is reached through **banked apertures**. FSMC A22..A19 select the aperture; each
@@ -123,17 +138,24 @@ fixed region:
 Set the extension, then stream the aperture window. The fixed region needs no
 extension register (its target is hardwired).
 
-### 2.3 Fixed-region layout (the top 1 MB, always reachable)
+### 2.3 Fixed-region layout (block 63, always reachable)
 
-Reached via `A22..A19 = 1111`, offset = FSMC A18..A0. The **top 3 offset bits
-(A18:A16)** select the slot; each slot is 64K words wide (A15:A0):
+Block 63 (`A29..A24 = 111111`) is the fixed region. The conversion clears
+`A23..A19` to 0, so the slot is selected by `A18..A16` (a passthrough of FSMC
+A18:A16 — free bits, distinct from the `(21:19)` trigger). Each slot is 64K
+words wide (`A15..A0`). Physical addresses in the linear FPGA space:
 
-| A18:A16 | Slot | Within-slot offset | Size |
-| --- | --- | --- | --- |
-| `000` | Atari 64 KB window (§8) | A14:A0 | 32K words / 64 KB |
-| `110` | SIO handler (§7) | A2:A0 | 6 words |
-| `111` | Register file (§3–§6) | A5:A0 | 31 words |
-| others | reserved | — | — |
+| A18:A16 | Slot | Phys word | Within-slot | Size |
+| --- | --- | --- | --- | --- |
+| `000` | Atari 64 KB window (§8) | `0x3F00_0000` | A14:A0 | 32K words / 64 KB |
+| `110` | SIO handler (§7) | `0x3F06_0000` | A2:A0 | 6 words |
+| `111` | Register file (§3–§6) | `0x3F07_0000` | A5:A0 | 31 words |
+| others | reserved (NO_SELECT) | | — | — |
+
+The device selects (`DMA_SELECT` / `SIO_SELECT` / `REG_SELECT` / `NO_SELECT`)
+are driven from this decode: the Atari-window slot goes to the RAM/DMA path,
+SIO and Registers to their handlers, and any other `A18:A16` in block 63 is
+`NO_SELECT`.
 
 Slots are generously sized (64K words each) — the Atari window fills half of
 its slot, the SIO handler and register file use a handful of words at the base
