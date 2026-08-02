@@ -486,19 +486,15 @@ architecture vhdl of tonnere is
   signal stm_sio_rxd : std_logic;
   signal stm_sio_command : std_logic;
 
-  -- STM32/FSMC adaptor memory interface
-  signal ZPU_ADDR_ROM : std_logic_vector(15 downto 0);
-  signal ZPU_ROM_DATA : std_logic_vector(31 downto 0);
-
   -- STM32/FSMC adaptor control and status registers
-  signal CONTROL : std_logic_vector(15 downto 0);
+  signal CONTROL : std_logic_vector(3 downto 0);
   signal RAMCONFIG : std_logic_vector(2 downto 0);
   signal PERFORMANCE : std_logic_vector(8 downto 0);
   signal CART : std_logic_vector(5 downto 0);
   signal VIDEO : std_logic_vector(6 downto 0);
 
   signal CONSOLE_INJECT : std_logic_vector(2 downto 0);
-  signal CONSOLE_PHYS : std_logic_vector(3 downto 0);
+  signal CONSOLE_PHYS : std_logic_vector(2 downto 0);
 
   signal JOY0_INJECT : std_logic_vector(4 downto 0);
   signal JOY1_INJECT : std_logic_vector(4 downto 0);
@@ -513,12 +509,9 @@ architecture vhdl of tonnere is
   signal FREEZE_ADDR : std_logic_vector(15 downto 0);
   signal FREEZE_DATA_CTRL : std_logic_vector(15 downto 0);
 
-  signal DEBUG0 : std_logic_vector(31 downto 0);
-  signal DEBUG1 : std_logic_vector(31 downto 0);
-  signal DEBUG2 : std_logic_vector(31 downto 0);
-  signal DEBUG3 : std_logic_vector(31 downto 0);
-
-  SIGNAL FKEYS : std_logic_vector(11 downto 0);
+  signal FSMC_D_OUT : std_logic_vector(15 downto 0);
+  signal FSMC_D_OE : std_logic;
+  signal FPGA_IRQ_INT : std_logic;
 
   -- system control from zpu
   signal ram_select : std_logic_vector(2 downto 0);
@@ -996,17 +989,14 @@ PORTA_gen:
     end if;
   end process;
 
-  -- No function-key source is currently connected.
-  FKEYS <= (others => '1');
-
   ---------------------------------------------------------------------------
   -- MACHINE RESET request handling (from STM32), as Eclaire
   ---------------------------------------------------------------------------
-  process(reset_atari_request,atari800mode,fkeys)
+  process(reset_atari_request,atari800mode)
   begin
     reset_atari <= '0';
     antic_rnmi_n <= '1';
-    if (atari800mode='1' and fkeys(9)='0') then
+    if (atari800mode='1') then -- TODO: Why was this gated on fkeys(9)?
       antic_rnmi_n <= not(reset_atari_request);
     else
       reset_atari <= reset_atari_request;
@@ -1153,43 +1143,45 @@ PORTA_gen:
 --      ZPU_SPI_SELECT0 => open,             -- TODO(tonnere): SD card select if ever wired
 --      ZPU_SPI_SELECT1 => spi_flash_select,
   spi_flash_select <= '0'; -- Tie off for now since we will use STM32 flash. Potentially we may use it so left sfl for now. In theory STM can directly write to the flash ic too...
+  dma_write_data(31 downto 16) <= (others=>'0');
 
   fsmc_adapt1 : entity work.fsmc_adaptor
     GENERIC MAP (
-      platform => 1
+      version => 1
     )
     PORT MAP (
       CLK => CLK,
+      CLK_FAST  => CLK_SDRAM,
       RESET_N => RESET_N and sdram_reset_n,
 
-      STM_ADDR_FETCH => dma_addr_fetch,
-      STM_DATA_OUT => dma_write_data,
-      STM_FETCH => dma_fetch,
-      STM_16BIT_WRITE_ENABLE => dma_16bit_write_enable,
-      STM_8BIT_WRITE_ENABLE => dma_8bit_write_enable,
-      STM_READ_ENABLE => dma_read_enable,
-      STM_MEMORY_READY => dma_memory_ready,
-      STM_MEMORY_DATA => snoop_data,
-      STM_ADDR_ROM => zpu_addr_rom,
-      STM_ROM_DATA => zpu_rom_data,
+      DMA_ADDR_FETCH => dma_addr_fetch,
+      DMA_DATA_OUT => dma_write_data(15 downto 0),
+      DMA_FETCH => dma_fetch,
+      DMA_16BIT_WIDTH => dma_16bit_write_enable, -- width, no write enable!!
+      DMA_8BIT_WIDTH => dma_8bit_write_enable,
+      DMA_READ_ENABLE => dma_read_enable,
+      DMA_MEMORY_READY => dma_memory_ready,
+      DMA_MEMORY_DATA => snoop_data(15 downto 0),
 
       -- built-in Pokey / SIO to Atari -> potentially handled by Fujinet-alike on ESP32 instead later? Wire up STM so it can anyway.
-      STM_POKEY_ENABLE => stm_pokey_enable,
-      STM_SIO_TXD => stm_sio_txd,
-      STM_SIO_RXD => stm_sio_rxd,
-      STM_SIO_COMMAND => stm_sio_command,
-      STM_SIO_CLK => ASIO_CLOCKOUT,
+      SIO_POKEY_ENABLE => stm_pokey_enable,
+      SIO_TXD => stm_sio_txd,
+      SIO_RXD => stm_sio_rxd,
+      SIO_COMMAND => stm_sio_command,
+      SIO_CLK => ASIO_CLOCKOUT,
 
       -- Sit on STM FSMC bus
       -- NB: async to fpga clocks
       FSMC_A     => FSMC_A,
-      FSMC_D     => FSMC_D,
+      FSMC_D_IN  => FSMC_D,
+      FSMC_D_OUT => FSMC_D_OUT,
+      FSMC_D_OE  => FSMC_D_OE,
       FSMC_NBL   => FSMC_NBL,
       FSMC_NE    => FSMC_NE,
       FSMC_NOE   => FSMC_NOE,
       FSMC_NWE   => FSMC_NWE,
       FSMC_NWAIT => FSMC_NWAIT,
-      FSMC_IRQ   => FPGA_IRQ,
+      FSMC_IRQ   => FPGA_IRQ_INT,
 
       -- external control
       -- dedicated regs
@@ -1214,17 +1206,21 @@ PORTA_gen:
       JOY2_PHYS => JOY2_TRIG(2) & JOY2_DIR(11 downto 8),
       JOY3_PHYS => JOY2_TRIG(3) & JOY2_DIR(15 downto 12),
 
-      POT_IN => POT_IN, --ADC on STM drives paddles
+      POT_TRIGGER => POT_IN, --ADC on STM drives paddles
       POT_RESET => POT_RESET, -- To allow an IRQ to reset the pots
 
       FREEZE_ADDR => FREEZE_ADDR,
       FREEZE_DATA_CTRL => FREEZE_DATA_CTRL,
 
-      DEBUG0 => DEBUG0,
-      DEBUG1 => DEBUG1,
-      DEBUG2 => DEBUG2,
-      DEBUG3 => DEBUG3
+      DEBUG0 => (others=>'0'),
+      DEBUG1 => (others=>'0'),
+      DEBUG2 => (others=>'0'),
+      DEBUG3 => (others=>'0')
     );
+
+  FSMC_D <= FSMC_D_OUT when FSMC_D_OE='1' else (others=>'Z');
+  FPGA_IRQ <= '0' when FPGA_IRQ_INT='1' else 'Z'; -- Active low open drain externally (pull up elsewhere), active high internally
+
   -- From STM
   reset_atari_request <= CONTROL(0) or not(CONSOL_RESET);
   pause_atari <= CONTROL(1);
@@ -1247,7 +1243,6 @@ PORTA_gen:
   CONSOLE_PHYS(0) <= CONSOL_START;
   CONSOLE_PHYS(1) <= CONSOL_SELECT;
   CONSOLE_PHYS(2) <= CONSOL_OPTION;
-  CONSOLE_PHYS(3) <= CONSOL_RESET;
 
   -- Merge STM and FPGA lines
   CONSOL_START_INT <= CONSOLE_INJECT(0) or CONSOL_START;
