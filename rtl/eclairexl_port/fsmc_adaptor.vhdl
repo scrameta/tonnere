@@ -170,10 +170,6 @@ architecture vhdl of fsmc_adaptor is
   signal APERTURE1_EXT_REG,    APERTURE1_EXT_NEXT    : std_logic_vector(7 downto 0);
   signal APERTURE2_EXT_REG,    APERTURE2_EXT_NEXT    : std_logic_vector(7 downto 0);
 
-  -- Aperture high-bit fields (phys A29..A22) as unconstrained-width vectors
-  signal APERTURE1_ADDRESS   : std_logic_vector(7 downto 0);
-  signal APERTURE2_ADDRESS   : std_logic_vector(7 downto 0);
-
   -- Register decode + read data
   signal REG_ADDR_DECODED    : std_logic_vector(31 downto 0);
   signal REG_DATA            : std_logic_vector(15 downto 0);
@@ -198,8 +194,6 @@ architecture vhdl of fsmc_adaptor is
   signal DMA_READ_ENABLE_REG        , DMA_READ_ENABLE_NEXT        : std_logic;
 
 begin
-  APERTURE1_ADDRESS <= APERTURE1_EXT_REG;
-  APERTURE2_ADDRESS <= APERTURE2_EXT_REG;
   -- Strategy
   -- All requests to a fifo -> write async, read flushes and gets response via another fifo
 
@@ -210,7 +204,7 @@ begin
       KEYBOARD_SHIFT_REG   <= '0';
       KEYBOARD_CONTROL_REG <= '0';
       KEYBOARD_BREAK_REG   <= '0';
-      CONSOLE_INJECT_REG   <= (others=>'0');
+      CONSOLE_INJECT_REG   <= (others=>'1');
       JOY0_INJECT_REG      <= (others=>'1');
       JOY1_INJECT_REG      <= (others=>'1');
       JOY2_INJECT_REG      <= (others=>'1');
@@ -225,7 +219,7 @@ begin
       IRQ_PENDING_REG      <= (others=>'0');
       IRQ_EDGE_REG         <= (others=>'0');
       POT_RESET_REG        <= '0';
-      CONTROL_REG          <= (others=>'0');
+      CONTROL_REG          <= "0010"; -- 1 = pause Atari
       RAMCONFIG_REG        <= (others=>'0');
       PERFORMANCE_REG      <= (others=>'0');
       CART_REG             <= (others=>'0');
@@ -408,9 +402,9 @@ begin
     FPGA_ADDRESS(21 downto 0)  <= ACTION_FIFO_A(21 downto 0);
 
     if (ACTION_FIFO_A(22)='0') then
-      FPGA_ADDRESS(29 downto 22) <= APERTURE1_ADDRESS;
+      FPGA_ADDRESS(29 downto 22) <= APERTURE1_EXT_REG;
     else
-      FPGA_ADDRESS(29 downto 22) <= APERTURE2_ADDRESS;
+      FPGA_ADDRESS(29 downto 22) <= APERTURE2_EXT_REG;
       if (ACTION_FIFO_A(21 downto 19) = "111") then -- 1/8 of aperture 2 -> fixed block 64 in FPGA space
         FPGA_ADDRESS(29 downto 24) <= (others=>'1'); 
         FPGA_ADDRESS(23 downto 19) <= (others=>'0');

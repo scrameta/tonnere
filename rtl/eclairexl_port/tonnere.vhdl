@@ -1234,7 +1234,7 @@ PORTA_gen:
 
   emulated_cartridge_select <= CART;
 
-  video_mode <= "001"; --VIDEO(2 downto 0) TODO - put back FIXME!
+  video_mode <= VIDEO(2 downto 0);
   PAL <= video(4);
   scanlines <= VIDEO(5);
   csync <= VIDEO(6);
@@ -1244,10 +1244,10 @@ PORTA_gen:
   CONSOLE_PHYS(1) <= CONSOL_SELECT;
   CONSOLE_PHYS(2) <= CONSOL_OPTION;
 
-  -- Merge STM and FPGA lines
-  CONSOL_START_INT <= CONSOLE_INJECT(0) or CONSOL_START;
-  CONSOL_SELECT_INT <= CONSOLE_INJECT(1) or CONSOL_SELECT;
-  CONSOL_OPTION_INT <= CONSOLE_INJECT(2) or CONSOL_OPTION;
+  -- Merge STM and FPGA lines 
+  CONSOL_START_INT <= not(CONSOLE_INJECT(0) and CONSOL_START); -- CONSOL, pull low to press. Core inverts it though!
+  CONSOL_SELECT_INT <= not(CONSOLE_INJECT(1) and CONSOL_SELECT);
+  CONSOL_OPTION_INT <= not(CONSOLE_INJECT(2) and CONSOL_OPTION);
 
   JOY_DIR_INT <= JOY_DIR and (JOY1_INJECT(3 downto 0) & JOY0_INJECT(3 downto 0));
   JOY2_DIR_INT <= JOY2_DIR and (JOY3_INJECT(3 downto 0) & JOY2_INJECT(3 downto 0));

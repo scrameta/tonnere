@@ -25,21 +25,36 @@
  * ext = 0x00 targets physical word 0 = base of SDRAM (spec §2.1).
  * Change TEST_EXT to point at SRAM1 (ext 0x20), SRAM2 (0x24), etc.
  * ------------------------------------------------------------------ */
-static void fpga_mem_test(void)
+static void fpga_mem_test(uint8_t bank)
 {
     volatile uint16_t *win = FPGA_APERTURE1_ADDR;   /* aperture 1 window base */
-    const uint8_t  TEST_EXT   = 0x00;               /* -> SDRAM word 0 */
-    //const uint32_t TEST_WORDS = 256;                /* small block: 512 bytes */
-    const uint32_t TEST_WORDS = 2;                /* small block: 512 bytes */
+    const uint32_t TEST_WORDS = 256;                /* small block: 512 bytes */
+    //const uint32_t TEST_WORDS = 2;                /* small block: 512 bytes */
 
     static const uint16_t patterns[] = { 0x0000u, 0xFFFFu, 0xA5A5u, 0x5A5Au };
     const uint32_t NPAT = sizeof(patterns) / sizeof(patterns[0]);
     uint32_t errors = 0;
 
     log_printf("memory test: aperture1 ext=0x%02X, %lu words...\r\n",
-               TEST_EXT, (unsigned long)TEST_WORDS);
+               bank, (unsigned long)TEST_WORDS);
 
-    fpga_aperture_set_ext(1, TEST_EXT);
+/*
+    while (1)
+    {
+        for (uint16_t i=0;i!=4;++i)
+	    win[i] = i;
+//        log_printf("read1 0x%04X 0x%04X 0x%04X 0x%04X\r\n",win[0], win[1], win[2], win[3]);
+        tx_thread_sleep(100);
+        for (uint16_t i=0;i!=4;++i)
+        {
+            uint16_t val = win[i];
+//	    if (val != i)
+//                log_printf("i:%04x win[i]:%04x\r\n",i,val);
+        }
+        tx_thread_sleep(100);
+    } */
+
+    fpga_aperture_set_ext(1, bank);
 
     /* constant patterns */
     for (uint32_t p = 0; p < NPAT; p++) {
@@ -104,12 +119,50 @@ UINT app_main(const app_config_t *cfg) {
         }
     }
 
-    while (1)
+    ////const uint8_t  TEST_EXT   = 0x00;               /* -> SDRAM word 0 */
+    ////const uint8_t  TEST_EXT   = 0x20;               /* -> SRAM word 0 */
+    //const uint8_t  TEST_EXT   = 0x28;               /* -> BLOCK RAM ? */
+/*    while (1)
     {
-        fpga_mem_test();
+        fpga_mem_test(0x00);
         tx_thread_sleep(100);
+        fpga_mem_test(0x20);
+        tx_thread_sleep(100);
+        fpga_mem_test(0x28);
+        tx_thread_sleep(100000);
         log_puts("\r\n\r\n\r\n\r\n");
+    }*/
+
+    // Lets see if we can get it to boot...
+    // Atari starts paused
+    fpga_core_set_pause(1);
+    fpga_core_set_reset(0);
+    fpga_set_performance(1, 0);
+    fpga_core_set_freezer(0);
+    fpga_set_ramconfig(0); //0:64k, 1:128K
+    fpga_core_set_atari800(0);
+
+    //fpga_set_video(uint16_t mode, int pal, int scanlines, int csync);
+    fpga_set_video(1, 1, 0, 0);
+    fpga_set_cart(0);
+
+    // clear ram
+    fpga_aperture_set_ext(1, 0x20); // sram
+    volatile uint16_t *win = FPGA_APERTURE1_ADDR;   /* aperture 1 window base */
+    for (int addr=0; addr!=32768; ++addr)
+    {
+        win[addr] = 0;
     }
+
+    // reset the 6502
+    fpga_core_set_reset(1);
+    tx_thread_sleep(100);
+    fpga_core_set_reset(0);
+    tx_thread_sleep(100);
+    fpga_core_set_pause(0);
+
+    for (;;) 
+        tx_thread_sleep(100);
 
     simplefile_init_lock();
 
