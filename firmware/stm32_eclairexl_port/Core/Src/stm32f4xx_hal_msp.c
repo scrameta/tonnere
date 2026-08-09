@@ -341,6 +341,15 @@ void HAL_SD_MspInit(SD_HandleTypeDef* hsd)
   {
     /* USER CODE BEGIN SDIO_MspInit 0 */
 
+    /* A clock disable/enable does not reset the SDIO register bank on STM32F4.
+     * After hot removal the previous card can leave DCTRL/DCOUNT/STA state
+     * behind; HAL_SD_Init only programs the clock/power setup, so the next
+     * HAL_SD_ConfigWideBusOperation can enter SD_FindSCR with stale data-path
+     * state and never finish.  Reset the peripheral on every fresh HAL init so
+     * reinsertion starts from the same hardware state as cold boot. */
+    __HAL_RCC_SDIO_FORCE_RESET();
+    __HAL_RCC_SDIO_RELEASE_RESET();
+
     /* USER CODE END SDIO_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_SDIO_CLK_ENABLE();
