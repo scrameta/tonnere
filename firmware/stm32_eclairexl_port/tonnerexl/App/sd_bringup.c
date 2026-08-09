@@ -190,11 +190,29 @@ static int sd_mount(void)
     return 1;
 }
 
-static void sd_unmount(void)
+/* Tear down after physical removal.  fx_media_close() is for orderly shutdown
+ * while media is still accessible: it flushes FAT/cache data and therefore
+ * sends commands to the card.  Once card-detect says the card is gone those
+ * commands cannot complete, so use FileX's abort path instead, then explicitly
+ * release the application-owned HAL and semaphore resources. */
+static void sd_unmount_removed(void)
 {
     if (s_media_open) {
+        log_puts("  SD: unbinding filesystem...\r\n");
         simplefile_unbind_media();
-        fx_media_close(&s_media);
+
+        log_puts("  SD: aborting FileX media (no flush)...\r\n");
+        UINT s = fx_media_abort(&s_media);
+        log_printf("  SD: fx_media_abort returned 0x%02X\r\n", s);
+
+        log_puts("  SD: deleting transfer semaphore...\r\n");
+        UINT txs = tx_semaphore_delete(&transfer_semaphore);
+        log_printf("  SD: semaphore delete returned 0x%02X\r\n", txs);
+
+        log_puts("  SD: deinitialising SDIO...\r\n");
+        HAL_StatusTypeDef hs = HAL_SD_DeInit(&hsd);
+        log_printf("  SD: HAL_SD_DeInit returned %d (state=%u error=0x%08lX)\r\n",
+                   (int)hs, (unsigned)hsd.State, (unsigned long)hsd.ErrorCode);
         s_media_open = 0;
     }
 }
@@ -396,12 +414,7 @@ void sd_bringup_poll(void)
     case SD_MOUNTED:
         if (!now) {
             log_puts("SD: card removed\r\n");
-            /* sd_unmount()'s fx_media_close issues FX_DRIVER_UNINIT, which
-             * already calls HAL_SD_DeInit AND deletes transfer_semaphore (via
-             * the driver's POST_DEINIT). Do NOT HAL_SD_DeInit again here — a
-             * second deinit on already-deinited hardware can wedge the thread,
-             * which stops all further polling (symptom: re-insert does nothing). */
-            sd_unmount();
+            sd_unmount_removed();
             s_state = SD_IDLE;
         }
         break;
