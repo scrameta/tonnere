@@ -69,6 +69,16 @@ static FX_MEDIA s_media;
 static uint8_t  s_media_buf[512 * 8] __attribute__((aligned(4)));
 static int      s_media_open;
 
+/* SimpleDir does not allocate memory: dir_init() must give it an arena before
+ * the first dir_entries() call.  The host interactive program did this, but
+ * the board path did not, so every on-board listing returned NULL without
+ * ever asking FileX to read the directory.  12 KiB holds roughly 36 entries;
+ * a larger directory is returned as a safely truncated list.  This buffer is
+ * CPU-only, so keep it in CCM and preserve DMA-capable SRAM for FileX/SDIO. */
+#define SD_DIR_ARENA_SIZE (12u * 1024u)
+static uint8_t s_dir_arena[SD_DIR_ARENA_SIZE]
+    __attribute__((section(".ccmram"), aligned(4)));
+
 static int card_present(void)
 {
     return HAL_GPIO_ReadPin(SD_DETECT_GPIO_Port, SD_DETECT_Pin) == SD_CD_PRESENT_STATE;
@@ -140,6 +150,29 @@ static int sd_mount(void)
                (unsigned long)s_media.fx_media_total_sectors,
                (unsigned long)s_media.fx_media_bytes_per_sector,
                (unsigned long)s_media.fx_media_sectors_per_cluster);
+
+    unsigned fat_bits = (s_media.fx_media_FAT_type == FX_FAT12) ? 12u :
+                        (s_media.fx_media_FAT_type == FX_FAT16) ? 16u :
+                        (s_media.fx_media_FAT_type == FX_FAT32) ? 32u : 0u;
+    log_printf("  SD: FAT%u (type=0x%02X) root-sector=%lu root-cluster=%lu root-sectors=%u\r\n",
+               fat_bits, (unsigned)s_media.fx_media_FAT_type,
+               (unsigned long)s_media.fx_media_root_sector_start,
+               (unsigned long)s_media.fx_media_root_cluster_32,
+               (unsigned)s_media.fx_media_root_sectors);
+
+    /* This is a required part of SimpleDir initialisation, independent of
+     * FileX media mounting.  Do it on every mount so a future implementation
+     * can reset any arena bookkeeping when a card is exchanged. */
+    if (dir_init(s_dir_arena, sizeof(s_dir_arena)) != SimpleFile_OK) {
+        log_printf("  SD: dir_init failed (arena=%p, bytes=%u)\r\n",
+                   (void *)s_dir_arena, (unsigned)sizeof(s_dir_arena));
+        simplefile_unbind_media();
+        fx_media_close(&s_media);
+        s_media_open = 0;
+        return 0;
+    }
+    log_printf("  SD: SimpleDir arena ready (%u bytes)\r\n",
+               (unsigned)sizeof(s_dir_arena));
 
     return 1;
 }
