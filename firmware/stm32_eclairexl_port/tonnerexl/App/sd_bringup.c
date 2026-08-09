@@ -39,6 +39,9 @@ extern SD_HandleTypeDef hsd;
  * Returns HAL_OK on success. */
 static HAL_StatusTypeDef sd_hw_init(void)
 {
+    log_printf("  SD: HAL init begin (handle-state=%u tick=%lu)\r\n",
+               (unsigned)hsd.State, (unsigned long)HAL_GetTick());
+
     hsd.Instance                 = SDIO;
     hsd.Init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
     hsd.Init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
@@ -47,12 +50,23 @@ static HAL_StatusTypeDef sd_hw_init(void)
     hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     hsd.Init.ClockDiv            = 0;
 
+    log_puts("  SD: calling HAL_SD_Init (1-bit identification)...\r\n");
     HAL_StatusTypeDef s = HAL_SD_Init(&hsd);
+    log_printf("  SD: HAL_SD_Init returned %d (state=%u error=0x%08lX tick=%lu)\r\n",
+               (int)s, (unsigned)hsd.State, (unsigned long)hsd.ErrorCode,
+               (unsigned long)HAL_GetTick());
     if (s != HAL_OK) return s;
 
     /* Switch to 4-bit. If this fails, deinit so the next attempt starts clean. */
+    log_puts("  SD: switching bus to 4-bit...\r\n");
     s = HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B);
-    if (s != HAL_OK) { HAL_SD_DeInit(&hsd); return s; }
+    log_printf("  SD: 4-bit switch returned %d (state=%u error=0x%08lX)\r\n",
+               (int)s, (unsigned)hsd.State, (unsigned long)hsd.ErrorCode);
+    if (s != HAL_OK) {
+        log_puts("  SD: deinitialising after 4-bit switch failure...\r\n");
+        HAL_SD_DeInit(&hsd);
+        return s;
+    }
 
     return HAL_OK;
 }
@@ -72,12 +86,11 @@ static int      s_media_open;
 /* SimpleDir does not allocate memory: dir_init() must give it an arena before
  * the first dir_entries() call.  The host interactive program did this, but
  * the board path did not, so every on-board listing returned NULL without
- * ever asking FileX to read the directory.  12 KiB holds roughly 36 entries;
- * a larger directory is returned as a safely truncated list.  This buffer is
- * CPU-only, so keep it in CCM and preserve DMA-capable SRAM for FileX/SDIO. */
-#define SD_DIR_ARENA_SIZE (12u * 1024u)
-static uint8_t s_dir_arena[SD_DIR_ARENA_SIZE]
-    __attribute__((section(".ccmram"), aligned(4)));
+ * ever asking FileX to read the directory.  8 KiB holds roughly 24 entries;
+ * a larger directory is returned as a safely truncated list.  Do not put this
+ * in CCM: USBX already reserves that entire 64 KiB bank on this target. */
+#define SD_DIR_ARENA_SIZE (8u * 1024u)
+static uint8_t s_dir_arena[SD_DIR_ARENA_SIZE] __attribute__((aligned(4)));
 
 static int card_present(void)
 {
@@ -308,6 +321,8 @@ static int sd_init_and_probe(void)
     /* Let the card power up and the contacts settle before talking to it —
      * cuts down on init failures from a still-seating card. */
     tx_thread_sleep(5);   /* ~50ms */
+    log_printf("  SD: power-up delay complete (tick=%lu, detect=%d)\r\n",
+               (unsigned long)HAL_GetTick(), card_present());
 
     HAL_StatusTypeDef s = sd_hw_init();
     if (s != HAL_OK) {
