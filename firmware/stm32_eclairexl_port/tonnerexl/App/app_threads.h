@@ -50,6 +50,12 @@ void boot_thread_entry(ULONG arg);   /* core bring-up + keyboard walk       */
  * FPGA HAL), so not a host-tested service step. */
 void tonnere_boot_core(void);
 
+#if defined(FPGA_BUS_STM32)
+/* SD step-(i) bring-up: poll card-detect, init + read block 0 on insert, log on
+ * remove. Board-only (touches HAL_SD). Called from the sdlife thread. */
+void sd_bringup_poll(void);
+#endif
+
 /* Portable per-iteration service steps (unit-tested on host). Each returns
  * after doing at most one unit of work, so they compose into the wait-loop and
  * can be driven directly by tests. */

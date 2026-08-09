@@ -59,12 +59,23 @@ void usbin_thread_entry(ULONG arg) {
 
 void sdlife_thread_entry(ULONG arg) {
     (void)arg;
+#if defined(FPGA_BUS_STM32)
+    /* Card-detect is a plain GPIO input (PC13), not EXTI, so poll it. The poll
+     * runs the detect/init/read/remove lifecycle in sd_bringup.c. */
+    for (;;) {
+        sd_bringup_poll();
+        tx_thread_sleep(10);   /* ~100 ms poll interval */
+    }
+#else
+    /* Host: no SDIO hardware. Keep the event-driven seam for the simulated
+     * lifecycle (host_interactive drives fx_media directly). */
     for (;;) {
         ULONG flags = 0;
         tx_event_flags_get(&g_sd_events, EVT_SD_INSERTED | EVT_SD_REMOVED,
                            TX_OR_CLEAR, &flags, TX_WAIT_FOREVER);
         sdlife_service_step();
     }
+#endif
 }
 
 void menu_thread_entry(ULONG arg) {
