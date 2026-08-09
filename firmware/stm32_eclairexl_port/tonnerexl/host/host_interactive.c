@@ -57,7 +57,6 @@ VOID _fx_ram_driver(FX_MEDIA *media_ptr);
 #include "fx_api.h"
 static UCHAR *s_blk_image;         /* the image bytes */
 static ULONG  s_blk_bytes;
-static ULONG  s_blk_part_off;      /* partition start (sectors), 0 if none */
 
 /* FileX helper: given sector 0, work out whether it's an MBR and where the
  * partition starts. Same call the ST on-target driver uses. */
@@ -70,33 +69,36 @@ static void host_block_driver(FX_MEDIA *media_ptr) {
 
     switch (media_ptr->fx_media_driver_request) {
     case FX_DRIVER_BOOT_READ: {
-        /* Read sector 0, then — exactly like ST's fx_stm32_sd_driver — check
-         * whether it's an MBR partition table and, if so, read the real boot
-         * sector from the partition start. This makes the host mirror the board
-         * and handles dd-imaged (partitioned) SD cards, not just bare FS. No
-         * jump-instruction validation (that was the RAM driver's bug). */
-        _fx_utility_memory_copy(s_blk_image, media_ptr->fx_media_driver_buffer, 512);
+        /* Read sector 0. If it's an MBR, find the partition start and present
+         * the partition's boot sector to FileX. FileX then records the offset
+         * as fx_media_hidden_sectors and applies it to every subsequent
+         * READ/WRITE itself — so the driver must NOT add the offset again (that
+         * double-counts and corrupts all directory/data reads). */
         ULONG pstart = 0, psize = 0;
-        UINT s = _fx_partition_offset_calculate(media_ptr->fx_media_driver_buffer, 0,
-                                                &pstart, &psize);
+        UINT s = _fx_partition_offset_calculate(s_blk_image, 0, &pstart, &psize);
         if (s != FX_SUCCESS) { media_ptr->fx_media_driver_status = FX_IO_ERROR; break; }
-        s_blk_part_off = pstart;   /* remember for subsequent sector I/O */
-        if (pstart) {
-            _fx_utility_memory_copy(s_blk_image + pstart*512,
-                                    media_ptr->fx_media_driver_buffer, 512);
-        }
+        /* Hand FileX the boot sector: the partition boot record if partitioned,
+         * else sector 0 itself. */
+        _fx_utility_memory_copy(s_blk_image + pstart * 512,
+                                media_ptr->fx_media_driver_buffer, 512);
         media_ptr->fx_media_driver_status = FX_SUCCESS;
         break;
     }
     case FX_DRIVER_BOOT_WRITE: {
+        /* Symmetric: FileX's hidden_sectors already points at the partition, so
+         * logical sector 0 here maps to the partition boot record. We don't
+         * track a separate offset. */
         _fx_utility_memory_copy(media_ptr->fx_media_driver_buffer,
-                                s_blk_image + s_blk_part_off*512, 512);
+                                s_blk_image + media_ptr->fx_media_hidden_sectors * 512, 512);
         media_ptr->fx_media_driver_status = FX_SUCCESS;
         break;
     }
     case FX_DRIVER_READ: {
+        /* FileX already folds the partition start into hidden_sectors; do NOT
+         * add a separate partition offset (that was the double-count bug that
+         * produced garbage filenames and absurd sizes). */
         ULONG off = (media_ptr->fx_media_driver_logical_sector +
-                     media_ptr->fx_media_hidden_sectors + s_blk_part_off) * ssz;
+                     media_ptr->fx_media_hidden_sectors) * ssz;
         _fx_utility_memory_copy(s_blk_image + off, media_ptr->fx_media_driver_buffer,
                                 media_ptr->fx_media_driver_sectors * ssz);
         media_ptr->fx_media_driver_status = FX_SUCCESS;
@@ -104,7 +106,7 @@ static void host_block_driver(FX_MEDIA *media_ptr) {
     }
     case FX_DRIVER_WRITE: {
         ULONG off = (media_ptr->fx_media_driver_logical_sector +
-                     media_ptr->fx_media_hidden_sectors + s_blk_part_off) * ssz;
+                     media_ptr->fx_media_hidden_sectors) * ssz;
         _fx_utility_memory_copy(media_ptr->fx_media_driver_buffer, s_blk_image + off,
                                 media_ptr->fx_media_driver_sectors * ssz);
         media_ptr->fx_media_driver_status = FX_SUCCESS;
@@ -175,6 +177,26 @@ static int sd_mount(const char *path) {
     if (s != FX_SUCCESS) { printf("  open failed: 0x%02X\n", s); free(s_sd_image); return -1; }
 
     simplefile_bind_media(&s_sd_media);
+
+    /* Diagnostic mirroring the board: dump the ROOT DIRECTORY sector's first
+     * bytes straight from the image so board vs host can be compared byte-for-
+     * byte on the same card. Same geometry fields, same layout. */
+    {
+        unsigned long root_lba = (unsigned long)s_sd_media.fx_media_hidden_sectors +
+                                 (unsigned long)s_sd_media.fx_media_root_sector_start;
+        printf("  mounted — hidden=%lu total=%lu bytes/sec=%lu sec/clus=%lu\n",
+               (unsigned long)s_sd_media.fx_media_hidden_sectors,
+               (unsigned long)s_sd_media.fx_media_total_sectors,
+               (unsigned long)s_sd_media.fx_media_bytes_per_sector,
+               (unsigned long)s_sd_media.fx_media_sectors_per_cluster);
+        printf("  root dir sector = %lu; first bytes:\n", root_lba);
+        const unsigned char *r = (const unsigned char *)s_sd_image + (size_t)root_lba * 512;
+        for (int row = 0; row < 2; row++) {
+            printf("   ");
+            for (int i = 0; i < 16; i++) printf(" %02X", r[row*16+i]);
+            printf("\n");
+        }
+    }
     strncpy(s_sd_image_path, path, sizeof s_sd_image_path - 1);
     s_sd_mounted = 1;
     printf("  mounted %s as SD card\n", path);
