@@ -26,7 +26,7 @@ static void prefix_time()
     uint32_t seconds = ms / 1000U;
     uint32_t millis  = ms % 1000U;
 
-    snprintf(&buf[0], 31, "%ld.%03ld: ", seconds, millis); 
+    snprintf(&buf[0], 31, "%lu.%03lu: ", (unsigned long)seconds, (unsigned long)millis);
     s = &buf[0];
     log_puts_no_prefix(s);
 }
