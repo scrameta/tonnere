@@ -333,8 +333,8 @@ UX_HOST_CLASS_HID_FIELD                 *field;
         UX_THREAD_EXTENSION_PTR_SET(&(keyboard_instance -> ux_host_class_hid_keyboard_thread), keyboard_instance)
 #endif
 
-        /* Default state of keyboard is with NumLock on.  */
-        keyboard_instance -> ux_host_class_hid_keyboard_alternate_key_state |= UX_HID_KEYBOARD_STATE_NUM_LOCK;
+        ///* Default state of keyboard is with NumLock on.  */
+        //keyboard_instance -> ux_host_class_hid_keyboard_alternate_key_state |= UX_HID_KEYBOARD_STATE_NUM_LOCK;
 
         /* We need to build the field for the LEDs. */
         keyboard_instance -> ux_host_class_hid_keyboard_led_mask =  keyboard_instance ->  ux_host_class_hid_keyboard_alternate_key_state &
