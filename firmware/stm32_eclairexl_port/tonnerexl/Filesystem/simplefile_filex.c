@@ -103,7 +103,12 @@ static void to_filex_path(const char *in, char *out, size_t cap) {
     size_t i = 0;
     for (; in[i] && i + 1 < cap; i++) out[i] = (in[i] == '/') ? '\\' : in[i];
     out[i] = '\0';
-    if (out[0] == '\0') { out[0] = '\\'; out[1] = '\0'; }   /* root */
+    /* Root ("/" -> "\" here, or already empty): leave as EMPTY string. Callers
+     * pass NULL to fx_directory_default_set for empty, and FX_NULL is FileX's
+     * canonical "root directory" argument. Passing a literal "\" instead asks
+     * FileX to navigate into a path, which some FileX versions (notably the ST
+     * 6.1.10 fork) enumerate as empty. So collapse a bare "\" to "". */
+    if ((out[0] == '\\' && out[1] == '\0') || out[0] == '\0') { out[0] = '\0'; }
 }
 /* Extract the basename (after last '/'). */
 static void basename_of(const char *path, char *out, size_t cap) {
