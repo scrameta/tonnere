@@ -14,7 +14,7 @@
 | JOYSTICK PADDLES  | ⚪     |  |
 | PLL1              |  🟢    | Programmed via I2C and checked they produce clocks |
 | PLL2              |  🟢    | Programmed via I2C and checked they produce clocks |
-| SDCARD(EXT)       | ⚪     |  | 
+| SDCARD(EXT)       |  🟢    | Detect insertion/removal. Lists directory on insertion. 4-bit mode. |
 | SDCARD(INT)       | ⚪     |  | 
 | SDRAM             |  🟢    | Boots to ready | 
 | SRAM1             |  🟡    | Used input pins on FPGA, had to correct with a few wires  | 
@@ -23,9 +23,9 @@
 | STM32 CORE        |  🟢    | Code running fine. SWD works. USART debug works. | 
 | STM32 DFU         |  🟡    | DFU slow to start due to PB5 connected to FPGA flash chip during boot  | 
 | STM32 RTC         |  ⚪    |   | 
-| STM32 FSMC        |  🟢    | Checked basic SRAM access via FPGA from STM | 
-| PBI               |  🟢    | Tested toggling pins | 
-| SIO               |  🟡    | Tested toggling pins. Motor control did not go via level shifter. | 
+| STM32 FSMC        |  🟢    | Full bridge to control registers and DMA port implemented | 
+| PBI               |  🟢    | Ran turbo freezer ok | 
+| SIO               |  🟡    | Motor control did not go via level shifter. Modified that and wired up, now boots | 
 | USB               |  🟢    | Tested keyboard in all ports. STM needed patches hub (class + reconnect fix) |
 | Video DAC         |  🟡    | Single pin was too aggressive for sigma delta (very low oversampling). Too noisy. Added 2nd pin and used fixed patterns. Achieved 6-bit |
 
