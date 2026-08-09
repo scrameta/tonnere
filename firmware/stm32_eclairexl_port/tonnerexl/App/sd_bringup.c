@@ -39,6 +39,9 @@ extern SD_HandleTypeDef hsd;
  * Returns HAL_OK on success. */
 static HAL_StatusTypeDef sd_hw_init(void)
 {
+    log_printf("  SD: HAL init begin (handle-state=%u tick=%lu)\r\n",
+               (unsigned)hsd.State, (unsigned long)HAL_GetTick());
+
     hsd.Instance                 = SDIO;
     hsd.Init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
     hsd.Init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
@@ -47,12 +50,23 @@ static HAL_StatusTypeDef sd_hw_init(void)
     hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     hsd.Init.ClockDiv            = 0;
 
+    log_puts("  SD: calling HAL_SD_Init (1-bit identification)...\r\n");
     HAL_StatusTypeDef s = HAL_SD_Init(&hsd);
+    log_printf("  SD: HAL_SD_Init returned %d (state=%u error=0x%08lX tick=%lu)\r\n",
+               (int)s, (unsigned)hsd.State, (unsigned long)hsd.ErrorCode,
+               (unsigned long)HAL_GetTick());
     if (s != HAL_OK) return s;
 
     /* Switch to 4-bit. If this fails, deinit so the next attempt starts clean. */
+    log_puts("  SD: switching bus to 4-bit...\r\n");
     s = HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B);
-    if (s != HAL_OK) { HAL_SD_DeInit(&hsd); return s; }
+    log_printf("  SD: 4-bit switch returned %d (state=%u error=0x%08lX)\r\n",
+               (int)s, (unsigned)hsd.State, (unsigned long)hsd.ErrorCode);
+    if (s != HAL_OK) {
+        log_puts("  SD: deinitialising after 4-bit switch failure...\r\n");
+        HAL_SD_DeInit(&hsd);
+        return s;
+    }
 
     return HAL_OK;
 }
@@ -68,6 +82,15 @@ static uint8_t s_block_buf[512] __attribute__((aligned(4)));
 static FX_MEDIA s_media;
 static uint8_t  s_media_buf[512 * 8] __attribute__((aligned(4)));
 static int      s_media_open;
+
+/* SimpleDir does not allocate memory: dir_init() must give it an arena before
+ * the first dir_entries() call.  The host interactive program did this, but
+ * the board path did not, so every on-board listing returned NULL without
+ * ever asking FileX to read the directory.  8 KiB holds roughly 24 entries;
+ * a larger directory is returned as a safely truncated list.  Do not put this
+ * in CCM: USBX already reserves that entire 64 KiB bank on this target. */
+#define SD_DIR_ARENA_SIZE (8u * 1024u)
+static uint8_t s_dir_arena[SD_DIR_ARENA_SIZE] __attribute__((aligned(4)));
 
 static int card_present(void)
 {
@@ -141,14 +164,55 @@ static int sd_mount(void)
                (unsigned long)s_media.fx_media_bytes_per_sector,
                (unsigned long)s_media.fx_media_sectors_per_cluster);
 
+    unsigned fat_bits = (s_media.fx_media_FAT_type == FX_FAT12) ? 12u :
+                        (s_media.fx_media_FAT_type == FX_FAT16) ? 16u :
+                        (s_media.fx_media_FAT_type == FX_FAT32) ? 32u : 0u;
+    log_printf("  SD: FAT%u (type=0x%02X) root-sector=%lu root-cluster=%lu root-sectors=%u\r\n",
+               fat_bits, (unsigned)s_media.fx_media_FAT_type,
+               (unsigned long)s_media.fx_media_root_sector_start,
+               (unsigned long)s_media.fx_media_root_cluster_32,
+               (unsigned)s_media.fx_media_root_sectors);
+
+    /* This is a required part of SimpleDir initialisation, independent of
+     * FileX media mounting.  Do it on every mount so a future implementation
+     * can reset any arena bookkeeping when a card is exchanged. */
+    if (dir_init(s_dir_arena, sizeof(s_dir_arena)) != SimpleFile_OK) {
+        log_printf("  SD: dir_init failed (arena=%p, bytes=%u)\r\n",
+                   (void *)s_dir_arena, (unsigned)sizeof(s_dir_arena));
+        simplefile_unbind_media();
+        fx_media_close(&s_media);
+        s_media_open = 0;
+        return 0;
+    }
+    log_printf("  SD: SimpleDir arena ready (%u bytes)\r\n",
+               (unsigned)sizeof(s_dir_arena));
+
     return 1;
 }
 
-static void sd_unmount(void)
+/* Tear down after physical removal.  fx_media_close() is for orderly shutdown
+ * while media is still accessible: it flushes FAT/cache data and therefore
+ * sends commands to the card.  Once card-detect says the card is gone those
+ * commands cannot complete, so use FileX's abort path instead, then explicitly
+ * release the application-owned HAL and semaphore resources. */
+static void sd_unmount_removed(void)
 {
     if (s_media_open) {
+        log_puts("  SD: unbinding filesystem...\r\n");
         simplefile_unbind_media();
-        fx_media_close(&s_media);
+
+        log_puts("  SD: aborting FileX media (no flush)...\r\n");
+        UINT s = fx_media_abort(&s_media);
+        log_printf("  SD: fx_media_abort returned 0x%02X\r\n", s);
+
+        log_puts("  SD: deleting transfer semaphore...\r\n");
+        UINT txs = tx_semaphore_delete(&transfer_semaphore);
+        log_printf("  SD: semaphore delete returned 0x%02X\r\n", txs);
+
+        log_puts("  SD: deinitialising SDIO...\r\n");
+        HAL_StatusTypeDef hs = HAL_SD_DeInit(&hsd);
+        log_printf("  SD: HAL_SD_DeInit returned %d (state=%u error=0x%08lX)\r\n",
+                   (int)hs, (unsigned)hsd.State, (unsigned long)hsd.ErrorCode);
         s_media_open = 0;
     }
 }
@@ -275,6 +339,8 @@ static int sd_init_and_probe(void)
     /* Let the card power up and the contacts settle before talking to it —
      * cuts down on init failures from a still-seating card. */
     tx_thread_sleep(5);   /* ~50ms */
+    log_printf("  SD: power-up delay complete (tick=%lu, detect=%d)\r\n",
+               (unsigned long)HAL_GetTick(), card_present());
 
     HAL_StatusTypeDef s = sd_hw_init();
     if (s != HAL_OK) {
@@ -348,12 +414,7 @@ void sd_bringup_poll(void)
     case SD_MOUNTED:
         if (!now) {
             log_puts("SD: card removed\r\n");
-            /* sd_unmount()'s fx_media_close issues FX_DRIVER_UNINIT, which
-             * already calls HAL_SD_DeInit AND deletes transfer_semaphore (via
-             * the driver's POST_DEINIT). Do NOT HAL_SD_DeInit again here — a
-             * second deinit on already-deinited hardware can wedge the thread,
-             * which stops all further polling (symptom: re-insert does nothing). */
-            sd_unmount();
+            sd_unmount_removed();
             s_state = SD_IDLE;
         }
         break;

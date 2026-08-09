@@ -65,8 +65,13 @@ VOID  fx_stm32_sd_driver(FX_MEDIA *media_ptr)
  /* the SD was initialized by the application */
   is_initialized = 1;
 #endif
-  /* before performing any operation, check the status of the SD IP */
-  if (is_initialized == 1)
+  /* Do not query the card for lifecycle requests.  In particular, ABORT is
+     issued after hot removal, when CMD13 can no longer receive a response.
+     The old unconditional status poll delayed/hung media teardown before the
+     driver could process the very request intended to recover from removal. */
+  if ((is_initialized == 1) &&
+      (media_ptr->fx_media_driver_request != FX_DRIVER_ABORT) &&
+      (media_ptr->fx_media_driver_request != FX_DRIVER_UNINIT))
   {
     if (check_sd_status(FX_STM32_SD_INSTANCE) != 0)
     {
