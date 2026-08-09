@@ -14,6 +14,7 @@
 static TX_MUTEX s_bus_mutex;
 static int      s_inited;
 static uint16_t s_kbd_shadow[4];
+static uint16_t s_control_shadow;   /* CONTROL is write-only — shadow it */
 
 static void lock(void)   { if (s_inited) tx_mutex_get(&s_bus_mutex, TX_WAIT_FOREVER); }
 static void unlock(void) { if (s_inited) tx_mutex_put(&s_bus_mutex); }
@@ -26,6 +27,7 @@ static inline void     uwr(enum fpga_sio_index i, uint16_t v) { *FPGA_SIO_ADDR(i
 fpga_status_t fpga_bus_init(void) {
     if (!s_inited) { tx_mutex_create(&s_bus_mutex, "fpga_bus", TX_INHERIT); s_inited = 1; }
     memset(s_kbd_shadow, 0, sizeof s_kbd_shadow);
+    s_control_shadow = 0;
     if (fpga_iface_magic() != FPGA_IFACE_MAGIC) return FPGA_ERR_MAGIC;
     return FPGA_OK;
 }
@@ -38,13 +40,18 @@ void     fpga_reg_rmw(enum fpga_reg_index idx, uint16_t mask, uint16_t value) {
     lock(); uint16_t cur = rd(idx); wr(idx, (uint16_t)((cur & ~mask) | (value & mask))); unlock();
 }
 
-static void bit_set(enum fpga_reg_index idx, int bit, int on) {
-    fpga_reg_rmw(idx, (uint16_t)(1u<<bit), on?(uint16_t)(1u<<bit):0);
+/* CONTROL (reg 2) is WRITE-ONLY: reading it returns undefined bus data, so a
+ * read-modify-write corrupts the other bits. Shadow it and write the whole
+ * register from the shadow. Same pattern as the keyboard matrix shadow. */
+static void control_set_bit(int bit, int on) {
+    if (on) s_control_shadow |=  (uint16_t)(1u<<bit);
+    else    s_control_shadow &= ~(uint16_t)(1u<<bit);
+    lock(); wr(REG_CONTROL, s_control_shadow); unlock();
 }
-void fpga_core_set_reset(int on)       { bit_set(REG_CONTROL, CTRL_RESET_BIT, on); }
-void fpga_core_set_pause(int on)       { bit_set(REG_CONTROL, CTRL_PAUSE_BIT, on); }
-void fpga_core_set_freezer(int on)     { bit_set(REG_CONTROL, CTRL_FREEZER_EN_BIT, on); }
-void fpga_core_set_atari800(int on)    { bit_set(REG_CONTROL, CTRL_ATARI800_BIT, on); }
+void fpga_core_set_reset(int on)       { control_set_bit(CTRL_RESET_BIT, on); }
+void fpga_core_set_pause(int on)       { control_set_bit(CTRL_PAUSE_BIT, on); }
+void fpga_core_set_freezer(int on)     { control_set_bit(CTRL_FREEZER_EN_BIT, on); }
+void fpga_core_set_atari800(int on)    { control_set_bit(CTRL_ATARI800_BIT, on); }
 void fpga_set_ramconfig(uint16_t sel)  { fpga_reg_write(REG_RAMCONFIG, (uint16_t)(sel & RAMCFG_SEL_MASK)); }
 void fpga_set_performance(uint16_t speed, int vbl) {
     uint16_t v = (uint16_t)(speed & PERF_SPEED_MASK);

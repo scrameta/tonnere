@@ -17,6 +17,7 @@ typedef struct {
 
     /* keyboard shadow (64 bits) */
     uint16_t kbd_shadow[4];
+    uint16_t control_shadow;   /* CONTROL is write-only — shadow it */
 
     /* console physical switch state (test-injectable) */
     uint16_t console_phys;
@@ -60,13 +61,18 @@ void fpga_reg_rmw(enum fpga_reg_index idx, uint16_t mask, uint16_t value) {
 }
 
 /* ---- machine control ---- */
-static void bit_set(enum fpga_reg_index idx, int bit, int on) {
-    fpga_reg_rmw(idx, (uint16_t)(1u<<bit), on?(uint16_t)(1u<<bit):0);
+/* CONTROL (reg 2) is write-only on hardware; shadow it and write the whole
+ * register (mirror the stm32 backend). We still store into g.reg so tests can
+ * read the shadowed value back via fake_fpga_get_reg. */
+static void control_set_bit(int bit, int on) {
+    if (on) g.control_shadow |=  (uint16_t)(1u<<bit);
+    else    g.control_shadow &= ~(uint16_t)(1u<<bit);
+    fpga_reg_write(REG_CONTROL, g.control_shadow);
 }
-void fpga_core_set_reset(int on)       { bit_set(REG_CONTROL, CTRL_RESET_BIT, on); }
-void fpga_core_set_pause(int on)       { bit_set(REG_CONTROL, CTRL_PAUSE_BIT, on); }
-void fpga_core_set_freezer(int on)     { bit_set(REG_CONTROL, CTRL_FREEZER_EN_BIT, on); }
-void fpga_core_set_atari800(int on)    { bit_set(REG_CONTROL, CTRL_ATARI800_BIT, on); }
+void fpga_core_set_reset(int on)       { control_set_bit(CTRL_RESET_BIT, on); }
+void fpga_core_set_pause(int on)       { control_set_bit(CTRL_PAUSE_BIT, on); }
+void fpga_core_set_freezer(int on)     { control_set_bit(CTRL_FREEZER_EN_BIT, on); }
+void fpga_core_set_atari800(int on)    { control_set_bit(CTRL_ATARI800_BIT, on); }
 void fpga_set_ramconfig(uint16_t sel)  { fpga_reg_write(REG_RAMCONFIG, (uint16_t)(sel & RAMCFG_SEL_MASK)); }
 void fpga_set_performance(uint16_t speed, int vbl) {
     uint16_t v = (uint16_t)(speed & PERF_SPEED_MASK);
