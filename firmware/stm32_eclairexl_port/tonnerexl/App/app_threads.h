@@ -20,6 +20,7 @@ extern "C" {
 #define PRIO_USBIN   10   /* USB HID input                                 */
 #define PRIO_SDLIFE  12   /* SD card lifecycle + filesystem                */
 #define PRIO_MENU    20   /* menu / UI                                     */
+#define PRIO_BOOT    15   /* one-shot core bring-up + kbd walk (bring-up)  */
 
 /* Event flag groups / queues shared between ISR/callbacks and threads. */
 extern TX_EVENT_FLAGS_GROUP g_fpga_events;   /* set from FPGA IRQ demux    */
@@ -42,6 +43,12 @@ void drive_thread_entry(ULONG arg);
 void usbin_thread_entry(ULONG arg);
 void sdlife_thread_entry(ULONG arg);
 void menu_thread_entry(ULONG arg);
+void boot_thread_entry(ULONG arg);   /* core bring-up + keyboard walk       */
+
+/* Core bring-up sequence (reset, RAM clear, release 6502). Runs in the boot
+ * thread so its tx_thread_sleep hold-times actually wait. Non-portable (touches
+ * FPGA HAL), so not a host-tested service step. */
+void tonnere_boot_core(void);
 
 /* Portable per-iteration service steps (unit-tested on host). Each returns
  * after doing at most one unit of work, so they compose into the wait-loop and

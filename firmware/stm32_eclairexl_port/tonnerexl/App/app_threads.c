@@ -13,12 +13,13 @@ TX_EVENT_FLAGS_GROUP g_fpga_events;
 TX_EVENT_FLAGS_GROUP g_sd_events;
 TX_QUEUE             g_input_queue;
 
-static TX_THREAD t_drive, t_usbin, t_sdlife, t_menu;
+static TX_THREAD t_drive, t_usbin, t_sdlife, t_menu, t_boot;
 
 #define STACK_DRIVE  (2*1024)
 #define STACK_USBIN  (2*1024)
 #define STACK_SDLIFE (4*1024)   /* FileX calls can be stack-hungry */
 #define STACK_MENU   (3*1024)
+#define STACK_BOOT   (2*1024)
 #define INPUT_QUEUE_MSGS 32
 
 /*
@@ -28,6 +29,7 @@ static TX_THREAD t_drive, t_usbin, t_sdlife, t_menu;
  * per-block overhead, with headroom.
  */
 #define PORT_POOL_SIZE ( STACK_DRIVE + STACK_USBIN + STACK_SDLIFE + STACK_MENU \
+                       + STACK_BOOT \
                        + (INPUT_QUEUE_MSGS * sizeof(ULONG)) + 2048 /* overhead */ )
 static UCHAR        s_port_pool_mem[PORT_POOL_SIZE];
 static TX_BYTE_POOL s_port_pool;
@@ -72,6 +74,87 @@ void menu_thread_entry(ULONG arg) {
         tx_thread_sleep(2);
     }
 }
+
+/* ---- core bring-up (runs in the boot thread, so sleeps really wait) ---- */
+#if defined(FPGA_BUS_STM32)
+void tonnere_boot_core(void) {
+    /* Atari starts paused, reset deasserted while we set config. */
+    fpga_core_set_pause(1);
+    fpga_core_set_reset(0);
+    fpga_set_performance(1, 0);
+    fpga_core_set_freezer(0);
+    fpga_set_ramconfig(0);          /* 0:64k, 1:128k */
+    fpga_core_set_atari800(0);
+    fpga_set_video(1, 1, 0, 0);
+    fpga_set_cart(0);
+
+    /* Clear the RAM the 6502 boots from. ext 0x20 = SRAM here — confirm that's
+     * the chip the core maps the Atari 64k onto (if it's SDRAM, use ext 0x00,
+     * else you clear the wrong chip and boot from garbage).
+     * Board-only: the aperture window is a raw FSMC pointer (0x60000000) that
+     * doesn't exist on host, so guard it. */
+#if defined(FPGA_BUS_STM32)
+    {
+        log_puts("Cleaning SRAM\r\n");
+        fpga_aperture_set_ext(1, 0x20);
+        volatile uint16_t *win = FPGA_APERTURE1_ADDR;
+        for (int addr = 0; addr < 65536; ++addr) win[addr] = 0;
+        log_puts("Verifying SRAM\r\n");
+        for (int addr = 0; addr < 65536; ++addr) 
+        {
+            uint16_t val = win[addr];
+            if (val!=0) log_printf("Read of sram %x was non-zero %x\n",addr,val);
+        }
+
+        log_puts("Cleaning SDRAM\r\n");
+        fpga_aperture_set_ext(1, 0x0);
+        for (int addr = 0; addr < 65536; ++addr) win[addr] = 0;
+        log_puts("Verifying SDRAM\r\n");
+        for (int addr = 0; addr < 65536; ++addr) 
+        {
+            uint16_t val = win[addr];
+            if (val!=0) log_printf("Read of sdram %x was non-zero %x\n",addr,val);
+        }
+    }
+#endif
+
+    /* Pulse 6502 reset — these sleeps now really wait (thread context). */
+    log_puts("Booting 6502\r\n");
+    fpga_core_set_reset(1);
+    tx_thread_sleep(10);
+    fpga_core_set_reset(0);
+    tx_thread_sleep(10);
+    fpga_core_set_pause(0);         /* release — Atari runs */
+
+    fpga_kbd_special(0, 0, 0);
+    log_puts("core released; walking keyboard matrix\r\n");
+}
+
+/* ---- boot / keyboard-walk thread ---- *
+ * One-shot core bring-up, then walk a single set bit through the 64-bit key
+ * matrix (kbd0..kbd3 = bits 0-15, 16-31, 32-47, 48-63), one key per second, so
+ * you can map each bit position to a physical key. When the USB keyboard is
+ * wired up, this walk is replaced by the HID->matrix mapping. */
+void boot_thread_entry(ULONG arg) {
+    (void)arg;
+    tonnere_boot_core();
+
+/*    uint64_t x = 1;
+    for (;;) {
+        log_printf("kbd matrix = %08lx%08lx\r\n",
+                   (unsigned long)(x >> 32),
+                   (unsigned long)(x & 0xFFFFFFFFu));
+        fpga_kbd_matrix_write((uint16_t)(x        & 0xFFFF),
+                              (uint16_t)((x >> 16) & 0xFFFF),
+                              (uint16_t)((x >> 32) & 0xFFFF),
+                              (uint16_t)((x >> 48) & 0xFFFF));
+        x <<= 1;
+        if (x == 0) x = 1;
+        tx_thread_sleep(100);       // 1 s at 100 Hz tick — real delay 
+    }*/
+}
+
+#endif /* FPGA_BUS_STM32 */
 
 /* ---- creation ---- */
 UINT app_threads_create(TX_BYTE_POOL *pool) {
@@ -120,6 +203,20 @@ UINT app_threads_create(TX_BYTE_POOL *pool) {
     st = tx_thread_create(&t_menu, "menu", menu_thread_entry, 0, sp, STACK_MENU,
                           PRIO_MENU, PRIO_MENU, TX_NO_TIME_SLICE, TX_AUTO_START);
     if (st) { log_printf("create menu failed: %u\r\n", st); return st; }
+
+    /* The boot thread does board bring-up (core reset, RAM clear over the FSMC
+     * aperture) then the keyboard-matrix walk — all hardware-only scaffolding.
+     * Don't create it on host, where there's no FSMC and the walk would spin
+     * forever in the test harness. */
+#if defined(FPGA_BUS_STM32)
+    st = tx_byte_allocate(pool, &sp, STACK_BOOT, TX_NO_WAIT);
+    if (st) { log_printf("alloc boot stack failed: %u\r\n", st); return st; }
+    st = tx_thread_create(&t_boot, "boot", boot_thread_entry, 0, sp, STACK_BOOT,
+                          PRIO_BOOT, PRIO_BOOT, TX_NO_TIME_SLICE, TX_AUTO_START);
+    if (st) { log_printf("create boot failed: %u\r\n", st); return st; }
+#else
+    (void)t_boot;
+#endif
 
     return TX_SUCCESS;
 }

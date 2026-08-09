@@ -25,7 +25,7 @@
  * ext = 0x00 targets physical word 0 = base of SDRAM (spec §2.1).
  * Change TEST_EXT to point at SRAM1 (ext 0x20), SRAM2 (0x24), etc.
  * ------------------------------------------------------------------ */
-static void fpga_mem_test(uint8_t bank)
+__attribute__((unused)) static void fpga_mem_test(uint8_t bank)
 {
     volatile uint16_t *win = FPGA_APERTURE1_ADDR;   /* aperture 1 window base */
     const uint32_t TEST_WORDS = 256;                /* small block: 512 bytes */
@@ -133,37 +133,6 @@ UINT app_main(const app_config_t *cfg) {
         log_puts("\r\n\r\n\r\n\r\n");
     }*/
 
-    // Lets see if we can get it to boot...
-    // Atari starts paused
-    fpga_core_set_pause(1);
-    fpga_core_set_reset(0);
-    fpga_set_performance(1, 0);
-    fpga_core_set_freezer(0);
-    fpga_set_ramconfig(0); //0:64k, 1:128K
-    fpga_core_set_atari800(0);
-
-    //fpga_set_video(uint16_t mode, int pal, int scanlines, int csync);
-    fpga_set_video(1, 1, 0, 0);
-    fpga_set_cart(0);
-
-    // clear ram
-    fpga_aperture_set_ext(1, 0x20); // sram
-    volatile uint16_t *win = FPGA_APERTURE1_ADDR;   /* aperture 1 window base */
-    for (int addr=0; addr!=32768; ++addr)
-    {
-        win[addr] = 0;
-    }
-
-    // reset the 6502
-    fpga_core_set_reset(1);
-    tx_thread_sleep(100);
-    fpga_core_set_reset(0);
-    tx_thread_sleep(100);
-    fpga_core_set_pause(0);
-
-    for (;;) 
-        tx_thread_sleep(100);
-
     simplefile_init_lock();
 
     /* Enable the interrupt sources the threads consume. */
@@ -172,10 +141,17 @@ UINT app_main(const app_config_t *cfg) {
                                (1u << IRQ_SIO_TX_BIT) |
                                (1u << IRQ_POTGO_BIT)));
 
+    /* Create the application threads and return so tx_kernel_enter can finish
+     * and the scheduler goes live. The core bring-up (6502 reset, RAM clear,
+     * release) and the keyboard-matrix walk run in the "boot" thread — they
+     * MUST be in a thread, not here: app_main runs at the end of
+     * tx_application_define, before the scheduler starts, so tx_thread_sleep
+     * does not block in this context. */
     UINT st = app_threads_create(cfg->thread_pool);
     if (st != TX_SUCCESS) {
         log_printf("app_threads_create failed: %u\r\n", st);
         return st;
-    }    log_puts("TonnereXL port started\r\n");
+    }
+    log_puts("TonnereXL port started\r\n");
     return TX_SUCCESS;
 }
