@@ -68,6 +68,7 @@ add_library(tonnerexl_port STATIC
   ${PORT_ROOT}/App/logger.c
   ${PORT_ROOT}/App/app_threads.c
   ${PORT_ROOT}/App/app_service_steps.c
+  ${PORT_ROOT}/App/usb_keyboard.c
 )
 target_include_directories(tonnerexl_port PUBLIC
   ${PORT_ROOT}/Platform ${PORT_ROOT}/Filesystem ${PORT_ROOT}/App
@@ -79,6 +80,7 @@ add_executable(host_tests
   ${PORT_ROOT}/Tests/test_main.c
   ${PORT_ROOT}/Tests/test_fpga_bus.c
   ${PORT_ROOT}/Tests/test_simplefile.c
+  ${PORT_ROOT}/Tests/test_usb_keyboard.c
 )
 target_include_directories(host_tests PRIVATE
   ${PORT_ROOT}/Tests ${PORT_ROOT}/Platform ${PORT_ROOT}/Filesystem ${PORT_ROOT}/App

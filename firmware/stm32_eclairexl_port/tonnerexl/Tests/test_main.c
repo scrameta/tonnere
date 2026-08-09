@@ -20,6 +20,7 @@ int g_tests_failed = 0;
 void run_fpga_bus_tests(void);
 void run_simplefile_tests(void);
 void run_platform_video_tests(void);
+void run_usb_keyboard_tests(void);
 
 static TX_THREAD test_thread;
 static UCHAR     test_stack[32*1024];
@@ -36,6 +37,7 @@ static void test_thread_entry(ULONG arg) {
 
     printf("\n--- platform video modes ---\n");
     run_platform_video_tests();
+    run_usb_keyboard_tests();
 
     printf("\n--- app_main() shared startup path ---\n");
     app_config_t cfg = { .thread_pool = TX_NULL };  /* port's own pool, as board does */

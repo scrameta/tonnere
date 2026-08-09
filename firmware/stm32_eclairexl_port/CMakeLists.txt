@@ -91,6 +91,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     tonnerexl/App/app_main.c
     tonnerexl/App/app_threads.c
     tonnerexl/App/app_service_steps.c
+    tonnerexl/App/usb_keyboard.c
     tonnerexl/App/logger.c
 )
 
