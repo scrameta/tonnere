@@ -22,6 +22,7 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
+extern DMA_HandleTypeDef hdma_sdio;
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
@@ -369,6 +370,36 @@ void HAL_SD_MspInit(SD_HandleTypeDef* hsd)
     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+    /* SDIO DMA Init */
+    /* SDIO Init */
+    hdma_sdio.Instance = DMA2_Stream3;
+    hdma_sdio.Init.Channel = DMA_CHANNEL_4;
+    hdma_sdio.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_sdio.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_sdio.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_sdio.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    hdma_sdio.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    hdma_sdio.Init.Mode = DMA_PFCTRL;
+    hdma_sdio.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_sdio.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    hdma_sdio.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+    hdma_sdio.Init.MemBurst = DMA_MBURST_INC4;
+    hdma_sdio.Init.PeriphBurst = DMA_PBURST_INC4;
+    if (HAL_DMA_Init(&hdma_sdio) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* Several peripheral DMA handle pointers point to the same DMA handle.
+     Be aware that there is only one stream to perform all the requested DMAs. */
+    /* Be sure to change transfer direction before calling
+     HAL_SD_ReadBlocks_DMA or HAL_SD_WriteBlocks_DMA. */
+    __HAL_LINKDMA(hsd,hdmarx,hdma_sdio);
+    __HAL_LINKDMA(hsd,hdmatx,hdma_sdio);
+
+    /* SDIO interrupt Init */
+    HAL_NVIC_SetPriority(SDIO_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(SDIO_IRQn);
     /* USER CODE BEGIN SDIO_MspInit 1 */
 
     /* USER CODE END SDIO_MspInit 1 */
@@ -406,6 +437,12 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef* hsd)
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 
+    /* SDIO DMA DeInit */
+    HAL_DMA_DeInit(hsd->hdmarx);
+    HAL_DMA_DeInit(hsd->hdmatx);
+
+    /* SDIO interrupt DeInit */
+    HAL_NVIC_DisableIRQ(SDIO_IRQn);
     /* USER CODE BEGIN SDIO_MspDeInit 1 */
 
     /* USER CODE END SDIO_MspDeInit 1 */
