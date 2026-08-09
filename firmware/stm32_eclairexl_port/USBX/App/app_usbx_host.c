@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_usbx_host.h"
+#include "app_threads.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -74,6 +75,7 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr)
 {
   UINT ret = UX_SUCCESS;
   TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
+  log_printf("USB: host init\r\n");
 
   /* USER CODE BEGIN MX_USBX_Host_MEM_POOL */
     (void)byte_pool;
@@ -143,16 +145,18 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr)
         if (tx_thread_create(&hid_keyboard_thread, "hid_kb",
                              hid_keyboard_thread_entry, 0,
                              kb_stack, 1024,
-                             20, 20, TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+                             PRIO_USBIN, PRIO_USBIN, TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
             return UX_ERROR;
     }
 
     /* Bring up the OTG FS hardware via HAL. */
+    log_printf("USB: host HCD start\r\n");
     HAL_HCD_Start(&hhcd_USB_OTG_FS);
   }
 
   /* USER CODE END MX_USBX_Host_Init */
 
+  log_printf("USB: host init done\r\n");
   return ret;
 }
 

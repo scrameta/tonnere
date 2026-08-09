@@ -310,15 +310,15 @@
 
 /* This is the ThreadX priority value for the USBX enumeration threads that monitors the bus topology */
 
-/* #define UX_THREAD_PRIORITY_ENUM             20 */
+#define UX_THREAD_PRIORITY_ENUM             6 
 
 /* This is the ThreadX priority value for the standard USBX threads */
 
-/* #define UX_THREAD_PRIORITY_CLASS             20 */
+#define UX_THREAD_PRIORITY_CLASS             6
 
 /* This is the ThreadX priority value for the USBX HID keyboard class. */
 
-/* #define UX_THREAD_PRIORITY_KEYBOARD             20 */
+#define UX_THREAD_PRIORITY_KEYBOARD             6
 
 /* This is the ThreadX priority value for the host controller thread. */
 

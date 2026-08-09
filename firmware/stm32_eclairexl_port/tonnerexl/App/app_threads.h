@@ -17,7 +17,7 @@ extern "C" {
 
 /* Priorities (ThreadX: 0 = highest). */
 #define PRIO_DRIVE   5    /* SIO/drive emulation — time critical           */
-#define PRIO_USBIN   10   /* USB HID input                                 */
+#define PRIO_USBIN   6   /* USB HID input                                 */
 #define PRIO_SDLIFE  12   /* SD card lifecycle + filesystem                */
 #define PRIO_MENU    20   /* menu / UI                                     */
 #define PRIO_BOOT    15   /* one-shot core bring-up + kbd walk (bring-up)  */

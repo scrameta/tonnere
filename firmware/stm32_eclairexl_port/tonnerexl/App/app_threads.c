@@ -118,6 +118,8 @@ void tonnere_boot_core(void) {
     }
 #endif
 
+    tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND/2); // Wait a little for USB to connect, so we can hold option? Better way?!
+
     /* Pulse 6502 reset — these sleeps now really wait (thread context). */
     log_puts("Booting 6502\r\n");
     fpga_core_set_reset(1);
