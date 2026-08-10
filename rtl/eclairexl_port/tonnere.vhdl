@@ -1280,7 +1280,7 @@ PORTA_gen:
       data0_out            => sfl_data_out,
       dclk_in             => 'Z', --spi_clk,
       ncso_in             => 'Z', --spi_flash_select,
-      noe_in              => 'Z' --'0' -- TODO
+      noe_in              => '1' --'0' -- TODO
     );
   spi_flash_di <= sfl_data_out;              -- flash MISO
 
