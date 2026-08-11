@@ -44,6 +44,14 @@ extern VOID fx_spi_sd_driver(FX_MEDIA *media_ptr);
 static FX_MEDIA s_spi_media;
 static uint8_t  s_spi_media_buf[512 * 8] __attribute__((aligned(4)));
 
+/* SimpleDir stores the returned linked list in a caller-provided arena.  A
+ * mounted/bound FileX medium is not enough: without dir_init(), dir_entries()
+ * deliberately returns NULL before it asks FileX for the first entry.  Keep a
+ * separate arena for this temporary SPI-media binding so the bring-up test is
+ * self-contained and does not depend on the later SDIO initialisation. */
+#define SPI_SD_DIR_ARENA_SIZE (8u * 1024u)
+static uint8_t s_spi_dir_arena[SPI_SD_DIR_ARENA_SIZE] __attribute__((aligned(4)));
+
 static void spi_sd_list_root(void)
 {
     struct SimpleDirEntry *e = dir_entries("/");
@@ -77,6 +85,18 @@ static void spi_sd_test_mount(void)
 
     /* Pinch the shared SimpleFile binding just for this listing test. */
     simplefile_bind_media(&s_spi_media);
+
+    if (dir_init(s_spi_dir_arena, sizeof(s_spi_dir_arena)) != SimpleFile_OK) {
+        log_printf("  SPI-SD: dir_init failed (arena=%p, bytes=%u)\r\n",
+                   (void *)s_spi_dir_arena,
+                   (unsigned)sizeof(s_spi_dir_arena));
+        simplefile_unbind_media();
+        fx_media_close(&s_spi_media);
+        return;
+    }
+    log_printf("  SPI-SD: SimpleDir arena ready (%u bytes)\r\n",
+               (unsigned)sizeof(s_spi_dir_arena));
+
     log_puts("  SPI-SD: root:\r\n");
     spi_sd_list_root();
     simplefile_unbind_media();
