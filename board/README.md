@@ -15,7 +15,7 @@
 | PLL1              |  🟢    | Programmed via I2C and checked they produce clocks |
 | PLL2              |  🟢    | Programmed via I2C and checked they produce clocks |
 | SDCARD(EXT)       |  🟢    | Detect insertion/removal. Lists directory on insertion. 4-bit mode. |
-| SDCARD(INT)       | ⚪     |  | 
+| SDCARD(INT)       |  🟢    | Lists directory on boot. spi mode. |
 | SDRAM             |  🟢    | Boots to ready | 
 | SRAM1             |  🟡    | Used input pins on FPGA, had to correct with a few wires  | 
 | SRAM2             |  🟡    | Used input pins on FPGA, had to correct with a few wires  | 
