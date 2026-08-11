@@ -22,7 +22,7 @@
 | STM32 ADC         | ⚪     |  | 
 | STM32 CORE        |  🟢    | Code running fine. SWD works. USART debug works. | 
 | STM32 DFU         |  🟡    | DFU slow to start due to PB5 connected to FPGA flash chip during boot  | 
-| STM32 RTC         |  ⚪    |   | 
+| STM32 RTC         |  🟢    | Cold starts without battery, keeps time running with battery | 
 | STM32 FSMC        |  🟢    | Full bridge to control registers and DMA port implemented | 
 | PBI               |  🟢    | Ran turbo freezer ok | 
 | SIO               |  🟡    | Motor control did not go via level shifter. Modified that and wired up, now boots | 
