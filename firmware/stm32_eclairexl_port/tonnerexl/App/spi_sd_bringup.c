@@ -44,6 +44,14 @@ extern VOID fx_spi_sd_driver(FX_MEDIA *media_ptr);
 static FX_MEDIA s_spi_media;
 static uint8_t  s_spi_media_buf[512 * 8] __attribute__((aligned(4)));
 
+/* SimpleDir does not allocate: dir_init() must give it an arena before the
+ * first dir_entries() call. The SDIO bring-up has its own arena; this listing
+ * test needs one too (its absence was why the SPI root always came up empty). */
+#ifndef SPI_SD_DIR_ARENA_SIZE
+#define SPI_SD_DIR_ARENA_SIZE 8192
+#endif
+static uint8_t s_spi_dir_arena[SPI_SD_DIR_ARENA_SIZE] __attribute__((aligned(4)));
+
 static void spi_sd_list_root(void)
 {
     struct SimpleDirEntry *e = dir_entries("/");
@@ -74,6 +82,13 @@ static void spi_sd_test_mount(void)
                (unsigned long)s_spi_media.fx_media_total_sectors,
                (unsigned long)s_spi_media.fx_media_bytes_per_sector,
                (unsigned long)s_spi_media.fx_media_sectors_per_cluster);
+
+    /* Give SimpleDir its arena before listing (mirrors the SDIO path). */
+    if (dir_init(s_spi_dir_arena, sizeof(s_spi_dir_arena)) != SimpleFile_OK) {
+        log_puts("  SPI-SD: dir_init failed\r\n");
+        fx_media_close(&s_spi_media);
+        return;
+    }
 
     /* Pinch the shared SimpleFile binding just for this listing test. */
     simplefile_bind_media(&s_spi_media);
