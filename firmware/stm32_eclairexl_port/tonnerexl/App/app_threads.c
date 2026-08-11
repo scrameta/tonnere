@@ -8,6 +8,9 @@
 #include "app_threads.h"
 #include "fpga_bus.h"
 #include "logger.h"
+#if defined(FPGA_BUS_STM32)
+#include "rtc_bringup.h"   /* rtc_bringup() — board-only RTC init */
+#endif
 
 TX_EVENT_FLAGS_GROUP g_fpga_events;
 TX_EVENT_FLAGS_GROUP g_sd_events;
@@ -156,6 +159,11 @@ void boot_thread_entry(ULONG arg) {
     /* Bring up the internal SPI microSD "hard drive" once (no detect, no retry).
      * Runs after core bring-up; logs + optionally lists its root as a self-test. */
     spi_sd_bringup();
+
+    /* Bring up the internal RTC (LSE + VBAT). Warm boots find it already ticking
+     * and return immediately; only a cold start waits for the crystal, and that
+     * wait is HERE in the thread, never on the boot path. */
+    rtc_bringup();
 #endif
 
 /*    uint64_t x = 1;

@@ -96,6 +96,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     tonnerexl/App/spi_sd.c
     tonnerexl/App/fx_spi_sd_driver.c
     tonnerexl/App/spi_sd_bringup.c
+    tonnerexl/App/rtc_bringup.c
     tonnerexl/App/logger.c
 )
 
