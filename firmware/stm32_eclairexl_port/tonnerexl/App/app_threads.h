@@ -54,6 +54,10 @@ void tonnere_boot_core(void);
 /* SD step-(i) bring-up: poll card-detect, init + read block 0 on insert, log on
  * remove. Board-only (touches HAL_SD). Called from the sdlife thread. */
 void sd_bringup_poll(void);
+
+/* SD step-(ii) internal SPI microSD bring-up: one-shot init at boot, optional
+ * dir-listing self-test. Board-only (touches SPI3). Called from boot thread. */
+void spi_sd_bringup(void);
 #endif
 
 /* Portable per-iteration service steps (unit-tested on host). Each returns

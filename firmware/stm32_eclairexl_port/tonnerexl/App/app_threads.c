@@ -152,6 +152,12 @@ void boot_thread_entry(ULONG arg) {
     (void)arg;
     tonnere_boot_core();
 
+#if defined(FPGA_BUS_STM32)
+    /* Bring up the internal SPI microSD "hard drive" once (no detect, no retry).
+     * Runs after core bring-up; logs + optionally lists its root as a self-test. */
+    spi_sd_bringup();
+#endif
+
 /*    uint64_t x = 1;
     for (;;) {
         log_printf("kbd matrix = %08lx%08lx\r\n",
