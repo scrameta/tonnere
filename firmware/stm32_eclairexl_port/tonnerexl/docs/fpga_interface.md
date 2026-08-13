@@ -1,11 +1,44 @@
 # TonnereXL — STM32 ↔ FPGA interface contract
 
-**Status:** DRAFT v0.4 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
+**Status:** DRAFT v0.6 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
 
 Authoritative contract between the STM32F407 firmware and the FPGA FSMC adaptor.
 The firmware `fpga_bus` HAL implements exactly what is written here; the RTL must
 match it. To change a field, change *this document first*, bump the version, then
 both sides. **TODO(mark)** marks values the RTL/board decides.
+
+## Changes v0.5 → v0.6 (audio ADC DMA stream)
+
+- Added four consecutive write-only registers, `AUDIO_ADC0`–`AUDIO_ADC3`, for
+  a second STM32 ADC regular sequence streamed directly to the FPGA by DMA.
+- Audio sampling is timer-triggered at nominal **44.1 kHz per channel**. One
+  timer trigger starts one four-rank ADC scan; the four conversions then produce
+  four DMA/FSMC writes to `AUDIO_ADC0`…`AUDIO_ADC3`.
+- The audio ADC must use **single-sequence / external-triggered operation**
+  (`CONT=0`), not continuous conversion mode. Otherwise the first timer trigger
+  would start an uncontrolled free-running scan.
+- Added the DMA contract for the audio stream: four 16-bit writes, `MINC=1`,
+  `NDTR=4`, circular mode, continuous ADC DMA requests (`DDS=1`), no normal
+  half/full-transfer interrupts, and FIFO explicitly enabled at 1/4-full.
+- ADC instance is board-pin dependent (**TODO(mark)**: confirm ADC2 or ADC3).
+  Firmware must choose a non-conflicting DMA2 stream/channel supported by RM0090.
+- Bumped `FPGA_IFACE_VERSION` to `0x0003`.
+
+## Changes v0.4 → v0.5 (paddle ADC DMA + POT_RESET IRQ)
+
+- Added eight consecutive write-only registers, `PADDLE_ADC0`–`PADDLE_ADC7`,
+  as the destination of the STM32 ADC1→DMA2→FSMC circular stream. Each write
+  carries one right-aligned 12-bit raw ADC sample; the register address identifies
+  the ADC rank/channel.
+- Physical paddle threshold detection moves into the FPGA. The FPGA compares each
+  raw ADC write against one common threshold and updates the corresponding internal
+  POT channel state; there is no per-sample CPU processing.
+- `PADDLE01`/`PADDLE23` are retained as the legacy packed 8-bit paddle-value path;
+  the new physical 8-channel ADC stream does not use them.
+- Added IRQ source bit 5 for the **falling edge of `POT_RESET`**. `POTGO` rising
+  starts the drive-low/discharge phase; `POT_RESET` falling ends it and tells
+  firmware to return the eight paddle GPIOs to analogue mode.
+- Bumped `FPGA_IFACE_VERSION` to `0x0002`.
 
 ## Changes v0.3 → v0.4 (addressing)
 
@@ -149,7 +182,7 @@ words wide (`A15..A0`). Physical addresses in the linear FPGA space:
 | --- | --- | --- | --- | --- |
 | `000` | Atari 64 KB window (§8) | `0x3F00_0000` | A14:A0 | 32K words / 64 KB |
 | `110` | SIO handler (§7) | `0x3F06_0000` | A2:A0 | 6 words |
-| `111` | Register file (§3–§6) | `0x3F07_0000` | A5:A0 | 31 words |
+| `111` | Register file (§3–§6) | `0x3F07_0000` | A5:A0 | 43 words |
 | others | reserved (NO_SELECT) | | — | — |
 
 The device selects (`DMA_SELECT` / `SIO_SELECT` / `REG_SELECT` / `NO_SELECT`)
@@ -199,6 +232,18 @@ inside the fixed region). Index *n* below:
 | 28 | RW | DEBUG3 |
 | 29 | W | APERTURE1_EXT (phys A29..A22 for aperture 1) |
 | 30 | W | APERTURE2_EXT (phys A29..A22 for aperture 2) |
+| 31 | W | PADDLE_ADC0 (raw ADC rank/channel 0, bits 11:0) |
+| 32 | W | PADDLE_ADC1 (raw ADC rank/channel 1, bits 11:0) |
+| 33 | W | PADDLE_ADC2 (raw ADC rank/channel 2, bits 11:0) |
+| 34 | W | PADDLE_ADC3 (raw ADC rank/channel 3, bits 11:0) |
+| 35 | W | PADDLE_ADC4 (raw ADC rank/channel 4, bits 11:0) |
+| 36 | W | PADDLE_ADC5 (raw ADC rank/channel 5, bits 11:0) |
+| 37 | W | PADDLE_ADC6 (raw ADC rank/channel 6, bits 11:0) |
+| 38 | W | PADDLE_ADC7 (raw ADC rank/channel 7, bits 11:0) |
+| 39 | W | AUDIO_ADC0 (raw audio ADC rank/channel 0, bits 11:0) |
+| 40 | W | AUDIO_ADC1 (raw audio ADC rank/channel 1, bits 11:0) |
+| 41 | W | AUDIO_ADC2 (raw audio ADC rank/channel 2, bits 11:0) |
+| 42 | W | AUDIO_ADC3 (raw audio ADC rank/channel 3, bits 11:0) |
 
 The extension registers are write-only; firmware shadows their values.
 Firmware: `fpga_aperture_set_ext(aperture, ext)` / `fpga_aperture_get_ext`.
@@ -220,7 +265,7 @@ Atari window: 32K words / 64 KB, 16-bit cells, within the fixed region.
 ## 3. Register map
 
 ### Identity (R)
-`IFACE_MAGIC` (strawman `0x584C`, **TODO(mark)**), `IFACE_VERSION` (`0x0001`).
+`IFACE_MAGIC` (strawman `0x584C`, **TODO(mark)**), `IFACE_VERSION` (`0x0003`).
 
 ### Machine control (W)
 
@@ -270,8 +315,175 @@ physical into PORTA/PORTB → GTIA (mirroring the console inject/phys model), an
 firmware can read the raw physical port state — so USB joysticks (injected from
 the STM32) and real Atari joysticks coexist.
 
-### Paddles (W)
-`PADDLE01`, `PADDLE23` — two 8-bit axes each, from STM32 ADCs. See §6 (POTGO).
+### Paddles
+
+`PADDLE01`, `PADDLE23` are retained as the legacy packed 8-bit paddle-value
+write path (two 8-bit axes per register). They are **not** used for the new
+physical 8-channel ADC path below.
+
+#### Physical paddle ADC stream (W; DMA target)
+
+`PADDLE_ADC0`–`PADDLE_ADC7` are eight consecutive 16-bit write-only registers.
+They are deliberately contiguous so STM32 DMA2 can stream the ADC regular scan
+directly into the FPGA with `MINC=1`, `NDTR=8`, and circular mode:
+
+```text
+ADC1 rank/channel 0  -> PADDLE_ADC0
+ADC1 rank/channel 1  -> PADDLE_ADC1
+...
+ADC1 rank/channel 7  -> PADDLE_ADC7
+                         |
+                         +-- circular DMA wraps back to PADDLE_ADC0
+```
+
+Each transfer is a 16-bit FSMC write. Bits `11:0` contain the right-aligned
+12-bit ADC result; bits `15:12` are ignored by the FPGA. With the current fixed
+region map, the STM32 register-file byte base is `0x60FE_0000`, so DMA starts at
+`PADDLE_ADC0 = 0x60FE_003E` (index 31 × 2 bytes) and increments by one 16-bit
+word per conversion through `PADDLE_ADC7 = 0x60FE_004C`.
+
+**Ordering is load-bearing:** the ADC regular sequence must always contain
+exactly eight ranks in the same order, and the FPGA register number is the
+channel identity. No channel number is carried in the data.
+
+**FPGA threshold handling:** on every `PADDLE_ADCn` write, compare `data[11:0]`
+against one common paddle threshold. A sample at or above the threshold updates
+the corresponding internal POT channel state for the current paddle cycle.
+Threshold state/re-arm is local RTL state associated with the POT cycle; no
+per-sample STM32 interrupt or software comparison is required.
+
+The common threshold is the same for all eight channels. Its numeric value is
+an RTL/firmware configuration constant for now (**TODO(mark): final 12-bit
+threshold value**); there are no per-channel threshold registers in this
+interface.
+
+**FSMC write requirement:** these eight registers are normal, no-wait write
+targets. The FPGA must accept them at the configured FSMC write timing and must
+not intentionally assert `NWAIT` for these writes. Occasional `NWAIT` on an
+unrelated CPU read can temporarily delay the DMA at the shared FSMC bus, so the
+firmware should use the DMA FIFO as short-term elasticity.
+
+**Firmware DMA settings that are part of this contract:**
+
+- ADC1 regular scan, 8 ranks, continuous conversion.
+- ADC DMA requests continuous (`DDS` enabled).
+- DMA2 peripheral→memory, peripheral address = `ADC1->DR`.
+- Peripheral width = 16 bit; memory width = 16 bit.
+- `PINC=0`, `MINC=1`, `CIRC=1`, `NDTR=8`.
+- DMA normal half/full-transfer interrupts disabled.
+- DMA priority = very high.
+- DMA FIFO explicitly enabled with **1/4-full threshold**; do not rely on reset
+  defaults (DMA resets in Direct Mode, while the `FTH` field itself resets to
+  1/2-full and is ignored until FIFO mode is enabled).
+- ADC overrun and DMA transfer/FIFO errors are fault conditions and should be
+  instrumented during bring-up.
+
+See §6 for the `POTGO` / `POT_RESET` GPIO-drive pacing.
+
+### Audio ADC inputs (W; DMA target)
+
+`AUDIO_ADC0`–`AUDIO_ADC3` are four consecutive 16-bit write-only registers for
+the four analogue audio inputs connected to a **different STM32 ADC from the
+paddle ADC**.
+
+The interface is deliberately the same pattern as the paddle stream: the STM32
+ADC regular sequence and DMA destination order define the channel identity.
+
+```text
+audio ADC rank/channel 0  -> AUDIO_ADC0
+audio ADC rank/channel 1  -> AUDIO_ADC1
+audio ADC rank/channel 2  -> AUDIO_ADC2
+audio ADC rank/channel 3  -> AUDIO_ADC3
+                              |
+                              +-- circular DMA wraps back to AUDIO_ADC0
+```
+
+Each transfer is a 16-bit FSMC write. Bits `11:0` contain the right-aligned
+12-bit ADC result; bits `15:12` are ignored by the FPGA.
+
+With the current fixed-region map:
+
+```text
+AUDIO_ADC0 = 0x60FE_004E   (register index 39)
+AUDIO_ADC1 = 0x60FE_0050
+AUDIO_ADC2 = 0x60FE_0052
+AUDIO_ADC3 = 0x60FE_0054
+```
+
+#### Sampling cadence
+
+The target rate is nominally **44.1 kHz per audio channel**.
+
+A hardware timer generates one regular-group trigger at 44.1 kHz. Each trigger
+starts exactly one four-rank scan:
+
+```text
+timer trigger
+    |
+    +--> rank 0 --> DMA write AUDIO_ADC0
+         rank 1 --> DMA write AUDIO_ADC1
+         rank 2 --> DMA write AUDIO_ADC2
+         rank 3 --> DMA write AUDIO_ADC3
+    |
+next 44.1 kHz timer trigger
+```
+
+The four channels are therefore sampled sequentially within each audio frame,
+not simultaneously. The inter-channel skew is the ADC conversion spacing and is
+small compared with the ~22.7 us audio-frame period.
+
+**Important:** configure this ADC with `CONT=0`. The timer trigger is intended
+to start one complete four-rank sequence. With `CONT=1`, the first trigger would
+start continuous free-running conversion and the sample rate would no longer be
+44.1 kHz/channel.
+
+The timer instance/trigger source is a firmware implementation choice
+(**TODO(mark): select a free ADC regular-trigger timer, e.g. TIM2/TIM3 TRGO**).
+If the timer clock does not divide exactly to 44.1 kHz, firmware may use the
+nearest practical rate unless exact audio-clock locking is required.
+
+#### Audio ADC DMA contract
+
+Configure the audio ADC/DMA stream as follows:
+
+- ADC instance: **TODO(mark): confirm ADC2 or ADC3 from the board pinout**.
+- Regular scan enabled; exactly 4 ranks in a fixed order.
+- 12-bit, right-aligned results.
+- External hardware timer trigger on the selected edge.
+- `CONT=0` — one four-rank sequence per timer trigger.
+- ADC DMA enabled; continuous DMA requests (`DDS=1`).
+- DMA2 peripheral→memory, source = selected `ADCx->DR`.
+- Destination = `AUDIO_ADC0` (`0x60FE_004E`).
+- Peripheral width = 16 bit; memory width = 16 bit.
+- `PINC=0`, `MINC=1`, `CIRC=1`, `NDTR=4`.
+- Normal half-transfer / transfer-complete DMA interrupts disabled.
+- DMA priority = **high** (paddle ADC DMA remains very-high priority).
+- DMA FIFO explicitly enabled with **1/4-full threshold**.
+- Peripheral and memory bursts = single.
+- ADC overrun and DMA transfer/FIFO errors are fault conditions.
+
+The STM32F407 DMA2 mappings provide independent DMA request routes for the
+secondary ADCs; select the route that does not conflict with the paddle stream
+or other DMA users. The exact stream/channel selection belongs in the firmware
+pin/DMA configuration once the audio ADC instance is confirmed.
+
+At 44.1 kHz/channel the interface traffic is:
+
+```text
+44,100 frames/s × 4 channels × 2 bytes = 352,800 bytes/s
+```
+
+This is negligible relative to the FSMC bandwidth and small compared with the
+high-rate paddle ADC stream.
+
+#### FPGA handling
+
+The FPGA must accept `AUDIO_ADC0`–`AUDIO_ADC3` as normal no-wait write targets.
+On each write it may simply latch `data[11:0]` into the corresponding latest
+audio-sample register.
+
+No FPGA→STM32 IRQ is required for the normal audio stream. The DMA write itself
+is the transport and pacing mechanism.
 
 ### Freezer debug (W)
 `FREEZE_ADDR` (16-bit), `FREEZE_DATA_CTRL` (data 7:0, read@8, write@9, match@10).
@@ -301,20 +513,20 @@ Single FPGA→STM32 line (PG12, EXTI15_10, level-preferred). Three registers:
 **Write-1-to-clear.** ISR reads `IRQ_PENDING`, handles, writes bits to
 `IRQ_CLEAR`. Line deasserts when no enabled+pending bit remains.
 
-**Edge-triggered.** Every source latches into `IRQ_PENDING` on the **rising edge
-of one signal** — a single edge, not both edges, not a level. After a reset,
-pending is clear and each source needs a fresh rising edge to fire.
+**Edge-triggered.** Every source latches into `IRQ_PENDING` on the **specific
+edge listed below** — one edge, not both edges, not a level. Most sources use a
+rising edge; `POT_RESET` deliberately uses a falling edge. After reset, pending
+is clear and each source needs a fresh qualifying edge to fire.
 
-Sources (each = rising edge of the named signal):
-
-| Bit | Rising edge of | Meaning |
+| Bit | Edge / source | Meaning |
 | --- | --- | --- |
-| 0 | SIO command line | new SIO command frame beginning |
-| 1 | SIO RX not-empty (empty→non-empty) | a byte arrived in the RX FIFO |
-| 2 | SIO TX empty (drain→empty) | transmit finished (FIFO drained) |
-| 3 | POTGO | Atari started a POT cycle (paddle pacing) |
-| 4 | DMA-done | (only if adaptor-assisted DMA is ever used) |
-| 15:5 | — | reserved (read 0) |
+| 0 | rising: SIO command line | new SIO command frame beginning |
+| 1 | rising: SIO RX not-empty (empty→non-empty) | a byte arrived in the RX FIFO |
+| 2 | rising: SIO TX empty (drain→empty) | transmit finished (FIFO drained) |
+| 3 | rising: POTGO | Atari started a POT cycle; enter paddle drive-low/discharge phase |
+| 4 | rising: DMA-done | (only if adaptor-assisted DMA is ever used) |
+| 5 | **falling: POT_RESET (1→0)** | end paddle drive-low/discharge phase; return STM32 paddle pins to analogue mode |
+| 15:6 | — | reserved (read 0) |
 
 **RX read-until-empty rule (load-bearing).** Because bit 1 is a *single* rising
 edge on empty→non-empty, multiple bytes arriving close together may produce only
@@ -326,10 +538,19 @@ assume one IRQ equals one byte. (`drive_service_step` does `while
 The IRQ says *when* to look; the FIFO status registers (`SIO_TX_FIFO`,
 `SIO_RX_FIFO`) say *what state* — poll them for counts/full/empty detail. If the
 opposite transition is ever needed (e.g. TX empty→non-empty, or RX
-non-empty→empty), add it as a separate IRQ bit (5–15 are free).
+non-empty→empty), add it as a separate IRQ bit (6–15 are free).
 
-**POTGO** paces paddles: the FPGA raises it when the Atari starts a POT cycle;
-the STM32 reads its ADCs and writes `PADDLE01`/`PADDLE23` in response.
+**Paddle GPIO pacing.** `POTGO` rising (IRQ bit 3) starts a new POT cycle and
+tells firmware to enter the discharge phase: preload the eight paddle GPIO output
+latches low, then switch those pins from analogue mode to push-pull output-low.
+`POT_RESET` is active during that drive-low/reset interval. Its falling edge
+(IRQ bit 5, `1→0`) ends the interval; firmware switches the eight pins back to
+analogue mode so ADC1 can observe the released paddle voltages.
+
+The raw ADC conversions are then streamed continuously by DMA to
+`PADDLE_ADC0`–`PADDLE_ADC7`; the FPGA performs the common-threshold comparison
+locally. ThreadX is not part of the time-critical GPIO path: the FPGA IRQ ISR
+handles the `MODER`/`BSRR` changes directly and may notify a thread afterward.
 
 ## 7. SIO handler
 
@@ -362,7 +583,7 @@ save-state, and RAM clear (write zeroes) for cold start. No DMA descriptor engin
 `IFACE_MAGIC` / `IFACE_VERSION` read at startup; mismatch → firmware safe-mode.
 ```
 FPGA_IFACE_MAGIC   = 0x584C   /* TODO(mark): finalise */
-FPGA_IFACE_VERSION = 0x0001
+FPGA_IFACE_VERSION = 0x0003
 ```
 
 ## 10. TODO(mark) the RTL pins down
