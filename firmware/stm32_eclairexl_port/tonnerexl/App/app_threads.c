@@ -99,7 +99,7 @@ void tonnere_boot_core(void) {
     fpga_core_set_freezer(0);
     fpga_set_ramconfig(0);          /* 0:64k, 1:128k */
     fpga_core_set_atari800(0);
-    fpga_set_video(1, 1, 0, 0);
+    fpga_set_video(3, 1, 0, 0);
     fpga_set_cart(0);
 
     /* Clear the RAM the 6502 boots from. ext 0x20 = SRAM here — confirm that's

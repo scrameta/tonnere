@@ -172,10 +172,10 @@ VOID tx_application_define(VOID *first_unused_memory)
     HAL_GPIO_WritePin(STM_I2CRESET_GPIO_Port, STM_I2CRESET_Pin, GPIO_PIN_SET);
     pca9546_select(2);
     si5351_init();                          // once after power-on
-    si5351_apply_mode(SI5351_MODE_720_PAL); // call whenever mode changes
+    si5351_apply_mode(SI5351_MODE_576_PAL); // call whenever mode changes
     pca9546_select(3);
     si5351_init();                          // once after power-on
-    si5351_apply_mode(SI5351_MODE_720_PAL); // call whenever mode changes
+    si5351_apply_mode(SI5351_MODE_576_PAL); // call whenever mode changes
     log_printf("Init SI5351 DONE\r\n");
 
     /* --- TonnereXL port entry --- */
