@@ -22,7 +22,6 @@ both sides. **TODO(mark)** marks values the RTL/board decides.
   half/full-transfer interrupts, and FIFO explicitly enabled at 1/4-full.
 - ADC instance is board-pin dependent (**TODO(mark)**: confirm ADC2 or ADC3).
   Firmware must choose a non-conflicting DMA2 stream/channel supported by RM0090.
-- Bumped `FPGA_IFACE_VERSION` to `0x0003`.
 
 ## Changes v0.4 → v0.5 (paddle ADC DMA + POT_RESET IRQ)
 
@@ -35,10 +34,9 @@ both sides. **TODO(mark)** marks values the RTL/board decides.
   POT channel state; there is no per-sample CPU processing.
 - `PADDLE01`/`PADDLE23` are retained as the legacy packed 8-bit paddle-value path;
   the new physical 8-channel ADC stream does not use them.
-- Added IRQ source bit 5 for the **falling edge of `POT_RESET`**. `POTGO` rising
+- Added IRQ source bit 4 for the **falling edge of `POT_RESET`**. `POTGO` rising
   starts the drive-low/discharge phase; `POT_RESET` falling ends it and tells
   firmware to return the eight paddle GPIOs to analogue mode.
-- Bumped `FPGA_IFACE_VERSION` to `0x0002`.
 
 ## Changes v0.3 → v0.4 (addressing)
 
@@ -523,9 +521,8 @@ is clear and each source needs a fresh qualifying edge to fire.
 | 0 | rising: SIO command line | new SIO command frame beginning |
 | 1 | rising: SIO RX not-empty (empty→non-empty) | a byte arrived in the RX FIFO |
 | 2 | rising: SIO TX empty (drain→empty) | transmit finished (FIFO drained) |
-| 3 | rising: POTGO | Atari started a POT cycle; enter paddle drive-low/discharge phase |
-| 4 | rising: DMA-done | (only if adaptor-assisted DMA is ever used) |
-| 5 | **falling: POT_RESET (1→0)** | end paddle drive-low/discharge phase; return STM32 paddle pins to analogue mode |
+| 3 | rising: POT_RESET | Atari started a POT cycle; enter paddle drive-low/discharge phase |
+| 4 | **falling: POT_RESET (1→0)** | end paddle drive-low/discharge phase; return STM32 paddle pins to analogue mode |
 | 15:6 | — | reserved (read 0) |
 
 **RX read-until-empty rule (load-bearing).** Because bit 1 is a *single* rising

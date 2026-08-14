@@ -64,7 +64,7 @@ void spi_sd_bringup(void);
  * after doing at most one unit of work, so they compose into the wait-loop and
  * can be driven directly by tests. */
 void drive_service_step(void);
-void potgo_service_step(void);
+void pot_reset_service_step(void);
 void usbin_service_step(void);
 void sdlife_service_step(void);
 void menu_service_step(void);

@@ -7,6 +7,7 @@
  */
 #include "app_threads.h"
 #include "fpga_bus.h"
+#include "adc_dma.h"
 
 /* Drive/SIO: on an IRQ, demux via the interrupt controller, then drain SIO.
  * Real ATR/ATX protocol SM ports here.
@@ -41,12 +42,15 @@ void drive_service_step(void) {
     }
 }
 
-/* Paddle poll, paced by POTGO IRQ: on POTGO, read STM32 ADCs and write the
- * paddle registers, then clear POTGO. Real ADC reads port here in Phase 6. */
-void potgo_service_step(void) {
-    if (fpga_irq_pending() & (1u << IRQ_POTGO_BIT)) {
-        /* TODO(port): read 4 ADC axes, fpga_paddle_write(0,a0,a1); (1,a2,a3). */
-        fpga_irq_clear((uint16_t)(1u << IRQ_POTGO_BIT));
+/* Paddle IRQ:  -> POT_RESET: dump on, NOT(POT_RESET): adc dma on */
+void pot_reset_service_step(void) {
+    if (fpga_irq_pending() & (1u << IRQ_POT_RESET_LH_BIT)) {
+        adc_dma_paddle_pins_clamp();
+        fpga_irq_clear((uint16_t)(1u << IRQ_POT_RESET_LH_BIT));
+    }
+    if (fpga_irq_pending() & (1u << IRQ_POT_RESET_HL_BIT)) {
+        adc_dma_paddle_pins_release();
+        fpga_irq_clear((uint16_t)(1u << IRQ_POT_RESET_HL_BIT));
     }
 }
 

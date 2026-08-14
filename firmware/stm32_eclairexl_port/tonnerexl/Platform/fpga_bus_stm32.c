@@ -105,6 +105,17 @@ void fpga_paddle_write(int pair, uint8_t a, uint8_t b) {
     fpga_reg_write(pair ? REG_PADDLE23 : REG_PADDLE01, v);
 }
 
+/* Manual single-channel writes to the DMA target registers — test only.
+ * Not used in the normal path (DMA owns these). Masked to the FPGA's 12 bits. */
+void fpga_paddle_adc_write(unsigned chan, uint16_t value12) {
+    if (chan >= FPGA_PADDLE_ADC_COUNT) return;
+    fpga_reg_write((enum fpga_reg_index)(REG_PADDLE_ADC0 + chan), (uint16_t)(value12 & 0x0fffu));
+}
+void fpga_audio_adc_write(unsigned chan, uint16_t value12) {
+    if (chan >= FPGA_AUDIO_ADC_COUNT) return;
+    fpga_reg_write((enum fpga_reg_index)(REG_AUDIO_ADC0 + chan), (uint16_t)(value12 & 0x0fffu));
+}
+
 void fpga_freeze_addr(uint16_t addr) { fpga_reg_write(REG_FREEZE_ADDR, addr); }
 void fpga_freeze_data_ctrl(uint8_t data, int rd_, int wr_, int match) {
     uint16_t v = data;

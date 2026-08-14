@@ -139,7 +139,8 @@ UINT app_main(const app_config_t *cfg) {
     fpga_irq_enable((uint16_t)((1u << IRQ_SIO_CMD_BIT) |
                                (1u << IRQ_SIO_RX_BIT) |
                                (1u << IRQ_SIO_TX_BIT) |
-                               (1u << IRQ_POTGO_BIT)));
+                               (1u << IRQ_POT_RESET_LH_BIT) |
+                               (1u << IRQ_POT_RESET_HL_BIT)));
 
     /* Create the application threads and return so tx_kernel_enter can finish
      * and the scheduler goes live. The core bring-up (6502 reset, RAM clear,
@@ -152,6 +153,19 @@ UINT app_main(const app_config_t *cfg) {
         log_printf("app_threads_create failed: %u\r\n", st);
         return st;
     }
+
+    /* ADCs - for paddle and audio */
+    UINT pad_st = adc_dma_paddle_start();
+    if (pad_st != TX_SUCCESS) {
+        log_printf("paddle dma start failed: %u\r\n", st);
+        return st;
+    }
+    UINT aud_st = adc_dma_audio_start();
+    if (aud_st != TX_SUCCESS) {
+        log_printf("adc dma start failed: %u\r\n", st);
+        return st;
+    }
+
     log_puts("TonnereXL port started\r\n");
     return TX_SUCCESS;
 }

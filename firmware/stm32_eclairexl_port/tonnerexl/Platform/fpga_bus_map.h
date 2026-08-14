@@ -107,8 +107,49 @@ enum fpga_reg_index {
      * firmware shadows the values. See docs/fpga_interface.md §2.2. */
     REG_APERTURE1_EXT,   /* aperture 1 (A22=0, 8 MB window) */
     REG_APERTURE2_EXT,   /* aperture 2 (A22=1 !=1111, 7 MB window) */
+
+    /* Physical paddle ADC stream (W; ADC1->DMA2 circular target).
+     * Eight CONSECUTIVE 16-bit write-only regs; the register index is the
+     * ADC rank/channel identity. data[11:0] = right-aligned 12-bit sample,
+     * bits 15:12 ignored by the FPGA. DMA streams rank 0..7 -> ADC0..ADC7
+     * with MINC=1/NDTR=8/CIRC=1. Contiguity is load-bearing — do not reorder.
+     * See docs/fpga_interface.md §3 "Physical paddle ADC stream". */
+    REG_PADDLE_ADC0,     /* index 31 */
+    REG_PADDLE_ADC1,
+    REG_PADDLE_ADC2,
+    REG_PADDLE_ADC3,
+    REG_PADDLE_ADC4,
+    REG_PADDLE_ADC5,
+    REG_PADDLE_ADC6,
+    REG_PADDLE_ADC7,     /* index 38 */
+
+    /* Audio ADC stream (W; second ADC->DMA2 circular target).
+     * Four CONSECUTIVE 16-bit write-only regs, same pattern as the paddle
+     * stream. Timer-triggered 4-rank scan at ~44.1 kHz/channel (CONT=0).
+     * See docs/fpga_interface.md §3 "Audio ADC inputs". */
+    REG_AUDIO_ADC0,      /* index 39 */
+    REG_AUDIO_ADC1,
+    REG_AUDIO_ADC2,
+    REG_AUDIO_ADC3,      /* index 42 */
+
     REG_COUNT
 };
+
+/* Compile-time guarantee of the contiguity the DMA contract relies on. */
+_Static_assert(REG_PADDLE_ADC7 - REG_PADDLE_ADC0 == 7, "paddle ADC regs must be contiguous");
+_Static_assert(REG_AUDIO_ADC3  - REG_AUDIO_ADC0  == 3, "audio ADC regs must be contiguous");
+_Static_assert(REG_PADDLE_ADC0 == 31, "paddle ADC base index must match fpga_interface.md");
+_Static_assert(REG_AUDIO_ADC0  == 39, "audio ADC base index must match fpga_interface.md");
+
+/* Absolute FSMC halfword addresses of the two DMA destinations.
+ * These are the exact byte addresses quoted in fpga_interface.md §3:
+ *   PADDLE_ADC0 = 0x60FE_003E   AUDIO_ADC0 = 0x60FE_004E
+ * Kept as macros so the ADC/DMA driver can hand them straight to the DMA
+ * memory-address field without recomputing the aperture math. */
+#define FPGA_PADDLE_ADC_ADDR  FPGA_REG_ADDR(REG_PADDLE_ADC0)
+#define FPGA_AUDIO_ADC_ADDR   FPGA_REG_ADDR(REG_AUDIO_ADC0)
+#define FPGA_PADDLE_ADC_COUNT 8u
+#define FPGA_AUDIO_ADC_COUNT  4u
 
 /* ------------------------------------------------------------------ */
 /* SIO UART register indices (separate region)                         */
@@ -189,26 +230,21 @@ enum fpga_sio_index {
 #define FREEZE_WRITE_BIT      9
 #define FREEZE_MATCH_BIT      10
 
-/* IRQ controller source bits */
-#define IRQ_SIO_CMD_BIT       0
-#define IRQ_SIO_RX_BIT       1
-#define IRQ_SIO_TX_BIT       2
-#define IRQ_POTGO_BIT         3
-#define IRQ_DMA_DONE_BIT      4
+/* IRQ controller source bits (edge-triggered; see docs/fpga_interface.md §6).
+ * Each source latches on the SPECIFIC edge noted — one edge, not a level.
+ * Most are rising; POT_RESET is deliberately FALLING. */
+#define IRQ_SIO_CMD_BIT       0   /* rising:  new SIO command frame           */
+#define IRQ_SIO_RX_BIT        1   /* rising:  RX FIFO empty->non-empty        */
+#define IRQ_SIO_TX_BIT        2   /* rising:  TX FIFO drained (drain->empty)  */
+#define IRQ_POT_RESET_LH_BIT  3   /* rising:  POT_RESET — enter paddle discharge  */
+#define IRQ_POT_RESET_HL_BIT  4   /* FALLING: POT_RESET 1->0 — release paddle */
+                                  /*          pins back to analogue mode      */
 
 /* ------------------------------------------------------------------ */
 /* Identity                                                            */
 /* ------------------------------------------------------------------ */
 #define FPGA_IFACE_MAGIC    0x584Cu   /* 'XL' — TODO(mark): finalise */
-#define FPGA_IFACE_VERSION  0x0001u
-
-/*
- * Atari 800XL keyboard matrix: 64 switches, bit n = KBCODE n. Break and both
- * Shift keys occupy their real matrix positions. KBD0=bits15:0, KBD1=31:16,
- * KBD2=47:32, KBD3=63:48.
- * TODO(mark): confirm KBCODE->bit assignment against the RTL matrix scan;
- * firmware fills this from the standard 800XL KBCODE table.
- */
+#define FPGA_IFACE_VERSION  0x0003u   /* fpga_interface.md v0.6 (paddle+audio ADC) */
 
 /* ------------------------------------------------------------------ */
 /* Firmware-side GPIO (from the board netlist / CubeMX pinlist).        */
@@ -235,6 +271,24 @@ enum fpga_sio_index {
 /* Net-(RN7-R2.2) but the schematic shows it as SD.WP).                 */
 #define FPGA_SD_WP_GPIO_PORT    GPIOD
 #define FPGA_SD_WP_GPIO_PIN     GPIO_PIN_3
+
+/* Paddle ADC input pins, in DMA rank order (rank n -> PADDLE_ADCn).
+ * From the CubeMX pinlist with board 0.51 errata applied. The rank order
+ * here is the channel identity the FPGA decodes from the register address,
+ * so it MUST match the ADC1 regular-sequence rank order in adc_dma.c.
+ *
+ * These are needed for the POTGO/POT_RESET clamp: on POTGO the ISR switches
+ * these pins analogue->output-low (discharge); on POT_RESET falling it
+ * switches them back to analogue. Rank order (see adc_dma.c):
+ *   rank 0..3 : PC0 PC1 PC2 PC3   (JOY.POT0-3,  ADC_IN10..13)
+ *   rank 4..7 : PA0 PA1 PA4 PA5   (JOY2.POT4-7, ADC_IN0,1,4,5)
+ * Note the paddle pins are split across GPIOA and GPIOC, so the "one MODER
+ * write" optimisation in the design doc is not available here — the clamp
+ * touches two ports. See adc_dma.c: paddle_pins_clamp()/release(). */
+#define FPGA_PADDLE_PC_PORT     GPIOC
+#define FPGA_PADDLE_PC_PINS     (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)
+#define FPGA_PADDLE_PA_PORT     GPIOA
+#define FPGA_PADDLE_PA_PINS     (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5)
 
 /* Other FPGA config/status lines from the netlist, for later use:     */
 /*   PG11 FPGA.PS_N, PG13 FPGA.CONFIG_N, PG14 FPGA.STATUS_N,           */

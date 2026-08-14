@@ -207,6 +207,42 @@ static void test_sio_fifo(void) {
     CHECK(txout[0]==0xC0 && txout[3]==0xC3);
 }
 
+/* Manual writes to the paddle/audio ADC DMA-target registers (test path).
+ * In normal operation DMA owns these; the manual accessors let us verify the
+ * FPGA-visible register layout without the ADC running. Also checks the
+ * contiguity + base addresses the DMA contract depends on. */
+static void test_adc_stream_regs(void) {
+    fpga_bus_init();
+
+    /* paddle: 8 channels, each masked to 12 bits, landing in consecutive regs */
+    for (unsigned ch = 0; ch < FPGA_PADDLE_ADC_COUNT; ++ch)
+        fpga_paddle_adc_write(ch, (uint16_t)(0x0A00 + ch));
+    for (unsigned ch = 0; ch < FPGA_PADDLE_ADC_COUNT; ++ch)
+        CHECK_EQ_U32(fake_fpga_get_reg((enum fpga_reg_index)(REG_PADDLE_ADC0 + ch)),
+                     (uint16_t)(0x0A00 + ch));
+
+    /* audio: 4 channels */
+    for (unsigned ch = 0; ch < FPGA_AUDIO_ADC_COUNT; ++ch)
+        fpga_audio_adc_write(ch, (uint16_t)(0x0B00 + ch));
+    for (unsigned ch = 0; ch < FPGA_AUDIO_ADC_COUNT; ++ch)
+        CHECK_EQ_U32(fake_fpga_get_reg((enum fpga_reg_index)(REG_AUDIO_ADC0 + ch)),
+                     (uint16_t)(0x0B00 + ch));
+
+    /* bits 15:12 are dropped (FPGA ignores them; accessor masks) */
+    fpga_paddle_adc_write(0, 0xF123);
+    CHECK_EQ_U32(fake_fpga_get_reg(REG_PADDLE_ADC0), 0x0123);
+
+    /* out-of-range channel is a no-op, not a clobber of an adjacent reg */
+    fpga_paddle_adc_write(FPGA_PADDLE_ADC_COUNT, 0x0FFF);   /* ignored */
+    CHECK_EQ_U32(fake_fpga_get_reg(REG_AUDIO_ADC0), 0x0B00); /* untouched */
+
+    /* layout invariants the DMA stream relies on */
+    CHECK_EQ_U32(REG_PADDLE_ADC0, 31);
+    CHECK_EQ_U32(REG_AUDIO_ADC0, 39);
+    CHECK_EQ_U32(REG_PADDLE_ADC7 - REG_PADDLE_ADC0, 7);
+    CHECK_EQ_U32(REG_AUDIO_ADC3 - REG_AUDIO_ADC0, 3);
+}
+
 void run_fpga_bus_tests(void) {
     RUN(test_identity);
     RUN(test_reg_roundtrip);
@@ -220,6 +256,7 @@ void run_fpga_bus_tests(void) {
     RUN(test_irq_controller);
     RUN(test_atari_copy_even_odd);
     RUN(test_sio_fifo);
+    RUN(test_adc_stream_regs);
 }
 
 #include "platform.h"

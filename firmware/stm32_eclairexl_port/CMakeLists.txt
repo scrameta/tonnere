@@ -86,6 +86,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     #AZURE_RTOS/App/thread_memtest.c
     #AZURE_RTOS/App/logger.c
     tonnerexl/Platform/fpga_bus_stm32.c
+    tonnerexl/Platform/adc_dma.c
     tonnerexl/Platform/platform_stm32.c
     tonnerexl/Filesystem/simplefile_filex.c
     tonnerexl/App/app_main.c

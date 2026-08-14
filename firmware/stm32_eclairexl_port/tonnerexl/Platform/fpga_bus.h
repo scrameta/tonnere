@@ -69,6 +69,17 @@ uint16_t fpga_joy_phys_read(int pair /*0=JOY01,1=JOY23*/);   /* physical ports *
 /* ---- paddles (analog, from STM32 ADCs) ---- */
 void fpga_paddle_write(int pair /*0=PADDLE01,1=PADDLE23*/, uint8_t axis_a, uint8_t axis_b);
 
+/* ---- physical ADC streams (normally written by DMA; these are for manual
+ *      bring-up / test only) ----------------------------------------------
+ * In normal operation the paddle and audio ADC registers are the destination
+ * of a circular ADC->DMA2 stream and firmware never touches them. These
+ * helpers let a test write a single raw 12-bit sample to one channel so the
+ * FPGA threshold/latch path can be exercised without the ADC running.
+ * chan is 0..7 (paddle) or 0..3 (audio); value is masked to 12 bits.
+ * Out-of-range chan is ignored. */
+void fpga_paddle_adc_write(unsigned chan, uint16_t value12);
+void fpga_audio_adc_write(unsigned chan, uint16_t value12);
+
 /* ---- freezer debug ---- */
 void fpga_freeze_addr(uint16_t addr);
 void fpga_freeze_data_ctrl(uint8_t data, int rd, int wr, int match);
