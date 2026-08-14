@@ -6,7 +6,7 @@
 | Audio DAC         |  🟢    | Played a multi-frequency sine wave fine |
 | ESP32             |  🟢    | Ran simple pin toggler, also checked it appears on JTAG | 
 | ESP32 audio DAC   | ⚪     | |
-| ESP32 WIFI        | ⚪     | |
+| ESP32 WIFI        |  🟢    | Fujinet is working fine |
 | FPGA              |  🟢    | Working fine. Caution: Do not use clock input pins as outputs!  | 
 | FPGA FLASH        |  🟢    | Working fine. Only tested one IC.  | 
 | HDMI port         |  🟢    | Tested DVI video output  | 
