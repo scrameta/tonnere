@@ -12,6 +12,7 @@
 #include "platform.h"
 #include "logger.h"
 #include "fpga_bus.h"
+#include "adc_dma.h"
 #include "simplefile_filex.h"
 
 /* ------------------------------------------------------------------ *
@@ -155,15 +156,18 @@ UINT app_main(const app_config_t *cfg) {
     }
 
     /* ADCs - for paddle and audio */
+/*
+    log_printf("starting paddle dma\r\n");
     UINT pad_st = adc_dma_paddle_start();
     if (pad_st != TX_SUCCESS) {
-        log_printf("paddle dma start failed: %u\r\n", st);
-        return st;
-    }
+        log_printf("paddle dma start failed: %u\r\n", pad_st);
+        return pad_st;
+    }*/
+    log_printf("starting adc dma\r\n");
     UINT aud_st = adc_dma_audio_start();
     if (aud_st != TX_SUCCESS) {
-        log_printf("adc dma start failed: %u\r\n", st);
-        return st;
+        log_printf("adc dma start failed: %u\r\n", aud_st);
+        return aud_st;
     }
 
     log_puts("TonnereXL port started\r\n");
