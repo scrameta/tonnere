@@ -22,6 +22,7 @@
 /* Handles owned by CubeMX (Core/Src/main.c). */
 extern ADC_HandleTypeDef hadc2;   /* paddle: 8-rank continuous scan          */
 extern ADC_HandleTypeDef hadc1;   /* audio:  4-rank timer-triggered scan     */
+extern TIM_HandleTypeDef htim2;   /* audio ADC trigger (TRGO on update)       */
 
 volatile adc_dma_fault_info_t adc_dma_last_fault;
 
@@ -77,20 +78,32 @@ fpga_status_t adc_dma_audio_start(void)
 {
     __HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_OVR);
 
-    /* CONT=0: the ADC waits for each TIM trigger to run one 4-rank scan.
-     * DDS=1 keeps DMA requests alive across triggers. The timer itself is
-     * started elsewhere (MX_TIMx_Init + HAL_TIM_Base_Start); see docs. */
+    /* CONT=0: the ADC waits for each TIM2 trigger to run one 4-rank scan.
+     * DDS=1 keeps DMA requests alive across triggers.  MX_TIM2_Init only
+     * configures the timer; it does not set TIM_CR1.CEN, so start the trigger
+     * after the ADC/DMA have been armed.  Previously no code started TIM2 and
+     * consequently ADC1 produced no conversions or FSMC writes. */
     if (HAL_ADC_Start_DMA(&hadc1,
                           (uint32_t *)FPGA_AUDIO_ADC_ADDR,
                           FPGA_AUDIO_ADC_COUNT) != HAL_OK) {
         return FPGA_ERR_STATE;
     }
     adc_dma_disable_completion_irqs(&hadc1);
+
+    if (HAL_TIM_Base_Start(&htim2) != HAL_OK) {
+        (void)HAL_ADC_Stop_DMA(&hadc1);
+        return FPGA_ERR_STATE;
+    }
     return FPGA_OK;
 }
 
 void adc_dma_paddle_stop(void) { (void)HAL_ADC_Stop_DMA(&hadc2); }
-void adc_dma_audio_stop(void)  { (void)HAL_ADC_Stop_DMA(&hadc1); }
+void adc_dma_audio_stop(void)
+{
+    /* Stop new triggers before disarming their consumer. */
+    (void)HAL_TIM_Base_Stop(&htim2);
+    (void)HAL_ADC_Stop_DMA(&hadc1);
+}
 
 /* ------------------------------------------------------------------ */
 /* POTGO / POT_RESET paddle-pin clamp                                  */

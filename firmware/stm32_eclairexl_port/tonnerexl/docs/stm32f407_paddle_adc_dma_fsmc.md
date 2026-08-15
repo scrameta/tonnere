@@ -26,6 +26,11 @@ The bandwidth is modest: one 16-bit FSMC write per ADC conversion. Even at the F
 
 ThreadX should stay out of the fast path. The FPGA IRQ handler should perform the GPIO change directly; a ThreadX event can be posted afterward if software needs to know about it.
 
+For the audio stream, remember that `MX_TIM2_Init()` only configures TIM2. It
+does not start the counter. `adc_dma_audio_start()` therefore arms ADC1/DMA2
+first and then calls `HAL_TIM_Base_Start(&htim2)`; without that call ADC1 never
+sees its external trigger and the DMA quite correctly performs no FSMC writes.
+
 ---
 
 ## 2. Implementation steps
