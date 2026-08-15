@@ -157,6 +157,38 @@ Therefore treat **any ADC overrun as a fault/assertion**, not as a harmless drop
 
 Also consider enabling DMA transfer/FIFO error reporting while leaving normal half-transfer/transfer-complete interrupts disabled.
 
+### Diagnosing an apparent hang
+
+The default error hook does not spin: it records `adc_dma_last_fault` and
+returns. In GDB, stop the target after the failure and inspect:
+
+```text
+p adc_dma_last_fault
+p/x hadc2.ErrorCode
+p/x hadc2.State
+p/x hdma_adc2.ErrorCode
+p/x DMA2->LISR
+p/x DMA2_Stream2->CR
+p/x DMA2_Stream2->NDTR
+p/x DMA2_Stream2->FCR
+```
+
+Set breakpoints on `HAL_ADC_ErrorCallback`, `HardFault_Handler`,
+`BusFault_Handler`, and `Error_Handler` before starting the stream. If none is
+hit, halt manually and inspect the current PC, LR, IPSR, and ThreadX current
+thread pointer. A PC in `DMA2_Stream2_IRQHandler` suggests an interrupt source
+is still enabled; a bus fault around the FSMC destination suggests an address
+or FSMC timing problem. A nonzero `adc_dma_last_fault.count` distinguishes an
+ADC/DMA fault from scheduler starvation without relying on logging from ISR
+context.
+
+For a bandwidth isolation test, first increase ADC2 sampling time substantially.
+If that helps, trigger ADC2 from a spare timer at a low rate and increase the
+rate gradually. This separates ADC/FSMC bus saturation or FPGA wait-state
+issues from ThreadX scheduling. Also probe FSMC `NWE`, `NE`, and `NWAIT`: the
+continuous eight-rank scan produces one FSMC write per conversion, not one
+write per complete scan.
+
 ### ADC sample time
 
 The shortest ADC sample time gives the highest rate, but only use it if the analogue source can charge the ADC sample capacitor quickly enough. A high source impedance may require a longer ADC sample time.

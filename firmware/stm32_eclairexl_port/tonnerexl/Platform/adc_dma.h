@@ -60,11 +60,29 @@ void adc_dma_audio_stop(void);
 void adc_dma_paddle_pins_clamp(void);
 void adc_dma_paddle_pins_release(void);
 
+/* Debug snapshot populated before adc_dma_on_fault() is called.  It remains
+ * valid after the IRQ returns and can be inspected as `adc_dma_last_fault` in
+ * GDB.  count==0 means that no ADC/DMA error callback has run since reset. */
+typedef struct {
+    uint32_t count;
+    uint32_t adc_instance;
+    uint32_t error;
+    uint32_t adc_sr;
+    uint32_t adc_cr1;
+    uint32_t adc_cr2;
+    uint32_t dma_cr;
+    uint32_t dma_ndtr;
+    uint32_t dma_fcr;
+    uint32_t dma_lisr;
+    uint32_t dma_hisr;
+} adc_dma_fault_info_t;
+
+extern volatile adc_dma_fault_info_t adc_dma_last_fault;
+
 /* Fault hook. Called from the DMA/ADC error ISR path when an ADC overrun (OVR)
- * or DMA transfer/FIFO error is seen. In DMA mode an ADC overrun latches the
- * ADC and it stops issuing DMA requests, so this is a hard fault, not a dropped
- * sample (design doc §"ADC overrun is a real fault"). Default impl asserts;
- * override for your bring-up policy. */
+ * or DMA transfer/FIFO error is seen. The default implementation returns after
+ * the snapshot above is recorded, rather than turning the fault into an
+ * apparent firmware hang. Override this hook for a production recovery policy. */
 void adc_dma_on_fault(ADC_HandleTypeDef *hadc, uint32_t err);
 
 #ifdef __cplusplus
