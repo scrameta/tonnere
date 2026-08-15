@@ -96,6 +96,7 @@ architecture vhdl of fsmc_adaptor is
   -- DELAYED FOR WRITES
   signal FSMC_D_REG, FSMC_D_NEXT : std_logic_vector(15 downto 0);
   signal FSMC_A_REG, FSMC_A_NEXT : std_logic_vector(22 downto 0);
+  signal FSMC_NBL_REG, FSMC_NBL_NEXT : std_logic_vector(1 downto 0);
 
   -- Capture state machine (CLK_FAST domain)
   type capture_state_t is (
@@ -301,9 +302,15 @@ begin
     if (RESET_N = '0') then
       CAPTURE_STATE_REG <= CAPTURE_STATE_DESELECTED;
       READ_READY_LAST_REG <= '0';
+      FSMC_NBL_REG <= (others=>'1');
+      FSMC_D_REG <= (others=>'0');
+      FSMC_A_REG <= (others=>'0');
     elsif (CLK_FAST'EVENT and CLK_FAST = '1') then
       CAPTURE_STATE_REG <= CAPTURE_STATE_NEXT;
       READ_READY_LAST_REG <= READ_READY_REG;
+      FSMC_NBL_REG <= FSMC_NBL_NEXT;
+      FSMC_D_REG <= FSMC_D_NEXT;
+      FSMC_A_REG <= FSMC_A_NEXT;
     end if;
   end process;
 
@@ -316,7 +323,9 @@ begin
     FSMC_NOE_REG,
     FSMC_NWE_REG,
     CAPTURE_FIFO_FULL,
-    READ_READY_REG, READ_READY_LAST_REG, READ_DATA_REG
+    READ_READY_REG, READ_READY_LAST_REG, READ_DATA_REG,
+    FSMC_NBL, FSMC_A, FSMC_D_IN, FSMC_NOE,
+    FSMC_NBL_REG, FSMC_A_REG, FSMC_D_REG
   )
   begin
     CAPTURE_STATE_NEXT <= CAPTURE_STATE_REG;
@@ -324,6 +333,10 @@ begin
     FSMC_NWAIT <= '0';
     CAPTURE_FIFO_REQ <= '0';
     CAPTURE_FIFO_WE_N <= '1';
+
+    FSMC_NBL_NEXT <= FSMC_NBL;
+    FSMC_A_NEXT <= FSMC_A;
+    FSMC_D_NEXT <= FSMC_D_IN;
 
     FSMC_D_OE <= '0';
 
@@ -333,6 +346,9 @@ begin
           CAPTURE_STATE_NEXT <= CAPTURE_STATE_SELECTED;
         end if;
       when CAPTURE_STATE_SELECTED =>
+        --FSMC_NBL_NEXT <= FSMC_NBL;
+        --FSMC_A_NEXT <= FSMC_A;
+        --FSMC_D_NEXT <= FSMC_D_IN;
         if FSMC_NOE_REG = '0' then
           CAPTURE_STATE_NEXT <= CAPTURE_STATE_READ_CAPTURE;
         elsif FSMC_NWE_REG = '0' then
@@ -353,8 +369,8 @@ begin
               CAPTURE_STATE_NEXT <= CAPTURE_STATE_READ_COMPLETE;
           end if;
       when CAPTURE_STATE_READ_COMPLETE =>
-          FSMC_NWAIT <= '1';
-          FSMC_D_OE <= '1';
+          FSMC_NWAIT <= not(FSMC_NOE); -- Fast response
+          FSMC_D_OE <= not(FSMC_NOE);
           if FSMC_NOE_REG = '1' then
               CAPTURE_STATE_NEXT <= CAPTURE_STATE_SELECTED;
           end if;
@@ -378,10 +394,10 @@ begin
   fsmc_fifo1 : ENTITY work.fsmc_fifo
   PORT MAP
   (
-    data(15 downto 0)  => FSMC_D_IN,
-    data(38 downto 16) => FSMC_A,
+    data(15 downto 0)  => FSMC_D_REG,
+    data(38 downto 16) => FSMC_A_REG,
     data(39)           => CAPTURE_FIFO_WE_N,
-    data(41 downto 40) => FSMC_NBL,
+    data(41 downto 40) => FSMC_NBL_REG,
     wrclk   => CLK_FAST, 
     wrreq   => CAPTURE_FIFO_REQ,
     wrfull  => CAPTURE_FIFO_FULL,
