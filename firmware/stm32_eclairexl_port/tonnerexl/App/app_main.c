@@ -156,19 +156,34 @@ UINT app_main(const app_config_t *cfg) {
     }
 
     /* ADCs - for paddle and audio */
-/*
     log_printf("starting paddle dma\r\n");
     UINT pad_st = adc_dma_paddle_start();
     if (pad_st != TX_SUCCESS) {
         log_printf("paddle dma start failed: %u\r\n", pad_st);
         return pad_st;
-    }*/
+    }
+
     log_printf("starting adc dma\r\n");
     UINT aud_st = adc_dma_audio_start();
     if (aud_st != TX_SUCCESS) {
         log_printf("adc dma start failed: %u\r\n", aud_st);
         return aud_st;
     }
+
+/*    while(1)
+    {
+    fpga_paddle_adc_write(0,0x111);
+    fpga_paddle_adc_write(1,0x222);
+    fpga_paddle_adc_write(2,0x333);
+    fpga_paddle_adc_write(3,0x444);
+    fpga_paddle_adc_write(4,0x555);
+    fpga_paddle_adc_write(5,0x666);
+    fpga_paddle_adc_write(6,0x777);
+    fpga_paddle_adc_write(7,0x888);
+    fpga_audio_adc_write(0,0x511);
+    fpga_audio_adc_write(1,0x522);
+    fpga_audio_adc_write(2,0x533);
+    fpga_audio_adc_write(3,0x544); }*/
 
     log_puts("TonnereXL port started\r\n");
     return TX_SUCCESS;
