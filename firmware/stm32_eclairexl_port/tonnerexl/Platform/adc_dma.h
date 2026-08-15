@@ -39,8 +39,8 @@ extern "C" {
 fpga_status_t adc_dma_paddle_start(void);
 
 /* Start the audio stream: ADC1 4-rank timer-triggered scan, circular DMA to
- * AUDIO_ADC0..3. The timer (TIM2 TRGO by default) must already be configured
- * and started to produce the 44.1 kHz trigger. */
+ * AUDIO_ADC0..3. TIM2 must already be configured for its ~44.1 kHz update
+ * TRGO; this function starts it after arming the ADC/DMA. */
 fpga_status_t adc_dma_audio_start(void);
 
 /* Stop each stream (DMA + ADC). Mainly for bring-up / fault recovery. */
