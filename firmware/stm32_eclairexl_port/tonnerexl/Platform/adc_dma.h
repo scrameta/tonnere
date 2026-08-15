@@ -6,8 +6,8 @@
  * normal path; the FPGA does the paddle threshold compare and latches audio.
  * See docs/stm32f407_paddle_adc_dma_fsmc.md and docs/fpga_interface.md §3.
  *
- *   Paddle:  ADC1, 8-rank continuous scan, DMA very-high, dest PADDLE_ADC0..7.
- *   Audio:   ADC2, 4-rank timer-triggered scan (~44.1 kHz), DMA high,
+ *   Paddle:  ADC2, 8-rank continuous scan, DMA very-high, dest PADDLE_ADC0..7.
+ *   Audio:   ADC1, 4-rank timer-triggered scan (~44.1 kHz), DMA high,
  *            dest AUDIO_ADC0..3, CONT=0.
  *
  * This module owns the ADC-start / DMA-start sequencing and the POTGO/
@@ -33,12 +33,12 @@
 extern "C" {
 #endif
 
-/* Start the paddle stream: ADC1 8-rank continuous scan, circular DMA to
- * PADDLE_ADC0..7. Idempotent-ish: call once after MX_ADC1_Init and the DMA
+/* Start the paddle stream: ADC2 8-rank continuous scan, circular DMA to
+ * PADDLE_ADC0..7. Idempotent-ish: call once after MX_ADC2_Init and the DMA
  * MSP link. Returns FPGA_OK or an error if HAL start fails. */
 fpga_status_t adc_dma_paddle_start(void);
 
-/* Start the audio stream: ADC2 4-rank timer-triggered scan, circular DMA to
+/* Start the audio stream: ADC1 4-rank timer-triggered scan, circular DMA to
  * AUDIO_ADC0..3. The timer (TIM2 TRGO by default) must already be configured
  * and started to produce the 44.1 kHz trigger. */
 fpga_status_t adc_dma_audio_start(void);

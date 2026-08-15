@@ -108,7 +108,7 @@ enum fpga_reg_index {
     REG_APERTURE1_EXT,   /* aperture 1 (A22=0, 8 MB window) */
     REG_APERTURE2_EXT,   /* aperture 2 (A22=1 !=1111, 7 MB window) */
 
-    /* Physical paddle ADC stream (W; ADC1->DMA2 circular target).
+    /* Physical paddle ADC stream (W; ADC2->DMA2 circular target).
      * Eight CONSECUTIVE 16-bit write-only regs; the register index is the
      * ADC rank/channel identity. data[11:0] = right-aligned 12-bit sample,
      * bits 15:12 ignored by the FPGA. DMA streams rank 0..7 -> ADC0..ADC7

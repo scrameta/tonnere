@@ -7,7 +7,7 @@ Use the STM32 ADC only as a fast 8-channel sampler and stream every conversion d
 ```text
 8 ADC channels
       ↓
-ADC1 regular scan, continuous
+ADC2 regular scan, continuous
       ↓
 DMA2, circular
       ↓
@@ -51,7 +51,7 @@ On each write:
 
 Provide a register or command to clear/re-arm the sticky bits.
 
-### ADC1
+### ADC2
 
 Configure:
 
@@ -69,11 +69,11 @@ The ADC produces one DMA request after each regular-channel conversion.
 
 ### DMA2
 
-Configure a valid ADC1 DMA2 stream/channel with:
+Configure a valid ADC2 DMA2 stream/channel with:
 
 ```text
 Direction          peripheral → memory
-Peripheral address ADC1->DR
+Peripheral address ADC2->DR
 Memory address     FPGA_ADC_BASE
 NDTR               8
 Peripheral width   16 bit
@@ -184,7 +184,7 @@ This keeps response latency deterministic and independent of thread scheduling.
 ## Recommended initial configuration
 
 ```text
-ADC1: 8-channel continuous scan
+ADC2: 8-channel continuous scan
 ADC DMA: enabled + DDS enabled
 DMA2: peripheral→memory, circular, NDTR=8
 Widths: 16-bit / 16-bit
