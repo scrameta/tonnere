@@ -25,6 +25,21 @@
 extern ADC_HandleTypeDef hadc2;   /* paddle: 8-rank continuous scan          */
 extern ADC_HandleTypeDef hadc1;   /* audio:  4-rank timer-triggered scan     */
 
+/* HAL_ADC_Start_DMA() deliberately uses HAL_DMA_Start_IT(), even when the
+ * application has no use for buffer-completion callbacks.  For the paddle
+ * stream that would produce one half-transfer IRQ every four conversions and
+ * one transfer-complete IRQ every eight conversions.  A free-running ADC can
+ * consequently spend essentially all CPU time in DMA2_Stream2_IRQHandler and
+ * starve ThreadX.
+ *
+ * Keep the DMA error sources enabled, but turn off the two normal completion
+ * sources immediately after HAL has armed the stream.  Circular DMA continues
+ * in hardware; these bits control only interrupt generation. */
+static void adc_dma_disable_completion_irqs(ADC_HandleTypeDef *hadc)
+{
+    __HAL_DMA_DISABLE_IT(hadc->DMA_Handle, DMA_IT_HT | DMA_IT_TC);
+}
+
 /* ------------------------------------------------------------------ */
 /* Stream start / stop                                                 */
 /* ------------------------------------------------------------------ */
@@ -54,6 +69,7 @@ fpga_status_t adc_dma_paddle_start(void)
                           FPGA_PADDLE_ADC_COUNT) != HAL_OK) {
         return FPGA_ERR_STATE;
     }
+    adc_dma_disable_completion_irqs(&hadc2);
     return FPGA_OK;
 }
 
@@ -69,6 +85,7 @@ fpga_status_t adc_dma_audio_start(void)
                           FPGA_AUDIO_ADC_COUNT) != HAL_OK) {
         return FPGA_ERR_STATE;
     }
+    adc_dma_disable_completion_irqs(&hadc1);
     return FPGA_OK;
 }
 

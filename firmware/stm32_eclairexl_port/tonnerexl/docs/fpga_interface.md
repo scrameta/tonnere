@@ -542,7 +542,7 @@ tells firmware to enter the discharge phase: preload the eight paddle GPIO outpu
 latches low, then switch those pins from analogue mode to push-pull output-low.
 `POT_RESET` is active during that drive-low/reset interval. Its falling edge
 (IRQ bit 5, `1→0`) ends the interval; firmware switches the eight pins back to
-analogue mode so ADC1 can observe the released paddle voltages.
+analogue mode so ADC2 can observe the released paddle voltages.
 
 The raw ADC conversions are then streamed continuously by DMA to
 `PADDLE_ADC0`–`PADDLE_ADC7`; the FPGA performs the common-threshold comparison
