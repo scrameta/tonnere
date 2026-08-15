@@ -113,6 +113,7 @@ architecture vhdl of fsmc_adaptor is
   -- Capture FIFO write side (CLK_FAST)
   signal CAPTURE_FIFO_REQ   : std_logic;
   signal CAPTURE_FIFO_FULL  : std_logic;
+  signal CAPTURE_FIFO_WE_N  : std_logic;
 
   -- Read-ready handshake (CLK domain producer -> CLK_FAST consumer)
   signal READ_READY_SLOW_REG  : std_logic;   -- toggled in CLK domain when a read completes
@@ -322,6 +323,7 @@ begin
 
     FSMC_NWAIT <= '0';
     CAPTURE_FIFO_REQ <= '0';
+    CAPTURE_FIFO_WE_N <= '1';
 
     FSMC_D_OE <= '0';
 
@@ -341,6 +343,7 @@ begin
       when CAPTURE_STATE_READ_CAPTURE =>
           if CAPTURE_FIFO_FULL='0' then
               CAPTURE_FIFO_REQ <= '1';
+              CAPTURE_FIFO_WE_N <= '1';
               CAPTURE_STATE_NEXT <= CAPTURE_STATE_READ_WAIT;
           end if;
       when CAPTURE_STATE_READ_WAIT =>
@@ -359,6 +362,7 @@ begin
           FSMC_NWAIT <= not(CAPTURE_FIFO_FULL);
           if FSMC_NWE_REG='0' and CAPTURE_FIFO_FULL='0' then -- Cannot be raised when NWAIT is active. Address/data are valid on falling edge.
               CAPTURE_FIFO_REQ <= '1';
+              CAPTURE_FIFO_WE_N <= '0';
               CAPTURE_STATE_NEXT <= CAPTURE_STATE_WRITE_COMPLETE;
           end if;
       when CAPTURE_STATE_WRITE_COMPLETE =>
@@ -376,7 +380,7 @@ begin
   (
     data(15 downto 0)  => FSMC_D_IN,
     data(38 downto 16) => FSMC_A,
-    data(39)           => FSMC_NWE,
+    data(39)           => CAPTURE_FIFO_WE_N,
     data(41 downto 40) => FSMC_NBL,
     wrclk   => CLK_FAST, 
     wrreq   => CAPTURE_FIFO_REQ,
