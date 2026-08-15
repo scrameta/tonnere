@@ -362,6 +362,7 @@ architecture vhdl of tonnere is
 
   -- Tonnere-specific extra clocks
   signal CLK112     : std_logic;
+  signal CLK224     : std_logic;
   signal CLK112_N   : std_logic;
   signal CLK_PATTERN: std_logic;
   signal CLK1_536   : std_logic;
@@ -637,7 +638,7 @@ begin
   pll_atari1 : pll_atari
     port map (
       inclk0 => PLL1(1),
-      c0     => open,        -- PHI2 (unused)
+      c0     => CLK224,     -- 4x
       c1     => CLK,         -- CLK56
       c2     => CLK112,
       c3     => CLK112_N,
@@ -1151,7 +1152,7 @@ PORTA_gen:
     )
     PORT MAP (
       CLK => CLK,
-      CLK_FAST  => CLK_SDRAM,
+      CLK_FAST  => CLK224,
       RESET_N => RESET_N and sdram_reset_n,
 
       DMA_ADDR_FETCH => dma_addr_fetch,
