@@ -70,6 +70,12 @@ entity fsmc_adaptor is
     POT_TRIGGER             : out   std_logic_vector(7 downto 0);
     POT_RESET               : in    std_logic;
 
+    -- Audio ADC
+    AUDIO_ADC0              : out   signed(11 downto 0);
+    AUDIO_ADC1              : out   signed(11 downto 0);
+    AUDIO_ADC2              : out   signed(11 downto 0);
+    AUDIO_ADC3              : out   signed(11 downto 0);
+
     -- Freezer/debug control
     FREEZE_ADDR             : out   std_logic_vector(15 downto 0);
     FREEZE_DATA_CTRL        : out   std_logic_vector(15 downto 0);
@@ -171,7 +177,7 @@ architecture vhdl of fsmc_adaptor is
   signal APERTURE2_EXT_REG,    APERTURE2_EXT_NEXT    : std_logic_vector(7 downto 0);
 
   -- Register decode + read data
-  signal REG_ADDR_DECODED    : std_logic_vector(31 downto 0);
+  signal REG_ADDR_DECODED    : std_logic_vector(63 downto 0);
   signal REG_DATA            : std_logic_vector(15 downto 0);
 
   -- SIO handler
@@ -180,18 +186,24 @@ architecture vhdl of fsmc_adaptor is
   signal SIO_FIFO_TX_EMPTY   : std_logic;
 
   -- Interrupt controller (CLK domain)
-  signal IRQ_ENABLE_REG,  IRQ_ENABLE_NEXT  : std_logic_vector(3 downto 0);
-  signal IRQ_PENDING_REG, IRQ_PENDING_NEXT : std_logic_vector(3 downto 0);
-  signal IRQ_EDGE_REG,    IRQ_EDGE_NEXT    : std_logic_vector(3 downto 0);
-  signal IRQ_CLEAR        : std_logic_vector(3 downto 0);
+  signal IRQ_ENABLE_REG,  IRQ_ENABLE_NEXT  : std_logic_vector(4 downto 0);
+  signal IRQ_PENDING_REG, IRQ_PENDING_NEXT : std_logic_vector(4 downto 0);
+  signal IRQ_EDGE_REG,    IRQ_EDGE_NEXT    : std_logic_vector(4 downto 0);
+  signal IRQ_CLEAR        : std_logic_vector(4 downto 0);
 
   -- DMA (delayed for timing)
   signal DMA_ADDR_FETCH_REG         , DMA_ADDR_FETCH_NEXT         : std_logic_vector(23 downto 0);
   signal DMA_DATA_OUT_REG           , DMA_DATA_OUT_NEXT           : std_logic_vector(15 downto 0);
   signal DMA_FETCH_REG              , DMA_FETCH_NEXT              : std_logic;
-  signal DMA_16BIT_WIDTH_REG , DMA_16BIT_WIDTH_NEXT               : std_logic;
-  signal DMA_8BIT_WIDTH_REG  , DMA_8BIT_WIDTH_NEXT                : std_logic;
+  signal DMA_16BIT_WIDTH_REG        , DMA_16BIT_WIDTH_NEXT        : std_logic;
+  signal DMA_8BIT_WIDTH_REG         , DMA_8BIT_WIDTH_NEXT         : std_logic;
   signal DMA_READ_ENABLE_REG        , DMA_READ_ENABLE_NEXT        : std_logic;
+  
+  -- AUDIO ADC
+  signal AUDIO_ADC0_REG, AUDIO_ADC0_NEXT : signed(11 downto 0);
+  signal AUDIO_ADC1_REG, AUDIO_ADC1_NEXT : signed(11 downto 0);
+  signal AUDIO_ADC2_REG, AUDIO_ADC2_NEXT : signed(11 downto 0);
+  signal AUDIO_ADC3_REG, AUDIO_ADC3_NEXT : signed(11 downto 0);  
 
 begin
   -- Strategy
@@ -231,6 +243,10 @@ begin
       DMA_16BIT_WIDTH_REG  <= '0';
       DMA_8BIT_WIDTH_REG   <= '0';
       DMA_READ_ENABLE_REG  <= '0';
+      AUDIO_ADC0_REG       <= to_signed(0,12);
+      AUDIO_ADC1_REG       <= to_signed(0,12);
+      AUDIO_ADC2_REG       <= to_signed(0,12);
+      AUDIO_ADC3_REG       <= to_signed(0,12);
     elsif (CLK'EVENT and CLK = '1') then
       KEYBOARD_MATRIX_REG  <= KEYBOARD_MATRIX_NEXT; 
       KEYBOARD_SHIFT_REG   <= KEYBOARD_SHIFT_NEXT;  
@@ -263,6 +279,10 @@ begin
       DMA_16BIT_WIDTH_REG  <= DMA_16BIT_WIDTH_NEXT;
       DMA_8BIT_WIDTH_REG   <= DMA_8BIT_WIDTH_NEXT;
       DMA_READ_ENABLE_REG  <= DMA_READ_ENABLE_NEXT;
+      AUDIO_ADC0_REG       <= AUDIO_ADC0_NEXT;
+      AUDIO_ADC1_REG       <= AUDIO_ADC1_NEXT;
+      AUDIO_ADC2_REG       <= AUDIO_ADC2_NEXT;
+      AUDIO_ADC3_REG       <= AUDIO_ADC3_NEXT;
     end if;
   end process;
 
@@ -372,7 +392,7 @@ begin
   );
 
   process( 
-    ACTION_FIFO_D, ACTION_FIFO_A, ACTION_FIFO_NWE, ACTION_FIFO_NBL,
+    ACTION_FIFO_D, ACTION_FIFO_A, ACTION_FIFO_NWE, ACTION_FIFO_NBL, ACTION_FIFO_EMPTY,
     MEMORY_READY
   )
   begin
@@ -545,15 +565,16 @@ begin
 
 -- decode address
 decode_addr : entity work.complete_address_decoder
-	generic map(width=>5)
-	port map (addr_in=>FPGA_ADDRESS(4 downto 0), addr_decoded=>REG_ADDR_DECODED);
+	generic map(width=>6)
+	port map (addr_in=>FPGA_ADDRESS(5 downto 0), addr_decoded=>REG_ADDR_DECODED);
 
   -- Register reads
   process(REG_ADDR_DECODED,
     CONSOLE_PHYS,
     JOY0_PHYS, JOY1_PHYS,
-    JOY0_PHYS, JOY3_PHYS,
-    IRQ_ENABLE_REG, IRQ_PENDING_REG
+    JOY2_PHYS, JOY3_PHYS,
+    IRQ_ENABLE_REG, IRQ_PENDING_REG,
+	 DEBUG0, DEBUG1, DEBUG2, DEBUG3
   )
   begin
     REG_DATA <= (others=>'0');
@@ -575,10 +596,10 @@ decode_addr : entity work.complete_address_decoder
       REG_DATA(12 downto 8) <= JOY3_PHYS;
     end if;
     if (REG_ADDR_DECODED(22)='1') then -- IRQ_ENABLE
-      REG_DATA(3 downto 0) <= IRQ_ENABLE_REG;
+      REG_DATA(4 downto 0) <= IRQ_ENABLE_REG;
     end if;
     if (REG_ADDR_DECODED(23)='1') then -- IRQ_PENDING
-      REG_DATA(3 downto 0) <= IRQ_PENDING_REG;
+      REG_DATA(4 downto 0) <= IRQ_PENDING_REG;
     end if;
     if (REG_ADDR_DECODED(25)='1') then -- DEBUG0
       REG_DATA <= DEBUG0;
@@ -611,8 +632,19 @@ decode_addr : entity work.complete_address_decoder
     APERTURE1_EXT_REG,
     APERTURE2_EXT_REG,
     IRQ_ENABLE_REG,
-    IRQ_PENDING_REG
+    IRQ_PENDING_REG,
+	 CONTROL_REG,
+	 RAMCONFIG_REG,
+	 PERFORMANCE_REG,
+	 CART_REG,
+	 VIDEO_REG,
+	 POT_RESET_REG,
+    AUDIO_ADC0_REG,
+    AUDIO_ADC1_REG,
+    AUDIO_ADC2_REG,
+    AUDIO_ADC3_REG
   )
+    variable PADDLE_OVER_THRESHOLD : std_logic;
   begin
     KEYBOARD_MATRIX_NEXT  <= KEYBOARD_MATRIX_REG;
     KEYBOARD_SHIFT_NEXT   <= KEYBOARD_SHIFT_REG;
@@ -635,10 +667,19 @@ decode_addr : entity work.complete_address_decoder
     CART_NEXT             <= CART_REG;
     VIDEO_NEXT            <= VIDEO_REG;
     POT_RESET_NEXT        <= POT_RESET_REG;
+    AUDIO_ADC0_NEXT       <= AUDIO_ADC0_REG;
+    AUDIO_ADC1_NEXT       <= AUDIO_ADC1_REG;
+    AUDIO_ADC2_NEXT       <= AUDIO_ADC2_REG;
+    AUDIO_ADC3_NEXT       <= AUDIO_ADC3_REG;
     IRQ_CLEAR <= (others=>'1');
 
     if (POT_RESET='1') then
       POT_TRIGGER_NEXT <= (others=>'0'); -- Immediate, do not wait for STM
+    end if;
+
+    PADDLE_OVER_THRESHOLD := '0';
+    if SIGNED(ACTION_FIFO_D(11 downto 0))>to_signed(4000,12) then -- TODO tune threshold!
+        PADDLE_OVER_THRESHOLD := '1';
     end if;
 
     if (REG_SELECT = '1' and ACTION_WRITE_ENABLE = '1') then
@@ -695,18 +736,54 @@ decode_addr : entity work.complete_address_decoder
         FREEZE_DATA_CTRL_NEXT <= ACTION_FIFO_D;
       end if;
       if (REG_ADDR_DECODED(22)='1') then  -- IRQ_ENABLE
-        IRQ_ENABLE_NEXT <= ACTION_FIFO_D(3 downto 0);
+        IRQ_ENABLE_NEXT <= ACTION_FIFO_D(4 downto 0);
       end if;
       if (REG_ADDR_DECODED(24)='1') then  -- IRQ_CLEAR
-        IRQ_CLEAR <= ACTION_FIFO_D(3 downto 0);
+        IRQ_CLEAR <= ACTION_FIFO_D(4 downto 0);
       end if;
+      -- DEBUG writes are just for picking up on the logic analyzer, not stored
       if (REG_ADDR_DECODED(29)='1') then  -- APERTURE1_EXT
         APERTURE1_EXT_NEXT <= ACTION_FIFO_D(7 downto 0);
       end if;
       if (REG_ADDR_DECODED(30)='1') then  -- APERTURE1_EXT
         APERTURE2_EXT_NEXT <= ACTION_FIFO_D(7 downto 0);
       end if;
-      -- DEBUG writes are just for picking up on the logic analyzer, not stored
+      if (REG_ADDR_DECODED(31)='1') then  -- PADDLE_ADC
+        POT_TRIGGER_NEXT(0) <= POT_TRIGGER_REG(0) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(32)='1') then
+        POT_TRIGGER_NEXT(1) <= POT_TRIGGER_REG(1) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(33)='1') then
+        POT_TRIGGER_NEXT(2) <= POT_TRIGGER_REG(2) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(34)='1') then
+        POT_TRIGGER_NEXT(3) <= POT_TRIGGER_REG(3) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(35)='1') then
+        POT_TRIGGER_NEXT(4) <= POT_TRIGGER_REG(4) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(36)='1') then
+        POT_TRIGGER_NEXT(5) <= POT_TRIGGER_REG(5) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(37)='1') then
+        POT_TRIGGER_NEXT(6) <= POT_TRIGGER_REG(6) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(38)='1') then
+        POT_TRIGGER_NEXT(7) <= POT_TRIGGER_REG(7) or PADDLE_OVER_THRESHOLD;
+      end if;
+      if (REG_ADDR_DECODED(39)='1') then  -- AUDIO_ADC
+        AUDIO_ADC0_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      end if;
+      if (REG_ADDR_DECODED(40)='1') then  -- AUDIO_ADC
+        AUDIO_ADC1_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      end if;
+      if (REG_ADDR_DECODED(41)='1') then  -- AUDIO_ADC
+        AUDIO_ADC2_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      end if;
+      if (REG_ADDR_DECODED(42)='1') then  -- AUDIO_ADC
+        AUDIO_ADC3_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      end if;
     end if;
   end process;
 
@@ -715,6 +792,7 @@ decode_addr : entity work.complete_address_decoder
   IRQ_EDGE_NEXT(1) <= not(SIO_FIFO_RX_EMPTY);
   IRQ_EDGE_NEXT(2) <= SIO_FIFO_TX_EMPTY;
   IRQ_EDGE_NEXT(3) <= POT_RESET;
+  IRQ_EDGE_NEXT(4) <= NOT(POT_RESET);
 
   IRQ_PENDING_NEXT <= (IRQ_PENDING_REG or (IRQ_EDGE_NEXT and not(IRQ_EDGE_REG))) and IRQ_CLEAR;
   FSMC_IRQ <= or_reduce(IRQ_PENDING_REG and IRQ_ENABLE_REG);
@@ -742,11 +820,16 @@ decode_addr : entity work.complete_address_decoder
   FREEZE_ADDR      <= FREEZE_ADDR_REG;
   FREEZE_DATA_CTRL <= FREEZE_DATA_CTRL_REG;
 
-  DMA_ADDR_FETCH          <= DMA_ADDR_FETCH_REG;
-  DMA_DATA_OUT            <= DMA_DATA_OUT_REG;
-  DMA_FETCH               <= DMA_FETCH_REG;
-  DMA_16BIT_WIDTH         <= DMA_16BIT_WIDTH_REG;
-  DMA_8BIT_WIDTH          <= DMA_8BIT_WIDTH_REG;
-  DMA_READ_ENABLE         <= DMA_READ_ENABLE_REG;
+  DMA_ADDR_FETCH   <= DMA_ADDR_FETCH_REG;
+  DMA_DATA_OUT     <= DMA_DATA_OUT_REG;
+  DMA_FETCH        <= DMA_FETCH_REG;
+  DMA_16BIT_WIDTH  <= DMA_16BIT_WIDTH_REG;
+  DMA_8BIT_WIDTH   <= DMA_8BIT_WIDTH_REG;
+  DMA_READ_ENABLE  <= DMA_READ_ENABLE_REG;
+
+  AUDIO_ADC0       <= AUDIO_ADC0_REG;
+  AUDIO_ADC1       <= AUDIO_ADC1_REG;
+  AUDIO_ADC2       <= AUDIO_ADC2_REG;
+  AUDIO_ADC3       <= AUDIO_ADC3_REG;
 
 end vhdl;
