@@ -19,11 +19,26 @@
 
 #if defined(FPGA_BUS_STM32)
 
-#include <assert.h>
-
 /* Handles owned by CubeMX (Core/Src/main.c). */
 extern ADC_HandleTypeDef hadc2;   /* paddle: 8-rank continuous scan          */
 extern ADC_HandleTypeDef hadc1;   /* audio:  4-rank timer-triggered scan     */
+
+volatile adc_dma_fault_info_t adc_dma_last_fault;
+
+/* HAL_ADC_Start_DMA() deliberately uses HAL_DMA_Start_IT(), even when the
+ * application has no use for buffer-completion callbacks.  For the paddle
+ * stream that would produce one half-transfer IRQ every four conversions and
+ * one transfer-complete IRQ every eight conversions.  A free-running ADC can
+ * consequently spend essentially all CPU time in DMA2_Stream2_IRQHandler and
+ * starve ThreadX.
+ *
+ * Keep the DMA error sources enabled, but turn off the two normal completion
+ * sources immediately after HAL has armed the stream.  Circular DMA continues
+ * in hardware; these bits control only interrupt generation. */
+static void adc_dma_disable_completion_irqs(ADC_HandleTypeDef *hadc)
+{
+    __HAL_DMA_DISABLE_IT(hadc->DMA_Handle, DMA_IT_HT | DMA_IT_TC);
+}
 
 /* ------------------------------------------------------------------ */
 /* Stream start / stop                                                 */
@@ -54,6 +69,7 @@ fpga_status_t adc_dma_paddle_start(void)
                           FPGA_PADDLE_ADC_COUNT) != HAL_OK) {
         return FPGA_ERR_STATE;
     }
+    adc_dma_disable_completion_irqs(&hadc2);
     return FPGA_OK;
 }
 
@@ -69,6 +85,7 @@ fpga_status_t adc_dma_audio_start(void)
                           FPGA_AUDIO_ADC_COUNT) != HAL_OK) {
         return FPGA_ERR_STATE;
     }
+    adc_dma_disable_completion_irqs(&hadc1);
     return FPGA_OK;
 }
 
@@ -133,22 +150,39 @@ void adc_dma_paddle_pins_release(void)
 /* ------------------------------------------------------------------ */
 /* Fault hook                                                          */
 /* ------------------------------------------------------------------ */
-/* Weak so bring-up code can override. Default: trap. An ADC overrun in DMA
- * mode is unrecoverable without reinit, so treat it as a real fault. */
+/* Weak so production code can override this with its desired recovery policy.
+ * The default deliberately returns: trapping here makes an ADC/DMA fault look
+ * exactly like a scheduler hang.  adc_dma_last_fault retains the evidence for
+ * a debugger, including the DMA raw status registers. */
 __attribute__((weak))
 void adc_dma_on_fault(ADC_HandleTypeDef *hadc, uint32_t err)
 {
     (void)hadc; (void)err;
-    /* Break into the debugger / assert. Replace with your fault policy. */
-    assert(0 && "ADC/DMA fault (overrun or DMA error)");
-    for (;;) { }
 }
 
 /* HAL calls this on ADC error (including OVR) if the ADC IRQ is enabled.
  * We route both ADCs through the single fault hook. */
 void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 {
-    adc_dma_on_fault(hadc, HAL_ADC_GetError(hadc));
+    const uint32_t err = HAL_ADC_GetError(hadc);
+
+    /* Write count last so a debugger never mistakes a partially updated
+     * snapshot for a new record.  Do not clear any peripheral flags here;
+     * HAL owns that sequencing and the raw DMA flags are valuable evidence. */
+    adc_dma_last_fault.adc_instance = (uint32_t)hadc->Instance;
+    adc_dma_last_fault.error = err;
+    adc_dma_last_fault.adc_sr = hadc->Instance->SR;
+    adc_dma_last_fault.adc_cr1 = hadc->Instance->CR1;
+    adc_dma_last_fault.adc_cr2 = hadc->Instance->CR2;
+    adc_dma_last_fault.dma_cr = hadc->DMA_Handle->Instance->CR;
+    adc_dma_last_fault.dma_ndtr = hadc->DMA_Handle->Instance->NDTR;
+    adc_dma_last_fault.dma_fcr = hadc->DMA_Handle->Instance->FCR;
+    adc_dma_last_fault.dma_lisr = DMA2->LISR;
+    adc_dma_last_fault.dma_hisr = DMA2->HISR;
+    __DMB();
+    adc_dma_last_fault.count++;
+
+    adc_dma_on_fault(hadc, err);
 }
 
 #endif /* FPGA_BUS_STM32 */

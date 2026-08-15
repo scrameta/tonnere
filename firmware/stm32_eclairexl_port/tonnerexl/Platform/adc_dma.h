@@ -6,8 +6,8 @@
  * normal path; the FPGA does the paddle threshold compare and latches audio.
  * See docs/stm32f407_paddle_adc_dma_fsmc.md and docs/fpga_interface.md §3.
  *
- *   Paddle:  ADC1, 8-rank continuous scan, DMA very-high, dest PADDLE_ADC0..7.
- *   Audio:   ADC2, 4-rank timer-triggered scan (~44.1 kHz), DMA high,
+ *   Paddle:  ADC2, 8-rank continuous scan, DMA very-high, dest PADDLE_ADC0..7.
+ *   Audio:   ADC1, 4-rank timer-triggered scan (~44.1 kHz), DMA high,
  *            dest AUDIO_ADC0..3, CONT=0.
  *
  * This module owns the ADC-start / DMA-start sequencing and the POTGO/
@@ -33,12 +33,12 @@
 extern "C" {
 #endif
 
-/* Start the paddle stream: ADC1 8-rank continuous scan, circular DMA to
- * PADDLE_ADC0..7. Idempotent-ish: call once after MX_ADC1_Init and the DMA
+/* Start the paddle stream: ADC2 8-rank continuous scan, circular DMA to
+ * PADDLE_ADC0..7. Idempotent-ish: call once after MX_ADC2_Init and the DMA
  * MSP link. Returns FPGA_OK or an error if HAL start fails. */
 fpga_status_t adc_dma_paddle_start(void);
 
-/* Start the audio stream: ADC2 4-rank timer-triggered scan, circular DMA to
+/* Start the audio stream: ADC1 4-rank timer-triggered scan, circular DMA to
  * AUDIO_ADC0..3. The timer (TIM2 TRGO by default) must already be configured
  * and started to produce the 44.1 kHz trigger. */
 fpga_status_t adc_dma_audio_start(void);
@@ -60,11 +60,29 @@ void adc_dma_audio_stop(void);
 void adc_dma_paddle_pins_clamp(void);
 void adc_dma_paddle_pins_release(void);
 
+/* Debug snapshot populated before adc_dma_on_fault() is called.  It remains
+ * valid after the IRQ returns and can be inspected as `adc_dma_last_fault` in
+ * GDB.  count==0 means that no ADC/DMA error callback has run since reset. */
+typedef struct {
+    uint32_t count;
+    uint32_t adc_instance;
+    uint32_t error;
+    uint32_t adc_sr;
+    uint32_t adc_cr1;
+    uint32_t adc_cr2;
+    uint32_t dma_cr;
+    uint32_t dma_ndtr;
+    uint32_t dma_fcr;
+    uint32_t dma_lisr;
+    uint32_t dma_hisr;
+} adc_dma_fault_info_t;
+
+extern volatile adc_dma_fault_info_t adc_dma_last_fault;
+
 /* Fault hook. Called from the DMA/ADC error ISR path when an ADC overrun (OVR)
- * or DMA transfer/FIFO error is seen. In DMA mode an ADC overrun latches the
- * ADC and it stops issuing DMA requests, so this is a hard fault, not a dropped
- * sample (design doc §"ADC overrun is a real fault"). Default impl asserts;
- * override for your bring-up policy. */
+ * or DMA transfer/FIFO error is seen. The default implementation returns after
+ * the snapshot above is recorded, rather than turning the fault into an
+ * apparent firmware hang. Override this hook for a production recovery policy. */
 void adc_dma_on_fault(ADC_HandleTypeDef *hadc, uint32_t err);
 
 #ifdef __cplusplus
