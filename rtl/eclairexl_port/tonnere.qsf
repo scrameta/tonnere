@@ -444,6 +444,9 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to SIO_MOTOR
 
 
 
+set_global_assignment -name VHDL_FILE a8core/vbxe/vbxe.vhdl
+set_global_assignment -name VHDL_FILE a8core/vbxe/vbxe_blitter.vhdl
+set_global_assignment -name VHDL_FILE bram.vhdl
 set_global_assignment -name VHDL_FILE sram.vhdl
 set_global_assignment -name QIP_FILE components/fifo_cyclone10LP/fifo_transmit.qip
 set_global_assignment -name SOURCE_FILE components/fifo_cyclone10LP/fifo_transmit.cmp

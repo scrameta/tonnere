@@ -19,8 +19,9 @@ PORT
 	reset_n : in std_logic;
 	
 	request : in std_logic;
+	extra_cycle : in std_logic := '0';
 	
-	width_16bit : in std_logic;
+	width_16bit : in std_logic := '0';
 	
 	-- SRAM interface
 	SRAM_ADDR: OUT STD_LOGIC_VECTOR(17 downto 0);
@@ -43,20 +44,29 @@ END sram;
 -- TODO, implement 32-bit accesses in two cycles
 
 -- first cycle, capture inputs
--- second cycle, sram access
+-- second cycle, sram access and result (if no extra cycle)
+-- third cycle, result (if extra cycle)
+
 ARCHITECTURE slow OF sram IS
+
 	signal oe_n_next : std_logic;
 	signal oe_n_reg : std_logic;
-	
+
 	signal we_n_next : std_logic;
 	signal we_n_reg : std_logic;	
-	
+
 	signal data_next : std_logic_vector(15 downto 0);
 	signal data_reg : std_logic_vector(15 downto 0);
-	
-	signal request_next : std_logic;
-	signal request_reg : std_logic;
-	
+
+	signal address_next : std_logic_vector(18 downto 0);
+	signal address_reg : std_logic_vector(18 downto 0);
+
+	signal complete_next : std_logic;
+	signal complete_reg : std_logic;
+
+	signal pending_next : std_logic;
+	signal pending_reg : std_logic;
+
 	signal low_byte : std_logic_vector(7 downto 0);
 BEGIN
 	-- registers
@@ -66,51 +76,70 @@ BEGIN
 			oe_n_reg <= '1';
 			we_n_reg <= '1';
 			data_reg <= (others=>'0');
-			request_reg <= '0';
-		elsif (clk'event and clk='1') then
+			address_reg <= (others=>'0');
+			complete_reg <= '0';
+			pending_reg <= '0';
+		elsif rising_edge(clk) then
 			oe_n_reg <= oe_n_next;
 			we_n_reg <= we_n_next;
 			data_reg <= data_next;
-			request_reg <= request_next;
+			address_reg <= address_next;
+			complete_reg <= complete_next;
+			pending_reg <= pending_next;
 		end if;
 	end process;
 
 	-- next state
-	process(din,wren,request,request_reg,width_16bit)
-	begin		
-		data_next <= din;
-		request_next <= '0';
+	process(din,wren,address,request,extra_cycle,pending_reg,complete_reg,oe_n_reg,we_n_reg,address_reg,data_reg,width_16bit)
+	begin
+		data_next <= data_reg;
+		address_next <= address_reg;
+		oe_n_next <= oe_n_reg;
+		we_n_next <= we_n_reg;
+		complete_next <= '0';
+		pending_next <= '0';
 		
-		oe_n_next <= '0';
-		we_n_next <= '1';
-		
-		if (width_16bit = '0') then
-			data_next <= din(7 downto 0)&din(7 downto 0);
+		if complete_reg = '1' then
+			oe_n_next <= '0';
+			we_n_next <= '1';
 		end if;
-		
+
 		if (request = '1') then
-			-- on second cycle do write - address/data stable by now guaranteed (normal timequest...)
+			address_next <= address;
+			data_next <= din;
+			if (width_16bit = '0') then
+				data_next(15 downto 8) <= din(7 downto 0);
+			end if;
 			oe_n_next <= wren;
-			we_n_next <= not(wren);		
-			request_next <= '1';
+			we_n_next <= not(wren);
+			-- TODO To keep the VBXE DMA engine timing uniform we could
+			-- consider not differentiating this on wren (ie. always add cycle)
+			-- But if the main (Atari) SRAM wants to use it and be most efficient
+			-- (for turbo) then "this is the way".
+			complete_next <= wren or not(extra_cycle);
+			pending_next <= not(wren) and extra_cycle;
+		end if;
+
+		if pending_reg = '1' then
+			complete_next <= '1';
 		end if;
 	end process;
 	
-	LOW_BYTE <= SRAM_DQ(7 downto 0) when address(0)='0' else SRAM_DQ(15 downto 8);
-	
+	LOW_BYTE <= SRAM_DQ(7 downto 0) when address_reg(0)='0' else SRAM_DQ(15 downto 8);
+
 	-- output
-	SRAM_ADDR <= address(18 downto 1);
+	SRAM_ADDR <= address_reg(18 downto 1);
 	SRAM_CE_N <= '0';
 	SRAM_OE_N <= oe_n_reg;
 	SRAM_WE_N <= we_n_reg;
-	SRAM_LB_N <= not(width_16bit) and address(0);
-	SRAM_UB_N <= not(width_16bit) and NOT(address(0));
+	SRAM_LB_N <= not(width_16bit) and address_reg(0);
+	SRAM_UB_N <= not(width_16bit) and NOT(address_reg(0));
 	SRAM_DQ <= data_reg when we_n_reg = '0' else (others=>'Z');
 
 	DOUT <= SRAM_DQ(15 downto 8)&LOW_BYTE;
-			
-	complete <= request_reg;		
-		
+
+	complete <= complete_reg;
+
 	--GPIO <= (others=>'0');
 END slow;
 
