@@ -8,3 +8,4 @@ keyboard/production/backups
 keyboard/Badge/Badge-backups
 *.lck
 *.af~lock~
+.vscode
