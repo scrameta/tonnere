@@ -427,6 +427,7 @@ architecture vhdl of tonnere is
   signal VBXE_SWITCH : STD_LOGIC;
   signal VBXE_REG_BASE : STD_LOGIC;
   signal VBXE_NTSC_FIX : STD_LOGIC;
+  signal VBXE_TURBO : STD_LOGIC;
   signal VBXE_PALETTE_RGB : STD_LOGIC_VECTOR(2 downto 0);
   signal VBXE_PALETTE_INDEX : STD_LOGIC_VECTOR(7 downto 0);
   signal VBXE_PALETTE_COLOR : STD_LOGIC_VECTOR(6 downto 0);
@@ -1062,6 +1063,7 @@ PORTA_gen:
   VBXE_SWITCH <= '1'; -- Enable/Disable VBXE
   VBXE_REG_BASE <= '0'; -- D6/D7
   VBXE_NTSC_FIX <= '0'; -- Fix the off by 1 scanline bug for NTSC in VBXE (coming revisions of VBXE might have this fixed permanently)
+  VBXE_TURBO <= '0'; -- Fast blitter (use all possible VRAM cycles)
 
   VBXE_PALETTE_RGB <= "000"; -- set 1 on each component for particular palette wren
   VBXE_PALETTE_INDEX <= (others => '0'); -- which color to update
@@ -1163,6 +1165,7 @@ PORTA_gen:
       VBXE_SWITCH => VBXE_SWITCH,
       VBXE_REG_BASE => VBXE_REG_BASE,
       VBXE_NTSC_FIX => VBXE_NTSC_FIX,
+      VBXE_TURBO => VBXE_TURBO,
       VBXE_PALETTE_RGB => VBXE_PALETTE_RGB,
       VBXE_PALETTE_INDEX => VBXE_PALETTE_INDEX,
       VBXE_PALETTE_COLOR => VBXE_PALETTE_COLOR,
