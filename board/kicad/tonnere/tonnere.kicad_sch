@@ -2346,9 +2346,9 @@
 				(justify left)
 			)
 		)
-		(pin "FPGAAUD{DATA,BCK,LR}" bidirectional
+		(pin "FPGAAUD{DATA,BCK,LR,SPDIF}" bidirectional
 			(at 229.87 107.95 180)
-			(uuid "d4d87b95-5b2e-4f80-82e4-fd7c15ca3c4e")
+			(uuid "1dbf8ad5-1d84-40c3-999b-5c1c10fc138f")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2798,16 +2798,6 @@
 				(justify right)
 			)
 		)
-		(pin "FPGAAUD{DATA,BCK,LR}" bidirectional
-			(at 29.21 59.69 90)
-			(uuid "537880fd-88da-4ccf-8813-efa38c81ea38")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
 		(pin "JOY2{DIR[8..15],TRIG[2..3],POT[4..7]}" bidirectional
 			(at 119.38 90.17 0)
 			(uuid "93d87ae9-d139-4af1-9416-5ccc3179f5ca")
@@ -2861,6 +2851,16 @@
 		(pin "VDAC{R[0..2],G[0..2],B[0..2],HSYNC,VSYNC}" bidirectional
 			(at 119.38 85.09 0)
 			(uuid "3709b3ab-a2ce-4c3c-be37-337de2e01d23")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "FPGAAUD{DATA,BCK,LR,SPDIF}" bidirectional
+			(at 29.21 59.69 90)
+			(uuid "0aa1762b-ec83-476f-9b3f-0d723b656e5a")
 			(effects
 				(font
 					(size 1.27 1.27)

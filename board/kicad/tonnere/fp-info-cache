@@ -1,4 +1,4 @@
-26437668337606329
+26462693633955558
 74lvc245a
 SOT764-1_NXP
 
@@ -59926,6 +59926,13 @@ DualDSub9Male
 0
 18
 18
+FFC100
+FPC-SMD_100P-P0.40-FH75M-100S-0.4SH-05
+
+
+0
+102
+102
 Ferrite_THT
 LairdTech_28C0236-0JW-10
 Ferrite, vertical, LairdTech 28C0236-0JW-10, https://assets.lairdtech.com/home/brandworld/files/28C0236-0JW-10.pdf, JW Miller core https://www.bourns.com/products/magnetic-products/j.w.-miller-through-hole-ferrite-beads-emi-filters
@@ -96053,6 +96060,13 @@ rotary encoder illuminated switch vertical
 0
 9
 8
+SII9022ACNU
+QFN-72_L10.0-W10.0-P0.50-BL-EP
+
+
+0
+77
+73
 SRAM
 TF-BGA-48L_ISI
 
@@ -105209,6 +105223,13 @@ BAT-TH_BS-05-A1BJ001
 0
 3
 2
+cyclonevef23
+FBGA-484_L23.0-W23.0-R22-C22-P1.00-TL
+
+
+0
+484
+484
 dpdt
 SW-SMD_MST22D18G2
 
@@ -105230,6 +105251,13 @@ WIFI-SMD_ESP32-WROVER-IE8MB
 0
 47
 39
+ethernet
+QFN-56_L8.0-W8.0-P0.50-BL-EP6.0
+
+
+0
+66
+57
 hdmi_a
 HDMI-SMD_19P-P0.50-H-F
 
@@ -105279,6 +105307,62 @@ VQFN-14_L3.5-W3.5-P0.50-BL-EP2.0
 0
 15
 15
+mega_videl
+BGA-672_L27.0-W27.0-R26-C26-P1.00-TL
+
+
+0
+672
+672
+mega_videl
+FBGA-484_L23.0-W23.0-R22-C22-P1.00-TL
+
+
+0
+484
+484
+mega_videl
+QFN-56_L8.0-W8.0-P0.50-BL-EP6.0
+
+
+0
+66
+57
+mega_videl
+RJ45-TH_J1B1211CCD
+
+
+0
+16
+14
+mega_videl
+SOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR
+
+
+0
+5
+5
+mega_videl
+USB-C_SMD-TYPE-C-31-M-12_1
+
+
+0
+18
+16
+mega_videl
+WQFN-40_L6.0-W4.0-P0.40-TL-EP4.7
+
+
+0
+41
+41
+mega_videl
+X2SON-5_L0.8-W0.8-P0.48-BR
+
+
+0
+5
+5
 microsd_hinged
 TF-SMD_472192001
 
@@ -105300,6 +105384,13 @@ IDTQS3861QG8
 0
 24
 24
+reg25ldo
+SOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR
+
+
+0
+5
+5
 sdpushpush
 SD-SMD_SD-006M
 
@@ -105307,6 +105398,13 @@ SD-SMD_SD-006M
 0
 13
 13
+sdram32
+TSOP-86_L22.2-W10.2-P0.50-LS11.8-BL
+
+
+0
+86
+86
 sn74cb3t16211
 DGV56
 
@@ -105335,6 +105433,20 @@ SOIC-8_L5.0-W4.0-P1.27-LS6.1-BL
 0
 8
 8
+tonnere
+AUDIO-TH_JA23331-HA6Q-4F
+
+
+0
+14
+13
+tonnere
+CONN-TH_PLT237-T10WH
+
+
+0
+5
+5
 tsv851
 SC70_LMV821AICT_STM
 

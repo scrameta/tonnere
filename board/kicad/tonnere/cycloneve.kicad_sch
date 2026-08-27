@@ -103749,10 +103749,6 @@
 		(uuid "e79cd9e9-ac0f-46f6-9f77-61a772069324")
 	)
 	(no_connect
-		(at 111.76 96.52)
-		(uuid "ed8cf44e-f773-44a7-aa40-e9ddd6fc92a9")
-	)
-	(no_connect
 		(at 581.66 96.52)
 		(uuid "f16c53b8-778c-4ee4-882b-599ad609002f")
 	)
@@ -104892,6 +104888,15 @@
 			(type default)
 		)
 		(uuid "627d744e-fb24-49da-92ff-92be72f81b0d")
+	)
+	(bus_entry
+		(at 72.39 91.44)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "65779fa5-583b-4e4b-87ca-a359f874c446")
 	)
 	(bus_entry
 		(at 335.28 71.12)
@@ -106708,6 +106713,16 @@
 		)
 		(uuid "084fb0dc-45c3-4ae2-89e2-6e61c9d12d23")
 	)
+	(bus
+		(pts
+			(xy 72.39 91.44) (xy 72.39 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0850f8af-470b-4d15-aaba-89493391c7bd")
+	)
 	(wire
 		(pts
 			(xy 307.34 101.6) (xy 335.28 101.6)
@@ -107027,6 +107042,16 @@
 			(type default)
 		)
 		(uuid "10138ce8-e1ce-4501-ab53-b4a82a02d376")
+	)
+	(wire
+		(pts
+			(xy 77.47 95.25) (xy 90.17 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "10766200-dbec-46c0-9dcf-d3a05dad5986")
 	)
 	(bus
 		(pts
@@ -110570,6 +110595,16 @@
 	)
 	(wire
 		(pts
+			(xy 77.47 93.98) (xy 77.47 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6caa9516-caa8-4e12-b1ca-362e699e6e9b")
+	)
+	(wire
+		(pts
 			(xy 427.99 213.36) (xy 444.5 213.36)
 		)
 		(stroke
@@ -112130,6 +112165,16 @@
 	)
 	(wire
 		(pts
+			(xy 74.93 93.98) (xy 77.47 93.98)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9482c8c7-661d-465b-bba0-efda149b9aa5")
+	)
+	(wire
+		(pts
 			(xy 255.27 405.13) (xy 250.19 405.13)
 		)
 		(stroke
@@ -112610,6 +112655,16 @@
 	)
 	(wire
 		(pts
+			(xy 90.17 96.52) (xy 111.76 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a0b4f155-42e4-42d8-b473-c037481cc005")
+	)
+	(wire
+		(pts
 			(xy 469.9 254) (xy 485.14 254)
 		)
 		(stroke
@@ -112727,6 +112782,16 @@
 			(type default)
 		)
 		(uuid "a2c43d15-8864-483b-bea1-a71563ac145d")
+	)
+	(wire
+		(pts
+			(xy 90.17 95.25) (xy 90.17 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a2c89094-e089-4122-833a-6377c619adb7")
 	)
 	(wire
 		(pts
@@ -113040,7 +113105,7 @@
 	)
 	(bus
 		(pts
-			(xy 72.39 76.2) (xy 72.39 92.71)
+			(xy 72.39 76.2) (xy 72.39 91.44)
 		)
 		(stroke
 			(width 0)
@@ -119270,6 +119335,16 @@
 		)
 		(uuid "e1ebacd4-7c61-43c9-85d5-e31af3d1eb5e")
 	)
+	(label "FPGAAUD.SPDIF"
+		(at 92.71 96.52 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e212cf75-f7fc-47b4-a68d-e1000be35c4c")
+	)
 	(label "FSMC.A2"
 		(at 570.23 257.81 0)
 		(effects
@@ -119766,7 +119841,7 @@
 		)
 		(uuid "deb0e308-544f-4c14-8474-e2fa0e1dfc06")
 	)
-	(hierarchical_label "FPGAAUD{DATA,BCK,LR}"
+	(hierarchical_label "FPGAAUD{DATA,BCK,LR,SPDIF}"
 		(shape bidirectional)
 		(at 64.77 92.71 180)
 		(effects
