@@ -1,0 +1,887 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "aa3ea4f7-d539-4965-aab3-77b3145b963c")
+	(paper "A4")
+	(lib_symbols
+		(symbol "Device:D"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "D"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Diode"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Sim.Device" "D"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Sim.Pins" "1=K 2=A"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "diode"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "D_0_1"
+				(polyline
+					(pts
+						(xy -1.27 1.27) (xy -1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "D_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Switch:SW_Push"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "SW"
+				(at 1.27 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "SW_Push"
+				(at 0 -1.524 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Push button switch, generic, two pins"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "switch normally-open pushbutton push-button"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "SW_Push_0_1"
+				(circle
+					(center -2.032 0)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 1.27) (xy 0 3.048)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.032 0)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 1.27) (xy -2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 2.54)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(hierarchical_label "KEY_ROW"
+		(shape output)
+		(at 132.08 90.17 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "22f0815b-3e77-45f1-a8ed-67646a3c0945")
+	)
+	(hierarchical_label "KEY_COL"
+		(shape input)
+		(at 121.92 97.79 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "fce61f4e-02a7-44c4-ad33-0d8f3d4fb679")
+	)
+	(symbol
+		(lib_id "Switch:SW_Push")
+		(at 127 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "06f1cec4-0594-4bed-a3c6-fffb55906daa")
+		(property "Reference" "SW2"
+			(at 127 90.7245 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Tactile"
+			(at 127 93.1488 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:SMD_KEYBOARD-SW"
+			(at 127 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 127 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Push button switch, generic, two pins"
+			(at 127 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Part #" "C41430893"
+			(at 127 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Rotation Offset" ""
+			(at 127 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Position Offset" "0.635,3.81"
+			(at 127 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Layer Override" "B.Cu"
+			(at 127 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "77764142-8889-431d-ae52-aeec2847231d")
+		)
+		(pin "2"
+			(uuid "e500cc62-9967-4f27-a8ab-988cc8b3d344")
+		)
+		(instances
+			(project "DecentNumPad"
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/166ae9a1-1fa6-45a7-8327-13d224a92d4f"
+					(reference "SW31")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/1abe1a77-8aac-4c29-95d1-f9707aa4fdb1"
+					(reference "SW26")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/3cb17e06-ad04-4d50-9565-8a9ba4ebdba3"
+					(reference "SW10")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/3cc9818f-a1dd-49a1-a797-eead680f9c13"
+					(reference "SW6")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/47263e08-18bb-4baa-bfdc-fd2b73c55f2c"
+					(reference "SW11")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/4b5389ad-6e65-4296-9af7-bbe9566da912"
+					(reference "SW23")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/50e112f8-7db7-4509-8296-ed8f130c3b51"
+					(reference "SW13")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/5e50d4f3-eef1-4e8a-b10b-a2ad6b689406"
+					(reference "SW7")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/7604ce60-879e-45d5-8be7-d86768e3e958"
+					(reference "SW3")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/7d33a0bd-3d01-4988-a70b-6a620d1a50a6"
+					(reference "SW33")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/80e70f0e-f533-4345-82eb-6ed67d3f0d54"
+					(reference "SW2")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/847cfe23-67a0-4918-a7c6-7c6d90364c3e"
+					(reference "SW25")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/85bd68c8-6ebc-460d-9242-1a4771b0de18"
+					(reference "SW22")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/8759f0d9-538e-4092-81d7-2666eebdd944"
+					(reference "SW27")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/8ad9e23f-c013-482d-8b93-6b9c6e6b27e1"
+					(reference "SW12")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/8dd4f9a9-bc7c-4230-be17-825ff531f36d"
+					(reference "SW4")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/928c8ada-72cc-4e10-8ca5-ddd099677834"
+					(reference "SW15")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/9717fff9-1998-4791-a955-5dddad8ed8b2"
+					(reference "SW32")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/a1f21c82-c4d9-439c-b39a-85709f9d6ff3"
+					(reference "SW30")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/a34d5e8c-6b86-489a-b7c5-1ec5be6863be"
+					(reference "SW24")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/a58c5154-fbc3-48b6-8ae4-e4813c64aa57"
+					(reference "SW34")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/af72c6d1-db9a-44b9-a474-2c96d7db69cf"
+					(reference "SW28")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/b1cf3e7c-df15-4794-902f-074b5f481849"
+					(reference "SW21")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/ba1102cf-e6f4-424d-bee7-9a24340510ca"
+					(reference "SW29")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/cadcb80c-ec17-4247-82a6-215f9a6caa08"
+					(reference "SW20")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/d3d1d945-161b-405a-bf56-811636d5130f"
+					(reference "SW5")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/d6cd3d3d-b01a-48c9-bc9d-cdd0d81339fe"
+					(reference "SW18")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/d8d7c9d6-0d55-4f8c-8727-e74c7394d356"
+					(reference "SW16")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/e9257e38-6586-415d-baf8-64aa60d6b392"
+					(reference "SW9")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/ee3ad1b0-d2dd-4554-bb3d-1ecbb9d48397"
+					(reference "SW14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:D")
+		(at 132.08 93.98 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "66ff891f-50ef-446e-b4fe-95785bdfe926")
+		(property "Reference" "D1"
+			(at 134.112 92.7678 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1N4148W"
+			(at 134.112 95.1921 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SOD-123"
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Diode"
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" "D"
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Part #" "C81598"
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Rotation Offset" ""
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Position Offset" ""
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "JLCPCB Layer Override" ""
+			(at 132.08 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "c4332599-00eb-48f6-98e2-3dc0fd5e9215")
+		)
+		(pin "1"
+			(uuid "2d656d4b-65d6-4ca2-80de-82b01fcc718f")
+		)
+		(instances
+			(project "DecentNumPad"
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/166ae9a1-1fa6-45a7-8327-13d224a92d4f"
+					(reference "D62")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/1abe1a77-8aac-4c29-95d1-f9707aa4fdb1"
+					(reference "D52")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/3cb17e06-ad04-4d50-9565-8a9ba4ebdba3"
+					(reference "D17")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/3cc9818f-a1dd-49a1-a797-eead680f9c13"
+					(reference "D9")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/47263e08-18bb-4baa-bfdc-fd2b73c55f2c"
+					(reference "D19")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/4b5389ad-6e65-4296-9af7-bbe9566da912"
+					(reference "D46")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/50e112f8-7db7-4509-8296-ed8f130c3b51"
+					(reference "D23")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/5e50d4f3-eef1-4e8a-b10b-a2ad6b689406"
+					(reference "D11")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/7604ce60-879e-45d5-8be7-d86768e3e958"
+					(reference "D3")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/7d33a0bd-3d01-4988-a70b-6a620d1a50a6"
+					(reference "D66")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/80e70f0e-f533-4345-82eb-6ed67d3f0d54"
+					(reference "D1")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/847cfe23-67a0-4918-a7c6-7c6d90364c3e"
+					(reference "D50")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/85bd68c8-6ebc-460d-9242-1a4771b0de18"
+					(reference "D44")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/8759f0d9-538e-4092-81d7-2666eebdd944"
+					(reference "D54")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/8ad9e23f-c013-482d-8b93-6b9c6e6b27e1"
+					(reference "D21")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/8dd4f9a9-bc7c-4230-be17-825ff531f36d"
+					(reference "D5")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/928c8ada-72cc-4e10-8ca5-ddd099677834"
+					(reference "D27")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/9717fff9-1998-4791-a955-5dddad8ed8b2"
+					(reference "D64")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/a1f21c82-c4d9-439c-b39a-85709f9d6ff3"
+					(reference "D60")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/a34d5e8c-6b86-489a-b7c5-1ec5be6863be"
+					(reference "D48")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/a58c5154-fbc3-48b6-8ae4-e4813c64aa57"
+					(reference "D68")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/af72c6d1-db9a-44b9-a474-2c96d7db69cf"
+					(reference "D56")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/b1cf3e7c-df15-4794-902f-074b5f481849"
+					(reference "D42")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/ba1102cf-e6f4-424d-bee7-9a24340510ca"
+					(reference "D58")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/cadcb80c-ec17-4247-82a6-215f9a6caa08"
+					(reference "D37")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/d3d1d945-161b-405a-bf56-811636d5130f"
+					(reference "D7")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/d6cd3d3d-b01a-48c9-bc9d-cdd0d81339fe"
+					(reference "D33")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/d8d7c9d6-0d55-4f8c-8727-e74c7394d356"
+					(reference "D29")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/e9257e38-6586-415d-baf8-64aa60d6b392"
+					(reference "D15")
+					(unit 1)
+				)
+				(path "/2c073ed7-8422-482e-9fe5-a73c0717c131/ee3ad1b0-d2dd-4554-bb3d-1ecbb9d48397"
+					(reference "D25")
+					(unit 1)
+				)
+			)
+		)
+	)
+)
