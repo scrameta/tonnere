@@ -28,7 +28,9 @@ PORT
 	scanlines_on : in std_logic;
 	csync_on : in std_logic;
 	colour_enable : in std_logic;  -- 720 pixels/line (at least...)
-	colour_in : in std_logic_vector(7 downto 0);
+	colour_in_r : in std_logic_vector(7 downto 0);
+	colour_in_g : in std_logic_vector(7 downto 0);
+	colour_in_b : in std_logic_vector(7 downto 0);
 	vsync_in : in std_logic;       -- high for new 
 	hsync_in : in std_logic;       -- high for new line
 	format : in std_logic_vector(1 downto 0);  -- "00"=VGA,"01"=DVI,"10"=HDMI
@@ -113,9 +115,9 @@ signal cap_line_start_raw : std_logic;
 signal cap_line_start : std_logic;
 signal cap_format : std_logic_vector(1 downto 0);
 
--- 
-signal out_colour_raw : std_logic_vector(7 downto 0);
-signal out_colour : std_logic_vector(7 downto 0);
+signal out_colour_r : std_logic_vector(7 downto 0);
+signal out_colour_g : std_logic_vector(7 downto 0);
+signal out_colour_b : std_logic_vector(7 downto 0);
 signal out_pal : std_logic;
 signal out_scanlines : std_logic;
 signal out_csync : std_logic;
@@ -230,17 +232,43 @@ end process;
 
 cap_frame_start <= cap_vsync_shift_reg(2);
 
-hdmi_line_buffer_inst : hdmi_line_buffer
-port map 
+hdmi_line_buffer_inst_r : hdmi_line_buffer
+port map
 	(
-		data		=> colour_in and colour_mask,
+		data		=> colour_in_r and colour_mask,
 		wraddress	=> cap_vcount_reg&cap_hcount_reg,
 		wrclock		=> CLK_ATARI_IN,
 		wren		=> colour_enable, -- 1824 times/line
 
 		rdaddress	=> vcnt(2 downto 1)&hcnt(9 downto 0)&'0',
 		rdclock		=> CLK_PIXEL_IN,
-		q		=> out_colour_raw
+		q		=> out_colour_r
+	);
+
+hdmi_line_buffer_inst_g : hdmi_line_buffer
+port map
+	(
+		data		=> colour_in_g and colour_mask,
+		wraddress	=> cap_vcount_reg&cap_hcount_reg,
+		wrclock		=> CLK_ATARI_IN,
+		wren		=> colour_enable, -- 1824 times/line
+
+		rdaddress	=> vcnt(2 downto 1)&hcnt(9 downto 0)&'0',
+		rdclock		=> CLK_PIXEL_IN,
+		q		=> out_colour_g
+	);
+
+hdmi_line_buffer_inst_b : hdmi_line_buffer
+port map
+	(
+		data		=> colour_in_b and colour_mask,
+		wraddress	=> cap_vcount_reg&cap_hcount_reg,
+		wrclock		=> CLK_ATARI_IN,
+		wren		=> colour_enable, -- 1824 times/line
+
+		rdaddress	=> vcnt(2 downto 1)&hcnt(9 downto 0)&'0',
+		rdclock		=> CLK_PIXEL_IN,
+		q		=> out_colour_b
 	);
 
 -- Audio should be signed
@@ -268,14 +296,10 @@ cap_format0_synchronizer : entity work.synchronizer
 cap_format1_synchronizer : entity work.synchronizer
 	port map (clk=>clk_pixel_in, raw=>format(1), sync=>out_format(1));						
 
-out_colour(7 downto 4) <= out_colour_raw(7 downto 4);
-out_colour(3 downto 0) <= out_colour_raw(3 downto 0) when (not(out_scanlines) or vcnt(0))='1' else '0'&out_colour_raw(3 downto 1);
+red_next <= out_colour_r when (not(out_scanlines) or vcnt(0))='1' else "00"&out_colour_r(7 downto 2);
+green_next <= out_colour_g when (not(out_scanlines) or vcnt(0))='1' else "00"&out_colour_g(7 downto 2);
+blue_next <= out_colour_b when (not(out_scanlines) or vcnt(0))='1' else "00"&out_colour_b(7 downto 2);
 
--- colour palette
--- TODO- share!!
-palette4 : entity work.gtia_palette
-	port map (PAL=>out_pal,ATARI_COLOUR=>out_colour, R_next=>red_next, G_next=>green_next, B_next=>blue_next);		
-	
 -- extract from fifo to line buffer (720 pixels)
 -- sync vsync between sides...
 

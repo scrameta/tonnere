@@ -271,6 +271,7 @@ architecture vhdl of tonnere is
   constant GENERIC_INTERNAL_ROM : integer := 1;      -- 16k os+basic (block RAM)
   constant GENERIC_INTERNAL_RAM : integer := 0;      -- RAM is external SRAM2 now
   constant GENERIC_SID          : integer := 0;
+  constant CYCLE_LENGTH         : integer := 32;
 
   ---------------------------------------------------------------------------
   -- Components  (only those still used on Tonnere)
@@ -419,6 +420,28 @@ architecture vhdl of tonnere is
 
   signal ANTIC_REFRESH : std_logic;
 
+  -- Additional GTIA config
+  signal GTIA_CLIP_SIDES : STD_LOGIC;
+  signal GTIA_XCOLOR : STD_LOGIC;
+
+  -- VBXE config
+  signal VBXE_SWITCH : STD_LOGIC;
+  signal VBXE_REG_BASE : STD_LOGIC;
+  signal VBXE_VER_127 : STD_LOGIC;
+  signal VBXE_TURBO : STD_LOGIC;
+  signal VBXE_PALETTE_RGB : STD_LOGIC_VECTOR(2 downto 0);
+  signal VBXE_PALETTE_INDEX : STD_LOGIC_VECTOR(7 downto 0);
+  signal VBXE_PALETTE_COLOR : STD_LOGIC_VECTOR(6 downto 0);
+
+  -- VBXE RAM
+  signal vbxe_vram_addr : std_logic_vector(18 downto 0);
+  signal vbxe_vram_data : std_logic_vector(7 downto 0);
+  signal vbxe_vram_data_in : std_logic_vector(15 downto 0);
+  signal vbxe_vram_request : std_logic;
+  signal vbxe_vram_wr_en : std_logic;
+  signal vbxe_vram_request_complete : std_logic;
+  signal vbxe_vram_extra_cycle : std_logic;
+
   -- pokey keyboard
   SIGNAL KEYBOARD_SCAN : std_logic_vector(5 downto 0);
   SIGNAL KEYBOARD_RESPONSE : std_logic_vector(1 downto 0);
@@ -546,7 +569,10 @@ architecture vhdl of tonnere is
   -- scandoubler
   signal half_scandouble_enable_reg : std_logic;
   signal half_scandouble_enable_next : std_logic;
-  signal ATARI_COLOUR : std_logic_vector(7 downto 0);
+  signal GTIA_COLOUR : std_logic_vector(7 downto 0);
+  signal COLOUR_R : std_logic_vector(7 downto 0);
+  signal COLOUR_G : std_logic_vector(7 downto 0);
+  signal COLOUR_B : std_logic_vector(7 downto 0);
 
   -- freezer
   signal freezer_enable : std_logic;
@@ -585,6 +611,7 @@ architecture vhdl of tonnere is
   signal irq_n : std_logic;
   signal rdy : std_logic;
   signal an : std_logic_vector(2 downto 0);
+  signal mmu_io_vbxe : std_logic;
 
   -- video settings (from STM32 VIDEO register)
   signal pal : std_logic;
@@ -699,9 +726,9 @@ begin
   ESP_MISO  <= 'Z';                      -- TODO(tonnere): ESP32 SPI slave
 
   -- Second SRAM chip and (for now) SRAM1: the ported core uses SDRAM only.
-  -- SRAM1 unused (atari RAM is on SRAM2). SRAM2 is driven by the sram instance.
-  SRAM1_A <= (others=>'0'); SRAM1_D <= (others=>'Z');
-  SRAM1_CE_N<='1'; SRAM1_OE_N<='1'; SRAM1_W_N<='1'; SRAM1_LB_N<='1'; SRAM1_UB_N<='1';
+  -- SRAM1 is VBXE VRAM, Atari RAM is on SRAM2, both are driven by the sram instance.
+  -- SRAM1 has additional read cycle added to keep things stable with the aggressive
+  -- blitter.
   -- TODO(tonnere): map SRAM1 as additional/expanded RAM per the memory-map comments.
 
   ---------------------------------------------------------------------------
@@ -770,6 +797,7 @@ begin
       RAM_DATA => open                     -- external SRAM drives RAM_DO
     );
 
+
   ---------------------------------------------------------------------------
   -- EXTERNAL RAM : atari main RAM -> SRAM2 (leave SRAM1 tied off)
   -- SRAM2 is a 512K x 16 (1MB) part: 19-bit word address SRAM2_A(18:0).
@@ -799,6 +827,31 @@ begin
     );
   SRAM2_A(18) <= '0';                      -- core addresses only 256K words
   SRAM2_A(19) <= '0';                      -- spare (512Kx16 part)
+
+  -- same, but for VBXE, SRAM1
+  vbxe_vram_extra_cycle <= '1' when CYCLE_LENGTH = 32 else '0'; -- for 16 it should be fast enough without additional read cycles
+
+  sram_vbxe : entity work.sram
+    PORT MAP (
+      WREN        => vbxe_vram_wr_en,
+      clk         => CLK,
+      reset_n     => RESET_N,
+      extra_cycle => vbxe_vram_extra_cycle,
+      request     => vbxe_vram_request,
+      ADDRESS     => vbxe_vram_addr,
+      DIN         => x"00"&vbxe_vram_data,
+      SRAM_DQ     => SRAM1_D,
+      SRAM_CE_N   => SRAM1_CE_N,
+      SRAM_OE_N   => SRAM1_OE_N,
+      SRAM_WE_N   => SRAM1_W_N,
+      SRAM_LB_N   => SRAM1_LB_N,
+      SRAM_UB_N   => SRAM1_UB_N,
+      complete    => vbxe_vram_request_complete,
+      DOUT        => vbxe_vram_data_in,
+      SRAM_ADDR   => SRAM1_A(17 downto 0)
+    );
+  SRAM1_A(18) <= '0';
+  SRAM1_A(19) <= '0';
 
   ---------------------------------------------------------------------------
   -- JOYSTICK / PADDLES
@@ -853,6 +906,7 @@ PORTA_gen:
   -- CARTRIDGE / PBI  (6502 bus master)
   ---------------------------------------------------------------------------
   pbi_disable <= antic_turbo when speed_6502="000001" else '1';
+  mmu_io_vbxe <= '1' when VBXE_SWITCH = '1' and pbi_addr(15 downto 5) = "1101"&"011"&VBXE_REG_BASE&"010" else '0';
 
   bus_adaptor : entity work.pbi6502
     PORT MAP (
@@ -860,6 +914,7 @@ PORTA_gen:
       RESET_N => RESET_N and SDRAM_RESET_N and not(reset_atari),
       ENABLE_179_EARLY => enable_179_early,
       REQUEST => pbi_request,
+      MMU_IO_INT => mmu_io_vbxe,
       ADDR_IN => pbi_addr,
       DATA_IN => pbi_write_data(7 downto 0),
       WRITE_IN => pbi_write_enable,
@@ -957,7 +1012,9 @@ PORTA_gen:
       hsync_in => VIDEO_HS,
       csync_in => VIDEO_CS,
       pal => PAL,
-      colour_in => ATARI_COLOUR,
+      colour_in_r => COLOUR_R,
+      colour_in_g => COLOUR_G,
+      colour_in_b => COLOUR_G,
       VSYNC => VIDEO_VSYNC,
       HSYNC => VIDEO_HSYNC,
       B => VIDEO_B,
@@ -1004,14 +1061,26 @@ PORTA_gen:
     end if;
   end process;
 
+  -- GTIA config, TODO from the user / MCU
+  GTIA_CLIP_SIDES <= '0'; -- Nicely clip the GTIA output on the sides to hide Antic/GTIA garbage
+  GTIA_XCOLOR <= '0'; -- Allow user level enablig of sparate hue/luma for highres and 8-bit GTIA color
+
+  -- VBXE config, TODO from the user / MCU
+  VBXE_SWITCH <= '1'; -- Enable/Disable VBXE
+  VBXE_REG_BASE <= '0'; -- D6/D7
+  VBXE_VER_127 <= '1'; -- Emulate VBXE core version 1.26 (0) or 1.27 (1)
+  VBXE_TURBO <= '0'; -- Fast blitter (use all possible VRAM cycles)
+
+  VBXE_PALETTE_RGB <= "000"; -- set 1 on each component for particular palette wren
+  VBXE_PALETTE_INDEX <= (others => '0'); -- which color to update
+  VBXE_PALETTE_COLOR <= (others => '0'); -- 7bit color value
+
   ---------------------------------------------------------------------------
   -- FULL ATARI CORE
   ---------------------------------------------------------------------------
   atari800 : entity work.atari800core
     GENERIC MAP (
-      cycle_length => 32,
-      video_bits => 8,
-      palette => 0,
+      cycle_length => CYCLE_LENGTH,
       internal_ram => GENERIC_INTERNAL_RAM,
       freezer_debug => 1,
       sid => GENERIC_SID
@@ -1019,12 +1088,14 @@ PORTA_gen:
     PORT MAP (
       CLK => CLK,
       RESET_N => RESET_N and SDRAM_RESET_N and not(reset_atari),
+      POWER_RESET => '0', -- use this to indicate that it is a power cycle reset rather than a key press one
       VIDEO_VS => VIDEO_VS,
       VIDEO_HS => VIDEO_HS,
       VIDEO_CS => VIDEO_CS,
-      VIDEO_B => ATARI_COLOUR,
-      VIDEO_G => open,
-      VIDEO_R => open,
+      VIDEO_B => COLOUR_B,
+      VIDEO_G => COLOUR_G,
+      VIDEO_R => COLOUR_R,
+      GTIA_COLOUR => GTIA_COLOUR,
       VIDEO_BLANK => VIDEO_BLANK,
       VIDEO_BURST => VIDEO_BURST,
       VIDEO_START_OF_FIELD => open,
@@ -1097,6 +1168,19 @@ PORTA_gen:
       RAM_REQUEST => RAM_REQUEST,
       RAM_REQUEST_COMPLETE => RAM_REQUEST_COMPLETE,
       RAM_WRITE_ENABLE => RAM_WRITE_ENABLE,
+      VBXE_SWITCH => VBXE_SWITCH,
+      VBXE_REG_BASE => VBXE_REG_BASE,
+      VBXE_VER_127 => VBXE_VER_127,
+      VBXE_TURBO => VBXE_TURBO,
+      VBXE_PALETTE_RGB => VBXE_PALETTE_RGB,
+      VBXE_PALETTE_INDEX => VBXE_PALETTE_INDEX,
+      VBXE_PALETTE_COLOR => VBXE_PALETTE_COLOR,
+      vbxe_vram_addr => vbxe_vram_addr,
+      vbxe_vram_data => vbxe_vram_data,
+      vbxe_vram_data_in => vbxe_vram_data_in(7 downto 0),
+      vbxe_vram_request => vbxe_vram_request,
+      vbxe_vram_wr_en => vbxe_vram_wr_en,
+      vbxe_vram_request_complete => vbxe_vram_request_complete,
       ROM_ADDR => ROM_ADDR,
       ROM_DO => ROM_DO,
       ROM_REQUEST => ROM_REQUEST,
@@ -1113,6 +1197,8 @@ PORTA_gen:
       RAM_SELECT => ram_select,
       CART_EMULATION_SELECT => emulated_cartridge_select,
       PAL => PAL,
+      GTIA_CLIP_SIDES => GTIA_CLIP_SIDES,
+      GTIA_XCOLOR => GTIA_XCOLOR,
       ROM_IN_RAM => ROM_IN_RAM,
       THROTTLE_COUNT_6502 => speed_6502,
       TURBO_VBLANK_ONLY => turbo_vblank_only,
@@ -1381,8 +1467,8 @@ PORTA_gen:
     PORT MAP (
       CLK => clk,
       RESET_N => reset_n,
-      brightness => ATARI_COLOUR(3 downto 0),
-      hue => ATARI_COLOUR(7 downto 4),
+      brightness => GTIA_COLOUR(3 downto 0),
+      hue => GTIA_COLOUR(7 downto 4),
       burst => VIDEO_BURST,
       blank => VIDEO_BLANK,
       sof => VIDEO_VS,
@@ -1407,7 +1493,9 @@ PORTA_gen:
       csync_on => csync,
       format => scandoubler_format,
       colour_enable => half_scandouble_enable_reg,
-      colour_in => atari_colour,
+      colour_in_r => colour_r,
+      colour_in_g => colour_g,
+      colour_in_b => colour_b,
       vsync_in => VIDEO_VS,
       hsync_in => VIDEO_HS,
       CLK_HDMI_IN => CLK_HDMI_IN,

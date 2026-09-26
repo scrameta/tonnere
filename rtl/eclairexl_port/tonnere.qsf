@@ -444,6 +444,9 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to SIO_MOTOR
 
 
 
+set_global_assignment -name VHDL_FILE a8core/vbxe/vbxe.vhdl
+set_global_assignment -name VHDL_FILE a8core/vbxe/vbxe_blitter.vhdl
+set_global_assignment -name VHDL_FILE bram.vhdl
 set_global_assignment -name VHDL_FILE sram.vhdl
 set_global_assignment -name QIP_FILE components/fifo_cyclone10LP/fifo_transmit.qip
 set_global_assignment -name SOURCE_FILE components/fifo_cyclone10LP/fifo_transmit.cmp
@@ -475,6 +478,7 @@ set_global_assignment -name VHDL_FILE a8core/atari800core_simple_sdram.vhd
 set_global_assignment -name VHDL_FILE a8core/simple_counter.vhdl
 set_global_assignment -name VHDL_FILE a8core/reg_file.vhdl
 set_global_assignment -name VHDL_FILE a8core/pokey_countdown_timer.vhdl
+set_global_assignment -name VHDL_FILE a8core/gtia_priority_store.vhdl
 set_global_assignment -name VHDL_FILE a8core/gtia_priority.vhdl
 set_global_assignment -name VHDL_FILE a8core/gtia_player.vhdl
 set_global_assignment -name VHDL_FILE a8core/antic_counter.vhdl
