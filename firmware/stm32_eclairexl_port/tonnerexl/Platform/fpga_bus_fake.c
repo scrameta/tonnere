@@ -51,7 +51,7 @@ uint16_t fpga_reg_read(enum fpga_reg_index idx) {
     return g.reg[idx];
 }
 void fpga_reg_write(enum fpga_reg_index idx, uint16_t value) {
-    if (idx == REG_IRQ_CLEAR) { g.irq_pending &= (uint16_t)~value; return; } /* W1C */
+    if (idx == REG_IRQ_CLEAR) { g.irq_pending &= value; return; } /* W0C: value is the keep-mask */
     if (idx == REG_CONSOLE_PHYS) return;  /* read-only */
     g.reg[idx] = value;
 }

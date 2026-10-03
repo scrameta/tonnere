@@ -96,7 +96,7 @@ enum fpga_reg_index {
     /* interrupt controller */
     REG_IRQ_ENABLE,       /* RW */
     REG_IRQ_PENDING,      /* R  */
-    REG_IRQ_CLEAR,        /* W1C */
+    REG_IRQ_CLEAR,        /* W0C: write the mask of bits to KEEP (0 clears) */
     /* debug scratch (RW) */
     REG_DEBUG0,
     REG_DEBUG1,

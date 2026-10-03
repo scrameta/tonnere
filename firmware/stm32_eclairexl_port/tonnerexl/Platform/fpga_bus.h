@@ -103,7 +103,7 @@ fpga_status_t fpga_atari_read(uint32_t off, void *dst, size_t len);
 void     fpga_irq_enable(uint16_t mask);        /* set the enable mask       */
 uint16_t fpga_irq_enabled(void);
 uint16_t fpga_irq_pending(void);                /* read pending (enabled) bits */
-void     fpga_irq_clear(uint16_t bits);         /* write-1-to-clear           */
+void     fpga_irq_clear(uint16_t bits);         /* clear the given bits (W0C: FPGA register holds the keep-mask) */
 
 /* ---- SIO UART ---- */
 int      fpga_sio_rx_empty(void);

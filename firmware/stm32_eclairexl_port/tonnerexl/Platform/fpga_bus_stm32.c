@@ -155,7 +155,7 @@ fpga_status_t fpga_atari_read(uint32_t off, void *dst, size_t len) {
 void     fpga_irq_enable(uint16_t mask) { fpga_reg_write(REG_IRQ_ENABLE, mask); }
 uint16_t fpga_irq_enabled(void)         { return fpga_reg_read(REG_IRQ_ENABLE); }
 uint16_t fpga_irq_pending(void)         { return fpga_reg_read(REG_IRQ_PENDING); }
-void     fpga_irq_clear(uint16_t bits)  { fpga_reg_write(REG_IRQ_CLEAR, bits); } /* W1C */
+void     fpga_irq_clear(uint16_t bits)  { fpga_reg_write(REG_IRQ_CLEAR, (uint16_t)(~bits & 0x1F)); } /* W0C keep-mask */
 
 int fpga_sio_rx_empty(void) { return (urd(SIO_RX_FIFO) & SIO_FIFO_EMPTY) != 0; }
 int fpga_sio_tx_full(void)  { return (urd(SIO_TX_FIFO) & SIO_FIFO_FULL) != 0; }

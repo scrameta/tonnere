@@ -159,17 +159,17 @@ static void test_freezer(void) {
 
 static void test_irq_controller(void) {
     fpga_bus_init();
-    /* enable only SIO cmd + POTGO */
-    fpga_irq_enable((1u<<IRQ_SIO_CMD_BIT) | (1u<<IRQ_POTGO_BIT));
-    CHECK_EQ_U32(fpga_irq_enabled(), (1u<<IRQ_SIO_CMD_BIT)|(1u<<IRQ_POTGO_BIT));
-    /* raise POTGO + UART_RX; only enabled bits are visible in pending */
-    fake_fpga_raise_irq((1u<<IRQ_POTGO_BIT) | (1u<<IRQ_SIO_RX_BIT));
+    /* enable only SIO cmd + POT_RESET rising */
+    fpga_irq_enable((1u<<IRQ_SIO_CMD_BIT) | (1u<<IRQ_POT_RESET_LH_BIT));
+    CHECK_EQ_U32(fpga_irq_enabled(), (1u<<IRQ_SIO_CMD_BIT)|(1u<<IRQ_POT_RESET_LH_BIT));
+    /* raise POT_RESET + UART_RX; only enabled bits are visible in pending */
+    fake_fpga_raise_irq((1u<<IRQ_POT_RESET_LH_BIT) | (1u<<IRQ_SIO_RX_BIT));
     uint16_t p = fpga_irq_pending();
-    CHECK(p & (1u<<IRQ_POTGO_BIT));
+    CHECK(p & (1u<<IRQ_POT_RESET_LH_BIT));
     CHECK(!(p & (1u<<IRQ_SIO_RX_BIT)));   /* not enabled -> masked out */
-    /* W1C: clearing POTGO removes it, leaves others */
-    fpga_irq_clear(1u<<IRQ_POTGO_BIT);
-    CHECK(!(fpga_irq_pending() & (1u<<IRQ_POTGO_BIT)));
+    /* clear POT_RESET removes it, leaves others (W0C keep-mask under the hood) */
+    fpga_irq_clear(1u<<IRQ_POT_RESET_LH_BIT);
+    CHECK(!(fpga_irq_pending() & (1u<<IRQ_POT_RESET_LH_BIT)));
     /* enable UART_RX now; the earlier-raised bit becomes visible */
     fpga_irq_enable((1u<<IRQ_SIO_RX_BIT));
     CHECK(fpga_irq_pending() & (1u<<IRQ_SIO_RX_BIT));
