@@ -4,6 +4,7 @@
  * Uses the same validity grid as the board so the port's mode logic is testable.
  */
 #include "platform.h"
+#include "fpga_bus.h"
 #include <stdio.h>
 
 #if !defined(FPGA_BUS_STM32)   /* host build */
@@ -34,5 +35,15 @@ void platform_log_putc(char c) { fputc(c, stdout); }
 /* test introspection */
 platform_video_standard_t host_platform_last_standard(void) { return s_last_standard; }
 platform_video_refresh_t  host_platform_last_refresh(void)  { return s_last_refresh; }
+
+/* Host stubs for the on-target adc_dma module (compiled out without
+ * FPGA_BUS_STM32). No ADC/DMA on the host: the start calls report success so
+ * app_main() proceeds, and the pin clamp/release are no-ops. */
+fpga_status_t adc_dma_paddle_start(void) { return FPGA_OK; }
+fpga_status_t adc_dma_audio_start(void)  { return FPGA_OK; }
+void adc_dma_paddle_stop(void) { }
+void adc_dma_audio_stop(void)  { }
+void adc_dma_paddle_pins_clamp(void)   { }
+void adc_dma_paddle_pins_release(void) { }
 
 #endif

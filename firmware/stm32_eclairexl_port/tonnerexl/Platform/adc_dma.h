@@ -82,8 +82,11 @@ extern volatile adc_dma_fault_info_t adc_dma_last_fault;
 /* Fault hook. Called from the DMA/ADC error ISR path when an ADC overrun (OVR)
  * or DMA transfer/FIFO error is seen. The default implementation returns after
  * the snapshot above is recorded, rather than turning the fault into an
- * apparent firmware hang. Override this hook for a production recovery policy. */
+ * apparent firmware hang. Override this hook for a production recovery policy.
+ * Target-only: references ADC_HandleTypeDef, so guard it like the rest of HAL. */
+#if defined(FPGA_BUS_STM32)
 void adc_dma_on_fault(ADC_HandleTypeDef *hadc, uint32_t err);
+#endif
 
 #ifdef __cplusplus
 }
