@@ -6,3 +6,4 @@ plate/MegaXE-plate-backups
 keyboard/production/backups
 *.FCBak
 firmware/stm32_eclairexl_port/tonnerexl/host/build/
+firmware/stm32_eclairexl_port/build/

@@ -70,13 +70,33 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     FPGA_BUS_STM32
 )
 
+# The CubeMX toolchain file (cmake/gcc-arm-none-eabi.cmake) already puts the
+# linker script, --specs=nano.specs, -Map, --gc-sections and
+# --print-memory-usage into CMAKE_EXE_LINKER_FLAGS, which every target
+# inherits. Those four must NOT be repeated here:
+#   * duplicate -T script  -> ld: "linker script file ... appears multiple times"
+#                            (CMake 4.x no longer tolerates this)
+#   * duplicate nano.specs -> arm-none-eabi-gcc >= 14.2 (newlib 4.6):
+#                            "attempt to rename spec 'link' to already defined
+#                             spec 'nano_link'"
+# Each option is therefore added only when the toolchain file did not provide
+# it, so the build also survives a build directory configured without it.
+if(NOT CMAKE_EXE_LINKER_FLAGS MATCHES "${LINKER_SCRIPT}")
+    set(_tonnere_extra_link_opts -T${LINKER_SCRIPT})
+endif()
+if(NOT CMAKE_EXE_LINKER_FLAGS MATCHES "nano[.]specs")
+    list(APPEND _tonnere_extra_link_opts -specs=nano.specs)
+endif()
+if(NOT CMAKE_EXE_LINKER_FLAGS MATCHES "--gc-sections")
+    list(APPEND _tonnere_extra_link_opts
+        -Wl,-Map=${CMAKE_PROJECT_NAME}.map
+        -Wl,--gc-sections
+        -Wl,--print-memory-usage)
+endif()
+
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
     ${CPU_FLAGS}
-    -T${LINKER_SCRIPT}
-    -Wl,-Map=${CMAKE_PROJECT_NAME}.map
-    -Wl,--gc-sections
-    -Wl,--print-memory-usage
-    -specs=nano.specs
+    ${_tonnere_extra_link_opts}
     -specs=nosys.specs
 )
 
