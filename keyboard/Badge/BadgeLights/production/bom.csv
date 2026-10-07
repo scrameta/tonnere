@@ -1,0 +1,9 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"C24, C25, C26, C27, C28, C29, C30, C31",0805,8,100nF,
+"D1, D2, D3, D4, D5, D6, D7, D8",LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm,8,WS2812B,
+PRG,PinHeader_2x03_P2.54mm_Vertical,1,Conn_02x03_Odd_Even,
+PWR,PinHeader_1x02_P2.54mm_Vertical,1,Conn_01x02_Pin,
+"QWIIC_2, QWIIC",PinHeader_1x04_P2.54mm_Vertical,2,Conn_01x04,
+R1,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,1,R,
+RGB OUT,PinHeader_1x03_P2.54mm_Vertical,1,Conn_01x03_Pin,
+U1,DIP-8_W7.62mm,1,ATtiny85-20P,

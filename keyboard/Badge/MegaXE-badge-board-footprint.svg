@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 291 29" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:square;">
+    <g id="Part__Part2DObjectPython003" transform="matrix(2.834646,0,0,-2.834646,-457.991209,436.611163)">
+        <g id="Part__Part2DObjectPython003_w0000" transform="matrix(1,0,0,1,-1.026716,1.026716)">
+            <path d="M162.596,153L265.267,153L265.267,142.637L162.596,142.637L162.596,153" style="fill:none;fill-rule:nonzero;stroke:black;stroke-width:0.04px;"/>
+        </g>
+        <g id="Part__Part2DObjectPython003_w0003" transform="matrix(1,0,0,1,-1.026716,1.026716)">
+            <path d="M254.449,150.637L167.777,150.637L173.414,145L260.086,145L254.449,150.637" style="fill:none;fill-rule:nonzero;stroke:black;stroke-width:0.04px;"/>
+        </g>
+        <g transform="matrix(0.283993,0,0,-0.307481,258.769121,153.237897)">
+            <ellipse cx="8.803" cy="14.346" rx="3.521" ry="3.252" style="fill:none;stroke:black;stroke-width:0.12px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(0.283993,0,0,-0.307481,162.069121,153.237897)">
+            <ellipse cx="8.803" cy="14.346" rx="3.521" ry="3.252" style="fill:none;stroke:black;stroke-width:0.12px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+    </g>
+</svg>
