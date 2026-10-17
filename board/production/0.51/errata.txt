@@ -11,6 +11,7 @@ vi) DAC is a bit noisy with only one pin per channel and sigma delta. Add a capa
 vii) SIO.MOTOR does not go via the level shifter (so does not turn on). Also transistor is not fully on but is enough for 100mA which is within SIO specs I think.
 viii) D2 is back to front, so STM reset on connect does not work.
 ix) Reset button is not connected to header
+x) Paddle ADC bleed with fast DMA, tied PC4 to GND to use as the ADC2 dummy rank.
 
 Layout:
 a) Move power switch and power in slightly further apart.
