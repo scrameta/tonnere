@@ -13,6 +13,7 @@
 #include "logger.h"
 #include "fpga_bus.h"
 #include "adc_dma.h"
+#include "paddle_bringup.h"
 #include "simplefile_filex.h"
 
 /* ------------------------------------------------------------------ *
@@ -155,19 +156,29 @@ UINT app_main(const app_config_t *cfg) {
         return st;
     }
 
-    /* ADCs - for paddle and audio */
-    log_printf("starting paddle dma\r\n");
-    UINT pad_st = adc_dma_paddle_start();
-    if (pad_st != TX_SUCCESS) {
-        log_printf("paddle dma start failed: %u\r\n", pad_st);
-        return pad_st;
+    /* ADCs - for paddle and audio. While the paddle bring-up diagnostic owns
+     * ADC2 both stream starts are skipped (it runs alone). A failed stream
+     * start is logged and we continue: the rest of the system (SIO, SD, USB)
+     * works without the ADCs, and returning here would abort boot. */
+    if (paddle_bringup_owns_adc2()) {
+        log_puts("paddle bring-up owns ADC2: paddle + audio stream starts skipped\r\n");
+    } else {
+        log_printf("starting paddle dma\r\n");
+        fpga_status_t pad_st = adc_dma_paddle_start();
+        if (pad_st != FPGA_OK) {
+            log_printf("paddle dma start failed: %u\r\n", (unsigned)pad_st);
+        }
+
+        log_printf("starting adc dma\r\n");
+        fpga_status_t aud_st = adc_dma_audio_start();
+        if (aud_st != FPGA_OK) {
+            log_printf("adc dma start failed: %u\r\n", (unsigned)aud_st);
+        }
     }
 
-    log_printf("starting adc dma\r\n");
-    UINT aud_st = adc_dma_audio_start();
-    if (aud_st != TX_SUCCESS) {
-        log_printf("adc dma start failed: %u\r\n", aud_st);
-        return aud_st;
+    /* Stage (i) paddle ADC diagnostic (TONNEREXL_PADBRING; 0 = off). */
+    if (paddle_bringup_start() != 0) {
+        log_puts("paddle bring-up thread not created\r\n");
     }
 
 /*    while(1)

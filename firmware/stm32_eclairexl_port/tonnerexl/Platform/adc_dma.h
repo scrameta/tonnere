@@ -38,6 +38,14 @@ extern "C" {
  * MSP link. Returns FPGA_OK or an error if HAL start fails. */
 fpga_status_t adc_dma_paddle_start(void);
 
+/* Bring-up variant of adc_dma_paddle_start(): identical circular setup
+ * (same stream, priority, wrap length semantics) but the DMA destination is
+ * the caller's RAM buffer instead of the FPGA PADDLE_ADC registers. The
+ * caller owns the buffer and must keep it alive for the stream's lifetime
+ * (it is written continuously; there is no stop unless adc_dma_paddle_stop()
+ * runs). len is the number of 16-bit conversions per wrap, <= 8 expected. */
+fpga_status_t adc_dma_paddle_start_to_ram(uint16_t *buf, uint32_t len);
+
 /* Start the audio stream: ADC1 4-rank timer-triggered scan, circular DMA to
  * AUDIO_ADC0..3. TIM2 must already be configured for its ~44.1 kHz update
  * TRGO; this function starts it after arming the ADC/DMA. */

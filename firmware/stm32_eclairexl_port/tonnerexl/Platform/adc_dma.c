@@ -74,6 +74,21 @@ fpga_status_t adc_dma_paddle_start(void)
     return FPGA_OK;
 }
 
+fpga_status_t adc_dma_paddle_start_to_ram(uint16_t *buf, uint32_t len)
+{
+    /* Same sequencing as adc_dma_paddle_start() with a RAM destination: the
+     * MSP has already linked hadc2.DMA_Handle; HAL arms the stream circular
+     * with NDTR=len halfwords. Used by the paddle bring-up diagnostic to
+     * prove the ADC2+DMA path without touching the FPGA registers. */
+    __HAL_ADC_CLEAR_FLAG(&hadc2, ADC_FLAG_OVR);
+
+    if (HAL_ADC_Start_DMA(&hadc2, (uint32_t *)buf, len) != HAL_OK) {
+        return FPGA_ERR_STATE;
+    }
+    adc_dma_disable_completion_irqs(&hadc2);
+    return FPGA_OK;
+}
+
 fpga_status_t adc_dma_audio_start(void)
 {
     __HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_OVR);
