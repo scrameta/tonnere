@@ -397,10 +397,9 @@ accepted and may be captured for debug, but must not affect POT state.
 Threshold state/re-arm is local RTL state associated with the POT cycle; no
 per-sample STM32 interrupt or software comparison is required.
 
-The common threshold is the same for all eight channels. Its numeric value is
-an RTL/firmware configuration constant for now (**TODO(mark): final 12-bit
-threshold value**); there are no per-channel threshold registers in this
-interface.
+The common threshold is the same for all eight channels. Its value is
+**`2700`** (12-bit, ≈ 2.2 V on a 3.3 V scale); there are no per-channel
+threshold registers in this interface.
 
 **FSMC write requirement:** these sixteen registers are normal, no-wait write
 targets. The FPGA must accept them at the configured FSMC write timing and must
