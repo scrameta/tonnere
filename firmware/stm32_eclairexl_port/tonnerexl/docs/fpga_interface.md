@@ -1,11 +1,28 @@
 # TonnereXL — STM32 ↔ FPGA interface contract
 
-**Status:** DRAFT v0.6 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
+**Status:** DRAFT v0.7 · **Owner:** firmware (STM32 side) · **Consumer:** FSMC adaptor RTL (FPGA side)
 
 Authoritative contract between the STM32F407 firmware and the FPGA FSMC adaptor.
 The firmware `fpga_bus` HAL implements exactly what is written here; the RTL must
 match it. To change a field, change *this document first*, bump the version, then
 both sides. **TODO(mark)** marks values the RTL/board decides.
+
+## Changes v0.6 → v0.7 (paddle ADC stream: interleaved dummy rank, 16 registers)
+
+- The paddle ADC DMA stream now writes **sixteen** consecutive registers,
+  `PADDLE_ADC0`–`PADDLE_ADC15` (indices 31–46). The STM32 scan sequence is 16
+  ranks with a dummy rank before every paddle, so slots alternate dummy (even)
+  / paddle (odd); **paddle r = `PADDLE_ADC(2r+1)`**. Reason is measured on
+  hardware: back-to-back paddle conversions bleed - the ADC sample-and-hold
+  cap carries the previous channel's charge onto the next, high-impedance pot
+  node - and the interleaved dummy resets it. Full-sequence scan period
+  doubles (~24 us at current settings); accepted.
+- Slot order is defined by **Atari paddle input number** (0…3 = the four
+  POTI lines of front ports 1/2, 4…7 = console pots). Which STM32 ADC, channel
+  and scan rank carries each input is firmware's choice - the FPGA only sees
+  slot writes in this order.
+- `AUDIO_ADC0`–`AUDIO_ADC3` therefore **move from indices 39–42 to 47–50**
+  (byte base `0x60FE_004E` → `0x60FE_005E`). Audio semantics are unchanged.
 
 ## Changes v0.5 → v0.6 (audio ADC DMA stream)
 
@@ -230,18 +247,26 @@ inside the fixed region). Index *n* below:
 | 28 | RW | DEBUG3 |
 | 29 | W | APERTURE1_EXT (phys A29..A22 for aperture 1) |
 | 30 | W | APERTURE2_EXT (phys A29..A22 for aperture 2) |
-| 31 | W | PADDLE_ADC0 (raw ADC rank/channel 0, bits 11:0) |
-| 32 | W | PADDLE_ADC1 (raw ADC rank/channel 1, bits 11:0) |
-| 33 | W | PADDLE_ADC2 (raw ADC rank/channel 2, bits 11:0) |
-| 34 | W | PADDLE_ADC3 (raw ADC rank/channel 3, bits 11:0) |
-| 35 | W | PADDLE_ADC4 (raw ADC rank/channel 4, bits 11:0) |
-| 36 | W | PADDLE_ADC5 (raw ADC rank/channel 5, bits 11:0) |
-| 37 | W | PADDLE_ADC6 (raw ADC rank/channel 6, bits 11:0) |
-| 38 | W | PADDLE_ADC7 (raw ADC rank/channel 7, bits 11:0) |
-| 39 | W | AUDIO_ADC0 (raw audio ADC rank/channel 0, bits 11:0) |
-| 40 | W | AUDIO_ADC1 (raw audio ADC rank/channel 1, bits 11:0) |
-| 41 | W | AUDIO_ADC2 (raw audio ADC rank/channel 2, bits 11:0) |
-| 42 | W | AUDIO_ADC3 (raw audio ADC rank/channel 3, bits 11:0) |
+| 31 | W | PADDLE_ADC0 (slot 0: dummy, value unused) |
+| 32 | W | PADDLE_ADC1 (slot 1: paddle 0, bits 11:0) |
+| 33 | W | PADDLE_ADC2 (slot 2: dummy, value unused) |
+| 34 | W | PADDLE_ADC3 (slot 3: paddle 1, bits 11:0) |
+| 35 | W | PADDLE_ADC4 (slot 4: dummy, value unused) |
+| 36 | W | PADDLE_ADC5 (slot 5: paddle 2, bits 11:0) |
+| 37 | W | PADDLE_ADC6 (slot 6: dummy, value unused) |
+| 38 | W | PADDLE_ADC7 (slot 7: paddle 3, bits 11:0) |
+| 39 | W | PADDLE_ADC8 (slot 8: dummy, value unused) |
+| 40 | W | PADDLE_ADC9 (slot 9: paddle 4, bits 11:0) |
+| 41 | W | PADDLE_ADC10 (slot 10: dummy, value unused) |
+| 42 | W | PADDLE_ADC11 (slot 11: paddle 5, bits 11:0) |
+| 43 | W | PADDLE_ADC12 (slot 12: dummy, value unused) |
+| 44 | W | PADDLE_ADC13 (slot 13: paddle 6, bits 11:0) |
+| 45 | W | PADDLE_ADC14 (slot 14: dummy, value unused) |
+| 46 | W | PADDLE_ADC15 (slot 15: paddle 7, bits 11:0) |
+| 47 | W | AUDIO_ADC0 (raw audio ADC rank/channel 0, bits 11:0) |
+| 48 | W | AUDIO_ADC1 (raw audio ADC rank/channel 1, bits 11:0) |
+| 49 | W | AUDIO_ADC2 (raw audio ADC rank/channel 2, bits 11:0) |
+| 50 | W | AUDIO_ADC3 (raw audio ADC rank/channel 3, bits 11:0) |
 
 The extension registers are write-only; firmware shadows their values.
 Firmware: `fpga_aperture_set_ext(aperture, ext)` / `fpga_aperture_get_ext`.
@@ -321,32 +346,54 @@ physical 8-channel ADC path below.
 
 #### Physical paddle ADC stream (W; DMA target)
 
-`PADDLE_ADC0`–`PADDLE_ADC7` are eight consecutive 16-bit write-only registers.
-They are deliberately contiguous so STM32 DMA2 can stream the ADC regular scan
-directly into the FPGA with `MINC=1`, `NDTR=8`, and circular mode:
+`PADDLE_ADC0`–`PADDLE_ADC15` are sixteen consecutive 16-bit write-only
+registers. They are deliberately contiguous so the STM32 DMA can stream its
+ADC scan directly into the FPGA with `MINC=1`, `NDTR=16`, and circular mode.
+The scan interleaves one **dummy conversion** before every paddle, so slots
+alternate dummy/paddle:
 
 ```text
-ADC1 rank/channel 0  -> PADDLE_ADC0
-ADC1 rank/channel 1  -> PADDLE_ADC1
+scan rank 1  (dummy)  -> PADDLE_ADC0   (slot 0)
+scan rank 2  (paddle 0)  -> PADDLE_ADC1   (slot 1)
+scan rank 3  (dummy)  -> PADDLE_ADC2   (slot 2)
+scan rank 4  (paddle 1)  -> PADDLE_ADC3   (slot 3)
 ...
-ADC1 rank/channel 7  -> PADDLE_ADC7
-                         |
-                         +-- circular DMA wraps back to PADDLE_ADC0
+scan rank 15 (dummy)  -> PADDLE_ADC14  (slot 14)
+scan rank 16 (paddle 7)  -> PADDLE_ADC15  (slot 15)
+                              |
+                              +-- circular DMA wraps back to PADDLE_ADC0
 ```
+
+The dummy rank is a hardware requirement measured on real boards: back-to-back
+paddle conversions bleed - the ADC sample-and-hold cap carries the previous
+channel's charge onto the next, high-impedance pot node - and sampling a dummy
+channel before every paddle resets it. The dummy slot value is undefined as
+far as this interface is concerned; the FPGA must accept the write but must
+not use the value for paddle state.
 
 Each transfer is a 16-bit FSMC write. Bits `11:0` contain the right-aligned
 12-bit ADC result; bits `15:12` are ignored by the FPGA. With the current fixed
 region map, the STM32 register-file byte base is `0x60FE_0000`, so DMA starts at
 `PADDLE_ADC0 = 0x60FE_003E` (index 31 × 2 bytes) and increments by one 16-bit
-word per conversion through `PADDLE_ADC7 = 0x60FE_004C`.
+word per conversion through `PADDLE_ADC15 = 0x60FE_005C` (index 46).
 
-**Ordering is load-bearing:** the ADC regular sequence must always contain
-exactly eight ranks in the same order, and the FPGA register number is the
-channel identity. No channel number is carried in the data.
+**Ordering is load-bearing:** the scan must always contain exactly sixteen
+ranks in this dummy/paddle order, and **odd slot 2r+1 carries Atari paddle
+input r** (0…3 = POTI lines of front ports 1/2, 4…7 = console pots). Which
+STM32 ADC channel and scan rank carries paddle r is firmware's choice, set to
+match the board wiring; the FPGA identifies channels purely by write position.
+No channel number is carried in the data.
 
-**FPGA threshold handling:** on every `PADDLE_ADCn` write, compare `data[11:0]`
-against one common paddle threshold. A sample at or above the threshold updates
-the corresponding internal POT channel state for the current paddle cycle.
+**Scan period:** the interleaved dummy doubles the full-sequence scan period
+versus the v0.6 eight-rank scan (~24 us with 3-cycle sample times at the
+current ADC clock). POT threshold timing resolution doubles accordingly; this
+is accepted against the ~14.5 ms paddle window.
+
+**FPGA threshold handling:** on every **odd-slot** write (`PADDLE_ADC1`, `3`,
+…, `15` = paddles 0…7), compare `data[11:0]` against one common paddle threshold.
+A sample at or above the threshold updates the corresponding internal POT
+channel state for the current paddle cycle. Even (dummy) writes must be
+accepted and may be captured for debug, but must not affect POT state.
 Threshold state/re-arm is local RTL state associated with the POT cycle; no
 per-sample STM32 interrupt or software comparison is required.
 
@@ -355,26 +402,21 @@ an RTL/firmware configuration constant for now (**TODO(mark): final 12-bit
 threshold value**); there are no per-channel threshold registers in this
 interface.
 
-**FSMC write requirement:** these eight registers are normal, no-wait write
+**FSMC write requirement:** these sixteen registers are normal, no-wait write
 targets. The FPGA must accept them at the configured FSMC write timing and must
 not intentionally assert `NWAIT` for these writes. Occasional `NWAIT` on an
 unrelated CPU read can temporarily delay the DMA at the shared FSMC bus, so the
 firmware should use the DMA FIFO as short-term elasticity.
 
-**Firmware DMA settings that are part of this contract:**
-
-- ADC1 regular scan, 8 ranks, continuous conversion.
-- ADC DMA requests continuous (`DDS` enabled).
-- DMA2 peripheral→memory, peripheral address = `ADC1->DR`.
-- Peripheral width = 16 bit; memory width = 16 bit.
-- `PINC=0`, `MINC=1`, `CIRC=1`, `NDTR=8`.
-- DMA normal half/full-transfer interrupts disabled.
-- DMA priority = very high.
-- DMA FIFO explicitly enabled with **1/4-full threshold**; do not rely on reset
-  defaults (DMA resets in Direct Mode, while the `FTH` field itself resets to
-  1/2-full and is ignored until FIFO mode is enabled).
-- ADC overrun and DMA transfer/FIFO errors are fault conditions and should be
-  instrumented during bring-up.
+**Write cadence (firmware side, informative):** the STM32 streams this as one
+circular DMA run - ADC continuous conversion, DMA requests continuous (`DDS`),
+peripheral→FSMC, 16-bit both sides, `PINC=0`, `MINC=1`, `CIRC=1`, `NDTR=16`,
+DMA normal half/full-transfer interrupts disabled, DMA priority very high, DMA
+FIFO explicitly enabled with **1/4-full threshold** (do not rely on reset
+defaults: DMA resets in Direct Mode, while the `FTH` field itself resets to
+1/2-full and is ignored until FIFO mode is enabled). ADC overrun and DMA
+transfer/FIFO errors are fault conditions and should be instrumented during
+bring-up.
 
 See §6 for the `POTGO` / `POT_RESET` GPIO-drive pacing.
 
@@ -402,10 +444,10 @@ Each transfer is a 16-bit FSMC write. Bits `11:0` contain the right-aligned
 With the current fixed-region map:
 
 ```text
-AUDIO_ADC0 = 0x60FE_004E   (register index 39)
-AUDIO_ADC1 = 0x60FE_0050
-AUDIO_ADC2 = 0x60FE_0052
-AUDIO_ADC3 = 0x60FE_0054
+AUDIO_ADC0 = 0x60FE_005E   (register index 47)
+AUDIO_ADC1 = 0x60FE_0060
+AUDIO_ADC2 = 0x60FE_0062
+AUDIO_ADC3 = 0x60FE_0064
 ```
 
 #### Sampling cadence
