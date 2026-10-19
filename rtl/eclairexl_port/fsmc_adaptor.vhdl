@@ -5,7 +5,7 @@ use ieee.std_logic_misc.all;   -- and_reduce
 
 entity fsmc_adaptor is
   generic (
-    version : integer := 1
+    version : integer := 7
   );
   port (
     CLK                     : in    std_logic;
@@ -543,17 +543,20 @@ begin
     DMA_SELECT, DMA_MEMORY_DATA, DMA_MEMORY_READY,
     SIO_SELECT, SIO_HANDLER_DATA,
     REG_SELECT, REG_DATA,
-    READ_DATA_REG
+    READ_DATA_REG,
+	 ACTION_FIFO_EMPTY
   )
   begin
     READ_DATA_NEXT <= READ_DATA_REG;
-    if (DMA_SELECT='1' and DMA_MEMORY_READY='1') then
-      READ_DATA_NEXT <= DMA_MEMORY_DATA;
-    elsif (SIO_SELECT='1') then
-      READ_DATA_NEXT <= SIO_HANDLER_DATA;
-    elsif (REG_SELECT='1') then
-      READ_DATA_NEXT <= REG_DATA;
-    end if;
+    if (ACTION_FIFO_EMPTY='0') then	-- Only one read request at a time. If we handled it hold until we get another request.
+		 if (DMA_SELECT='1' and DMA_MEMORY_READY='1') then
+			READ_DATA_NEXT <= DMA_MEMORY_DATA;
+		 elsif (SIO_SELECT='1') then
+			READ_DATA_NEXT <= SIO_HANDLER_DATA;
+		 elsif (REG_SELECT='1') then
+			READ_DATA_NEXT <= REG_DATA;
+		 end if;
+	 end if;
   end process;
 
   sio_handler1 : ENTITY work.sio_handler
@@ -698,7 +701,7 @@ decode_addr : entity work.complete_address_decoder
     end if;
 
     PADDLE_OVER_THRESHOLD := '0';
-    if SIGNED(ACTION_FIFO_D(11 downto 0))>to_signed(4000,12) then -- TODO tune threshold!
+    if UNSIGNED(ACTION_FIFO_D(11 downto 0))>to_unsigned(2700,12) then -- 2700 ~= 2.2v
         PADDLE_OVER_THRESHOLD := '1';
     end if;
 
@@ -768,41 +771,41 @@ decode_addr : entity work.complete_address_decoder
       if (REG_ADDR_DECODED(30)='1') then  -- APERTURE1_EXT
         APERTURE2_EXT_NEXT <= ACTION_FIFO_D(7 downto 0);
       end if;
-      if (REG_ADDR_DECODED(31)='1') then  -- PADDLE_ADC
+      if (REG_ADDR_DECODED(32)='1') then  -- PADDLE_ADC
         POT_TRIGGER_NEXT(0) <= POT_TRIGGER_REG(0) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(32)='1') then
+      if (REG_ADDR_DECODED(34)='1') then
         POT_TRIGGER_NEXT(1) <= POT_TRIGGER_REG(1) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(33)='1') then
+      if (REG_ADDR_DECODED(36)='1') then
         POT_TRIGGER_NEXT(2) <= POT_TRIGGER_REG(2) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(34)='1') then
+      if (REG_ADDR_DECODED(38)='1') then
         POT_TRIGGER_NEXT(3) <= POT_TRIGGER_REG(3) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(35)='1') then
+      if (REG_ADDR_DECODED(40)='1') then
         POT_TRIGGER_NEXT(4) <= POT_TRIGGER_REG(4) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(36)='1') then
+      if (REG_ADDR_DECODED(42)='1') then
         POT_TRIGGER_NEXT(5) <= POT_TRIGGER_REG(5) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(37)='1') then
+      if (REG_ADDR_DECODED(44)='1') then
         POT_TRIGGER_NEXT(6) <= POT_TRIGGER_REG(6) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(38)='1') then
+      if (REG_ADDR_DECODED(46)='1') then
         POT_TRIGGER_NEXT(7) <= POT_TRIGGER_REG(7) or PADDLE_OVER_THRESHOLD;
       end if;
-      if (REG_ADDR_DECODED(39)='1') then  -- AUDIO_ADC
-        AUDIO_ADC0_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      if (REG_ADDR_DECODED(47)='1') then  -- AUDIO_ADC
+        AUDIO_ADC0_NEXT <= SIGNED(not(ACTION_FIFO_D(11))&ACTION_FIFO_D(10 downto 0));
       end if;
-      if (REG_ADDR_DECODED(40)='1') then  -- AUDIO_ADC
-        AUDIO_ADC1_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      if (REG_ADDR_DECODED(48)='1') then  -- AUDIO_ADC
+        AUDIO_ADC1_NEXT <= SIGNED(not(ACTION_FIFO_D(11))&ACTION_FIFO_D(10 downto 0));
       end if;
-      if (REG_ADDR_DECODED(41)='1') then  -- AUDIO_ADC
-        AUDIO_ADC2_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      if (REG_ADDR_DECODED(59)='1') then  -- AUDIO_ADC
+        AUDIO_ADC2_NEXT <= SIGNED(not(ACTION_FIFO_D(11))&ACTION_FIFO_D(10 downto 0));
       end if;
-      if (REG_ADDR_DECODED(42)='1') then  -- AUDIO_ADC
-        AUDIO_ADC3_NEXT <= SIGNED(ACTION_FIFO_D(11 downto 0));
+      if (REG_ADDR_DECODED(50)='1') then  -- AUDIO_ADC
+        AUDIO_ADC3_NEXT <= SIGNED(not(ACTION_FIFO_D(11))&ACTION_FIFO_D(10 downto 0));
       end if;
     end if;
   end process;
