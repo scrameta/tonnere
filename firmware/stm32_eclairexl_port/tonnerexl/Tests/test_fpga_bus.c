@@ -214,7 +214,8 @@ static void test_sio_fifo(void) {
 static void test_adc_stream_regs(void) {
     fpga_bus_init();
 
-    /* paddle: 8 channels, each masked to 12 bits, landing in consecutive regs */
+    /* paddle: 16 slots (dummy-interleaved, v0.7), each masked to 12 bits,
+     * landing in consecutive regs */
     for (unsigned ch = 0; ch < FPGA_PADDLE_ADC_COUNT; ++ch)
         fpga_paddle_adc_write(ch, (uint16_t)(0x0A00 + ch));
     for (unsigned ch = 0; ch < FPGA_PADDLE_ADC_COUNT; ++ch)
@@ -238,8 +239,8 @@ static void test_adc_stream_regs(void) {
 
     /* layout invariants the DMA stream relies on */
     CHECK_EQ_U32(REG_PADDLE_ADC0, 31);
-    CHECK_EQ_U32(REG_AUDIO_ADC0, 39);
-    CHECK_EQ_U32(REG_PADDLE_ADC7 - REG_PADDLE_ADC0, 7);
+    CHECK_EQ_U32(REG_AUDIO_ADC0, 47);
+    CHECK_EQ_U32(REG_PADDLE_ADC15 - REG_PADDLE_ADC0, 15);
     CHECK_EQ_U32(REG_AUDIO_ADC3 - REG_AUDIO_ADC0, 3);
 }
 

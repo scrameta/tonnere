@@ -305,7 +305,7 @@ static void MX_ADC2_Init(void)
   hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc2.Init.NbrOfConversion = 8;
+  hadc2.Init.NbrOfConversion = 16;
   hadc2.Init.DMAContinuousRequests = ENABLE;
   hadc2.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc2) != HAL_OK)
@@ -313,77 +313,35 @@ static void MX_ADC2_Init(void)
     Error_Handler();
   }
 
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_10;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+  /* 16-rank dummy-interleaved scan, contract v0.7 §3: D,P0,D,P1,...,D,P7.
+   * Odd ranks sample CH14/PC4, which is tied to GND on rev 0.51: the throwaway
+   * conversion snaps the S/H to a solid 0 V, discharging the mux charge that
+   * otherwise bleeds into the next channel (bench-proven in paddle_bringup.c).
+   * Paddle r converts at rank 2r+2 -> PADDLE_ADC(2r+1); dummy slots are
+   * accepted but ignored by the FPGA.  Sampling: pots 15 cycles, dummy ranks
+   * 15 cycles — interim default.  SMP bisect on real hardware: 56 and 144
+   * still leak, 480 (23 us, ~20tau) is leak-free but 375 us is too slow for
+   * paddles, so no fast-and-clean setting exists on this board (tau ~1 us).
+   * Next board rev: LVDS comparator inputs direct into the FPGA + dump FET.
+   * ADC clock is 21 MHz (84 MHz APB2 / 4): 3 cyc ~143 ns, 15 ~714 ns,
+   * 144 ~6.9 us, 480 ~23 us.  Scan = 16*(15+12) = 20.6 us.
+   * LA evidence: dummy slots read WAY off 0
+   * at 3/15 — the F4 sampling network (tens of kOhm, tens of pF) does not
+   * discharge to GND in a few hundred ns, so the dummy inherits the previous
+   * pot's residue; longer dummy SMP is the real lever (480 = ~23 us = 20+tau).
+   * NOTE: CubeMX-generated territory — mirror this sequence in the .ioc. */
+  static const uint8_t adc2_seq[16] = {
+      14, 10, 14, 11, 14, 12, 14, 13, 14, 0, 14, 1, 14, 4, 14, 5
+  };
+  for (uint32_t r = 0; r < 16u; r++)
   {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_11;
-  sConfig.Rank = 2;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_12;
-  sConfig.Rank = 3;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_13;
-  sConfig.Rank = 4;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_0;
-  sConfig.Rank = 5;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_1;
-  sConfig.Rank = 6;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_4;
-  sConfig.Rank = 7;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_5;
-  sConfig.Rank = 8;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
+    sConfig.Channel      = adc2_seq[r];
+    sConfig.Rank         = r + 1u;
+    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+    if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+    {
+      Error_Handler();
+    }
   }
   /* USER CODE BEGIN ADC2_Init 2 */
 
@@ -758,10 +716,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ESP_BOOT_Pin ESP_EN_Pin FPGA_PS_N_Pin FPGA_IRQ_Pin
-                           FPGA_CONFIG_N_Pin FPGA_STATUS_N_Pin FPGA_CONF_DONE_Pin */
-  GPIO_InitStruct.Pin = ESP_BOOT_Pin|ESP_EN_Pin|FPGA_PS_N_Pin|FPGA_IRQ_Pin
-                          |FPGA_CONFIG_N_Pin|FPGA_STATUS_N_Pin|FPGA_CONF_DONE_Pin;
+  /*Configure GPIO pins : ESP_BOOT_Pin ESP_EN_Pin FPGA_PS_N_Pin FPGA_CONFIG_N_Pin
+                           FPGA_STATUS_N_Pin FPGA_CONF_DONE_Pin */
+  GPIO_InitStruct.Pin = ESP_BOOT_Pin|ESP_EN_Pin|FPGA_PS_N_Pin|FPGA_CONFIG_N_Pin
+                          |FPGA_STATUS_N_Pin|FPGA_CONF_DONE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
@@ -772,12 +730,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SD_WP_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : FPGA_IRQ_Pin */
+  GPIO_InitStruct.Pin = FPGA_IRQ_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;   /* FPGA IRQ is open-drain active-low (contract §6) */
+  GPIO_InitStruct.Pull = GPIO_PULLUP;            /* no external pull-up on board: line floats otherwise */
+  HAL_GPIO_Init(FPGA_IRQ_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : SPI_CS1_Pin SPI_CS2_Pin */
   GPIO_InitStruct.Pin = SPI_CS1_Pin|SPI_CS2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

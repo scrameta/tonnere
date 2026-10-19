@@ -109,46 +109,56 @@ enum fpga_reg_index {
     REG_APERTURE2_EXT,   /* aperture 2 (A22=1 !=1111, 7 MB window) */
 
     /* Physical paddle ADC stream (W; ADC2->DMA2 circular target).
-     * Eight CONSECUTIVE 16-bit write-only regs; the register index is the
-     * ADC rank/channel identity. data[11:0] = right-aligned 12-bit sample,
-     * bits 15:12 ignored by the FPGA. DMA streams rank 0..7 -> ADC0..ADC7
-     * with MINC=1/NDTR=8/CIRC=1. Contiguity is load-bearing — do not reorder.
+     * Sixteen CONSECUTIVE 16-bit write-only regs (contract v0.7): the DMA
+     * streams the 16-rank dummy-interleaved scan, rank n -> PADDLE_ADCn,
+     * with MINC=1/NDTR=16/CIRC=1. Even slots = dummy conversion (value must
+     * be accepted but is unused); odd slot 2r+1 = Atari paddle r.
+     * data[11:0] = right-aligned unsigned 12-bit sample, bits 15:12 ignored
+     * by the FPGA. Contiguity is load-bearing — do not reorder.
      * See docs/fpga_interface.md §3 "Physical paddle ADC stream". */
-    REG_PADDLE_ADC0,     /* index 31 */
-    REG_PADDLE_ADC1,
-    REG_PADDLE_ADC2,
-    REG_PADDLE_ADC3,
-    REG_PADDLE_ADC4,
-    REG_PADDLE_ADC5,
-    REG_PADDLE_ADC6,
-    REG_PADDLE_ADC7,     /* index 38 */
+    REG_PADDLE_ADC0,     /* index 31 — dummy (ADC CH14/PC4) */
+    REG_PADDLE_ADC1,     /* index 32 — paddle 0 (PC0) */
+    REG_PADDLE_ADC2,     /* index 33 — dummy */
+    REG_PADDLE_ADC3,     /* index 34 — paddle 1 (PC1) */
+    REG_PADDLE_ADC4,     /* index 35 — dummy */
+    REG_PADDLE_ADC5,     /* index 36 — paddle 2 (PC2) */
+    REG_PADDLE_ADC6,     /* index 37 — dummy */
+    REG_PADDLE_ADC7,     /* index 38 — paddle 3 (PC3) */
+    REG_PADDLE_ADC8,     /* index 39 — dummy */
+    REG_PADDLE_ADC9,     /* index 40 — paddle 4 (PA0) */
+    REG_PADDLE_ADC10,    /* index 41 — dummy */
+    REG_PADDLE_ADC11,    /* index 42 — paddle 5 (PA1) */
+    REG_PADDLE_ADC12,    /* index 43 — dummy */
+    REG_PADDLE_ADC13,    /* index 44 — paddle 6 (PA4) */
+    REG_PADDLE_ADC14,    /* index 45 — dummy */
+    REG_PADDLE_ADC15,    /* index 46 — paddle 7 (PA5) */
 
     /* Audio ADC stream (W; second ADC->DMA2 circular target).
      * Four CONSECUTIVE 16-bit write-only regs, same pattern as the paddle
      * stream. Timer-triggered 4-rank scan at ~44.1 kHz/channel (CONT=0).
-     * See docs/fpga_interface.md §3 "Audio ADC inputs". */
-    REG_AUDIO_ADC0,      /* index 39 */
+     * Moved from idx 39-42 by contract v0.7 (paddle block widened to 16). */
+    REG_AUDIO_ADC0,      /* index 47 */
     REG_AUDIO_ADC1,
     REG_AUDIO_ADC2,
-    REG_AUDIO_ADC3,      /* index 42 */
+    REG_AUDIO_ADC3,      /* index 50 */
 
     REG_COUNT
 };
 
 /* Compile-time guarantee of the contiguity the DMA contract relies on. */
-_Static_assert(REG_PADDLE_ADC7 - REG_PADDLE_ADC0 == 7, "paddle ADC regs must be contiguous");
+_Static_assert(REG_PADDLE_ADC15 - REG_PADDLE_ADC0 == 15, "paddle ADC regs must be contiguous");
 _Static_assert(REG_AUDIO_ADC3  - REG_AUDIO_ADC0  == 3, "audio ADC regs must be contiguous");
 _Static_assert(REG_PADDLE_ADC0 == 31, "paddle ADC base index must match fpga_interface.md");
-_Static_assert(REG_AUDIO_ADC0  == 39, "audio ADC base index must match fpga_interface.md");
+_Static_assert(REG_AUDIO_ADC0  == 47, "audio ADC base index must match fpga_interface.md v0.7");
 
 /* Absolute FSMC halfword addresses of the two DMA destinations.
  * These are the exact byte addresses quoted in fpga_interface.md §3:
- *   PADDLE_ADC0 = 0x60FE_003E   AUDIO_ADC0 = 0x60FE_004E
+ *   PADDLE_ADC0 = 0x60FE_003E   AUDIO_ADC0 = 0x60FE_005E
  * Kept as macros so the ADC/DMA driver can hand them straight to the DMA
  * memory-address field without recomputing the aperture math. */
 #define FPGA_PADDLE_ADC_ADDR  FPGA_REG_ADDR(REG_PADDLE_ADC0)
 #define FPGA_AUDIO_ADC_ADDR   FPGA_REG_ADDR(REG_AUDIO_ADC0)
-#define FPGA_PADDLE_ADC_COUNT 8u
+#define FPGA_PADDLE_ADC_COUNT 16u
 #define FPGA_AUDIO_ADC_COUNT  4u
 
 /* ------------------------------------------------------------------ */
@@ -272,19 +282,22 @@ enum fpga_sio_index {
 #define FPGA_SD_WP_GPIO_PORT    GPIOD
 #define FPGA_SD_WP_GPIO_PIN     GPIO_PIN_3
 
-/* Paddle ADC input pins, in DMA rank order (rank n -> PADDLE_ADCn).
- * From the CubeMX pinlist with board 0.51 errata applied. The rank order
- * here is the channel identity the FPGA decodes from the register address,
- * so it MUST match the ADC1 regular-sequence rank order in adc_dma.c.
+/* Paddle ADC input pins, in DMA rank order (contract v0.7, 16-rank scan).
+ * From the CubeMX pinlist with board 0.51 errata applied. Rank order is the
+ * slot identity the FPGA decodes from the register address, so it MUST match
+ * the ADC2 regular-sequence in MX_ADC2_Init (main.c):
+ *   odd ranks 1,3,..15 : CH14/PC4 dummy (value unused by the FPGA)
+ *   even ranks 2,4,..16: paddle 0..7 =
+ *     PC0 PC1 PC2 PC3 (JOY.POT0-3, ADC_IN10..13),
+ *     PA0 PA1 PA4 PA5 (JOY2.POT4-7, ADC_IN0,1,4,5)
+ * i.e. paddle r converts at rank 2r+2 and lands in PADDLE_ADC(2r+1).
  *
  * These are needed for the POTGO/POT_RESET clamp: on POTGO the ISR switches
  * these pins analogue->output-low (discharge); on POT_RESET falling it
- * switches them back to analogue. Rank order (see adc_dma.c):
- *   rank 0..3 : PC0 PC1 PC2 PC3   (JOY.POT0-3,  ADC_IN10..13)
- *   rank 4..7 : PA0 PA1 PA4 PA5   (JOY2.POT4-7, ADC_IN0,1,4,5)
- * Note the paddle pins are split across GPIOA and GPIOC, so the "one MODER
- * write" optimisation in the design doc is not available here — the clamp
- * touches two ports. See adc_dma.c: paddle_pins_clamp()/release(). */
+ * switches them back to analogue. Note the paddle pins are split across GPIOA
+ * and GPIOC, so the "one MODER write" optimisation in the design doc is not
+ * available here — the clamp touches two ports. See adc_dma.c:
+ * paddle_pins_clamp()/release(). PC4 is NOT clamped (dummy only). */
 #define FPGA_PADDLE_PC_PORT     GPIOC
 #define FPGA_PADDLE_PC_PINS     (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)
 #define FPGA_PADDLE_PA_PORT     GPIOA

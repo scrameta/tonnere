@@ -15,6 +15,9 @@
 #include "adc_dma.h"
 #include "paddle_bringup.h"
 #include "simplefile_filex.h"
+#if defined(FPGA_BUS_STM32)
+#include "main.h"   /* FPGA_IRQ_GPIO_Port / HAL GPIO reads */
+#endif
 
 /* ------------------------------------------------------------------ *
  * Simple FPGA RAM smoke test.
@@ -137,12 +140,33 @@ UINT app_main(const app_config_t *cfg) {
 
     simplefile_init_lock();
 
+    /* Clear stale pendings first: if the FPGA kept state across an STM32-only
+     * reset, an old pending would hold the (active-low) line asserted and no
+     * fresh falling edge could ever come. */
+    fpga_irq_clear(0x1Fu);  /* arg = bits to clear: all five sources */
     /* Enable the interrupt sources the threads consume. */
-    fpga_irq_enable((uint16_t)((1u << IRQ_SIO_CMD_BIT) |
-                               (1u << IRQ_SIO_RX_BIT) |
-                               (1u << IRQ_SIO_TX_BIT) |
-                               (1u << IRQ_POT_RESET_LH_BIT) |
+    //fpga_irq_enable((uint16_t)((1u << IRQ_SIO_CMD_BIT) |
+    //                           (1u << IRQ_SIO_RX_BIT) |
+    //                           (1u << IRQ_SIO_TX_BIT) |
+    //                           (1u << IRQ_POT_RESET_LH_BIT) |
+    //                           (1u << IRQ_POT_RESET_HL_BIT)));
+    fpga_irq_enable((uint16_t)((1u << IRQ_POT_RESET_LH_BIT) |
                                (1u << IRQ_POT_RESET_HL_BIT)));
+    /* Breadcrumb: en must read 0018; pend!=0 here means the FPGA already
+     * latched POT edges (line pulls LOW now — active-low open-drain, so the
+     * falling edge should fire EXTI immediately). lvl=1 with ent staying 0 =
+     * line never asserted (FPGA output/pin); lvl=0 with ent staying 0 =
+     * asserted but edge missed. */
+    log_printf("potirq: en=%04X pend=%04X"
+#if defined(FPGA_BUS_STM32)
+               " lvl=%u"
+#endif
+               "\r\n",
+               fpga_irq_enabled(), fpga_irq_pending()
+#if defined(FPGA_BUS_STM32)
+               , (unsigned)HAL_GPIO_ReadPin(FPGA_IRQ_GPIO_Port, FPGA_IRQ_Pin)
+#endif
+               );
 
     /* Create the application threads and return so tx_kernel_enter can finish
      * and the scheduler goes live. The core bring-up (6502 reset, RAM clear,

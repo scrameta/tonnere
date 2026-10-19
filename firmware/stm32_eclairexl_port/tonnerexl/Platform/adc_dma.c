@@ -47,11 +47,11 @@ static void adc_dma_disable_completion_irqs(ADC_HandleTypeDef *hadc)
 /*
  * HAL_ADC_Start_DMA(hadc, pData, Length):
  *   pData  = DMA memory (destination) address. We hand it the FPGA register
- *            address; MINC walks it through the 8 (or 4) consecutive halfword
+ *            address; MINC walks it through the 16 (or 4) consecutive halfword
  *            regs, then circular mode wraps it back to the base.
  *   Length = number of ADC conversions per DMA "buffer" = NDTR. With CIRC=1
  *            the controller reloads NDTR automatically, so this is the wrap
- *            length, exactly the 8 / 4 from the interface contract.
+ *            length, exactly the 16 / 4 from the interface contract.
  *
  * Circular + DMAContinuousRequests(DDS)=1 (set in CubeMX) means the stream
  * runs forever with no CPU involvement after this call.
@@ -64,6 +64,14 @@ fpga_status_t adc_dma_paddle_start(void)
      * inside Start_DMA, but we also make sure the ADC isn't left in an
      * overrun-latched state from a previous run. */
     __HAL_ADC_CLEAR_FLAG(&hadc2, ADC_FLAG_OVR);
+
+    /* Contract v0.7 §3: FIFO mode at 1/4-full threshold (FTH=00 + DMDIS) so
+     * the free-running scan never drops a DR read while the FSMC burst
+     * finishes. HAL leaves the stream in Direct Mode; FCR is written while
+     * the stream is disabled (it is, until HAL_ADC_Start_DMA arms it). */
+    if (hadc2.DMA_Handle != NULL) {
+        hadc2.DMA_Handle->Instance->FCR = DMA_SxFCR_DMDIS;
+    }
 
     if (HAL_ADC_Start_DMA(&hadc2,
                           (uint32_t *)FPGA_PADDLE_ADC_ADDR,

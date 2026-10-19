@@ -12,7 +12,11 @@
  *   0 = off (normal paddle + audio streams run)
  *   1 = poll forever
  *   2 = DMA-to-RAM immediately
- *   3 = poll 30 s, then DMA-to-RAM  (default)
+ *   3 = poll 30 s, then DMA-to-RAM
+ *
+ * Default is 0 (production): the FPGA-backed paddle stream + audio run. The
+ * bench diagnostic is a bring-up tool for new board revisions — enable with
+ * -DTONNEREXL_PADBRING=1/2/3.
  *
  * While the diagnostic is on it OWNS ADC2: app_main must not start the
  * paddle/audio streams (see paddle_bringup_owns_adc2()).
@@ -28,7 +32,7 @@
 #if defined(FPGA_BUS_STM32)
 
 #ifndef TONNEREXL_PADBRING
-#define TONNEREXL_PADBRING 3
+#define TONNEREXL_PADBRING 0
 #endif
 
 /* Create the bring-up thread. Call from app_main after app_threads_create()

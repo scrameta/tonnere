@@ -8,6 +8,10 @@
 #include "app_threads.h"
 #include "fpga_bus.h"
 #include "adc_dma.h"
+#include "logger.h"
+#if defined(FPGA_BUS_STM32)
+#include "main.h"   /* FPGA_IRQ_GPIO_Port / FPGA_IRQ_Pin */
+#endif
 
 /* Drive/SIO: on an IRQ, demux via the interrupt controller, then drain SIO.
  * Real ATR/ATX protocol SM ports here.
@@ -43,14 +47,37 @@ void drive_service_step(void) {
 }
 
 /* Paddle IRQ:  -> POT_RESET: dump on, NOT(POT_RESET): adc dma on */
+
+/* GDB-readable IRQ counters (print pot_irq_diag any time; no logging from ISR
+ * context). entries=EXTI edges seen; clamps/releases=bits actually handled;
+ * loops>entries means the re-check loop caught a mid-handling event;
+ * raw_pending shows what the FPGA reported (SIO bits there = enable mask or
+ * clear is wrong; clamps==0 with entries>0 = bits 3/4 never reaching us). */
+volatile struct {
+    uint32_t entries;
+    uint32_t clamps;
+    uint32_t releases;
+    uint32_t loops;
+    uint16_t last_pending;   /* masked pending of the last handled iteration */
+    uint16_t raw_pending;    /* pending & enabled at entry, unmasked */
+} pot_irq_diag;
+
+/* 1 = printer thread logs pot_irq_diag once a second while it changes. */
+volatile uint32_t pot_irq_log = 1u;
+
 void pot_reset_service_step(void) {
-    if (fpga_irq_pending() & (1u << IRQ_POT_RESET_LH_BIT)) {
-        adc_dma_paddle_pins_clamp();
-        fpga_irq_clear((uint16_t)(1u << IRQ_POT_RESET_LH_BIT));
-    }
-    if (fpga_irq_pending() & (1u << IRQ_POT_RESET_HL_BIT)) {
-        adc_dma_paddle_pins_release();
-        fpga_irq_clear((uint16_t)(1u << IRQ_POT_RESET_HL_BIT));
+    int first = 1;
+    pot_irq_diag.entries++;
+    for (;;) {
+        uint16_t p = fpga_irq_pending() & fpga_irq_enabled();
+        if (first) { pot_irq_diag.raw_pending = p; first = 0; }
+        p &= (1u << IRQ_POT_RESET_LH_BIT) | (1u << IRQ_POT_RESET_HL_BIT); // Only these are ours to handle
+        if (!p) break;
+        pot_irq_diag.loops++;
+        pot_irq_diag.last_pending = p;
+        if (p & (1u << IRQ_POT_RESET_LH_BIT)) { adc_dma_paddle_pins_clamp(); pot_irq_diag.clamps++; }
+        if (p & (1u << IRQ_POT_RESET_HL_BIT)) { adc_dma_paddle_pins_release(); pot_irq_diag.releases++; }
+        fpga_irq_clear(p);
     }
 }
 
@@ -81,6 +108,37 @@ void sdlife_service_step(void) {
 void menu_service_step(void) {
     uint16_t phys = fpga_console_phys_read();
     (void)phys;
+
+    /* Debug printer for the paddle IRQ counters (thread context; the ISR must
+     * never log). Now a 1 s heartbeat with LIVE pend/lvl, not just counter
+     * changes: a pending that latches but never edges the line was invisible
+     * before. pot_irq_log=0 to silence. */
+    static uint32_t tick;
+    static int armed;
+    if (!armed) { armed = 1; log_printf("potirq: printer armed\r\n"); }
+    if (++tick >= 50u) {            /* menu thread ticks every 20 ms */
+        tick = 0;
+        if (pot_irq_log) {
+            uint16_t pend = fpga_irq_pending();
+            /* Diagnostic clear removed: the EXTI path is proven. A forced
+             * clear here bypasses clamp/release and can strand one pot scan. */
+            uint16_t ppot = pend & ((1u << IRQ_POT_RESET_LH_BIT) | (1u << IRQ_POT_RESET_HL_BIT));
+            (void)ppot;
+#if defined(FPGA_BUS_STM32)
+            unsigned lvl = (unsigned)HAL_GPIO_ReadPin(FPGA_IRQ_GPIO_Port, FPGA_IRQ_Pin);
+#else
+            unsigned lvl = 0u;
+#endif
+            log_printf("potirq: ent=%lu cl=%lu rel=%lu lp=%lu raw=%04X last=%04X pend=%04X lvl=%u\r\n",
+                       (unsigned long)pot_irq_diag.entries,
+                       (unsigned long)pot_irq_diag.clamps,
+                       (unsigned long)pot_irq_diag.releases,
+                       (unsigned long)pot_irq_diag.loops,
+                       pot_irq_diag.raw_pending, pot_irq_diag.last_pending,
+                       pend, lvl);
+        }
+    }
+
     /* TODO(port): observe physical console keys (Start/Select/Option) for menu
      * navigation. Physical Reset is no longer a console key — the RESET key
      * drives the 6502 reset line directly; if the menu needs to react to it,

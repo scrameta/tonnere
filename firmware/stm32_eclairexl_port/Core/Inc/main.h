@@ -87,6 +87,7 @@ void Error_Handler(void);
 #define FPGA_PS_N_GPIO_Port GPIOG
 #define FPGA_IRQ_Pin GPIO_PIN_12
 #define FPGA_IRQ_GPIO_Port GPIOG
+#define FPGA_IRQ_EXTI_IRQn EXTI15_10_IRQn
 #define FPGA_CONFIG_N_Pin GPIO_PIN_13
 #define FPGA_CONFIG_N_GPIO_Port GPIOG
 #define FPGA_STATUS_N_Pin GPIO_PIN_14

@@ -9,6 +9,11 @@ both sides. **TODO(mark)** marks values the RTL/board decides.
 
 ## Changes v0.6 → v0.7 (paddle ADC stream: interleaved dummy rank, 16 registers)
 
+- IRQ line electricals pinned down (previously unspecified; firmware had guessed
+  active-high): `FPGA_IRQ` is **open-drain, active-low** — `'0'` when asserted,
+  `'Z'` otherwise, external pull-up — so the STM32 must arm EXTI on the
+  **falling** edge. §6 updated.
+
 - The paddle ADC DMA stream now writes **sixteen** consecutive registers,
   `PADDLE_ADC0`–`PADDLE_ADC15` (indices 31–46). The STM32 scan sequence is 16
   ranks with a dummy rank before every paddle, so slots alternate dummy (even)
@@ -93,7 +98,7 @@ quoted in word units; memory sizes in bytes.
 | Interface | FSMC/FMC Bank1, NE1 | Base `0x6000_0000`. |
 | Data width | 16-bit | Native; no register exceeds 16 bits. |
 | Access type | Async SRAM, NWAIT-capable | |
-| IRQ | one FPGA→STM32 line | PG12, EXTI15_10, level-preferred. |
+| IRQ | one FPGA→STM32 line | PG12, EXTI15_10. Open-drain, active-low (external pull-up); assert edge = falling. |
 
 `FPGA_BUS_BASE` is a single compile-time constant in `Platform/fpga_bus_map.h`.
 
@@ -541,7 +546,10 @@ GTIA/PORTA/PORTB; expose raw physical state at the `*_PHYS` registers.
 
 ## 6. Interrupt controller
 
-Single FPGA→STM32 line (PG12, EXTI15_10, level-preferred). Three registers:
+Single FPGA→STM32 line (PG12, EXTI15_10). Electrical: **open-drain, active-low**
+(`FPGA_IRQ <= '0' when asserted else 'Z'`, pull-up required — rev 0.51 has no
+external one, firmware enables the STM32 internal `PULLUP`); the STM32 arms
+EXTI on the **falling** edge. Three registers:
 
 | Reg | Acc | Meaning |
 | --- | --- | --- |
