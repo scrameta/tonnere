@@ -318,17 +318,15 @@ static void MX_ADC2_Init(void)
    * conversion snaps the S/H to a solid 0 V, discharging the mux charge that
    * otherwise bleeds into the next channel (bench-proven in paddle_bringup.c).
    * Paddle r converts at rank 2r+2 -> PADDLE_ADC(2r+1); dummy slots are
-   * accepted but ignored by the FPGA.  Sampling: pots 15 cycles, dummy ranks
-   * 15 cycles — interim default.  SMP bisect on real hardware: 56 and 144
-   * still leak, 480 (23 us, ~20tau) is leak-free but 375 us is too slow for
-   * paddles, so no fast-and-clean setting exists on this board (tau ~1 us).
-   * Next board rev: LVDS comparator inputs direct into the FPGA + dump FET.
+   * accepted but ignored by the FPGA.  Sampling: pots 3 cycles, dummy ranks
+   * 3 cycles — test now that PC4 is set to ANALOG mode in ADC2 MspInit.  With
+   * the dummy pad truly sampling GND the S/H reset is ~5 ns, so short SMP
+   * everywhere should be clean.  (History: SMP bisect found 56/144 leak, 480
+   * clean — but that was all with PC4 left as a *digital input* in live mode,
+   * i.e. the dummy never actually reset the S/H.  Next board rev: LVDS
+   * comparator inputs direct into the FPGA + dump FET.)
    * ADC clock is 21 MHz (84 MHz APB2 / 4): 3 cyc ~143 ns, 15 ~714 ns,
-   * 144 ~6.9 us, 480 ~23 us.  Scan = 16*(15+12) = 20.6 us.
-   * LA evidence: dummy slots read WAY off 0
-   * at 3/15 — the F4 sampling network (tens of kOhm, tens of pF) does not
-   * discharge to GND in a few hundred ns, so the dummy inherits the previous
-   * pot's residue; longer dummy SMP is the real lever (480 = ~23 us = 20+tau).
+   * 144 ~6.9 us, 480 ~23 us.  Scan = 16*(3+12) = 11.4 us.
    * NOTE: CubeMX-generated territory — mirror this sequence in the .ioc. */
   static const uint8_t adc2_seq[16] = {
       14, 10, 14, 11, 14, 12, 14, 13, 14, 0, 14, 1, 14, 4, 14, 5
@@ -337,7 +335,7 @@ static void MX_ADC2_Init(void)
   {
     sConfig.Channel      = adc2_seq[r];
     sConfig.Rank         = r + 1u;
-    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
     if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
     {
       Error_Handler();
