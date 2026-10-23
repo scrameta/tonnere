@@ -25982,6 +25982,16 @@
 		)
 		(uuid "ffe77f2f-6be6-43dd-875d-209bb9ac9060")
 	)
+	(label "unconnected-(U30-NC-Pad1)"
+		(at 36.83 41.91 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "004e84de-08e8-4dad-a68f-aaa1ff93cfa1")
+	)
 	(label "PBI.D5"
 		(at 328.93 156.21 0)
 		(effects
@@ -26041,6 +26051,16 @@
 			(justify left bottom)
 		)
 		(uuid "02fc2192-1961-4f0a-ab53-69ccfdca698f")
+	)
+	(label "Net-(J11B-POTA)"
+		(at 228.6 63.5 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0449058f-0846-487a-b72f-e9a5226f8c56")
 	)
 	(label "SIO_EXT.DATA_IN"
 		(at 132.08 323.85 0)
@@ -26332,6 +26352,16 @@
 		)
 		(uuid "19be661e-5ba3-41d3-b9de-53a6bea835ff")
 	)
+	(label "unconnected-(U35-NC-Pad1)"
+		(at 36.83 140.97 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "19d0bb0c-15f7-4fbf-8c61-00114266675c")
+	)
 	(label "PBI_EXT.A4"
 		(at 485.14 25.4 0)
 		(effects
@@ -26351,6 +26381,26 @@
 			(justify left bottom)
 		)
 		(uuid "1ab57727-fdd7-42fb-86ab-9e3a53d0831f")
+	)
+	(label "Net-(J16A-POTB)"
+		(at 223.52 177.8 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1b0d5ead-a925-47af-892b-8e3df1d854d1")
+	)
+	(label "unconnected-(U13-IO4-Pad4)"
+		(at 467.36 388.62 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1b455ca8-a4a6-455f-80f9-d26e0ec88e18")
 	)
 	(label "SIO_EXT.MOTOR"
 		(at 107.95 191.77 0)
@@ -26602,6 +26652,16 @@
 		)
 		(uuid "2dbebaee-5b13-4ac8-9202-a3e419f0428d")
 	)
+	(label "unconnected-(U24-IO1-Pad1)"
+		(at 387.35 317.5 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2ea465f3-d00b-4f31-97e5-93bf480122aa")
+	)
 	(label "PBI_EXT.A10"
 		(at 447.04 290.83 0)
 		(effects
@@ -26722,6 +26782,16 @@
 		)
 		(uuid "349db189-256c-4bc8-8d39-6ba39f1f021c")
 	)
+	(label "unconnected-(U32-1B6-Pad48)"
+		(at 415.29 73.66 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "35322096-19bb-43cd-9d5f-2e0a2a705950")
+	)
 	(label "PBI_EXT.REF"
 		(at 441.96 189.23 0)
 		(effects
@@ -26752,6 +26822,16 @@
 		)
 		(uuid "35e13258-89dc-4937-bd55-ca095b9c368d")
 	)
+	(label "unconnected-(U35-2A10-Pad26)"
+		(at 36.83 204.47 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3625a2d5-7359-4022-8d83-d1018bd46496")
+	)
 	(label "PBI_EXT.RD5"
 		(at 405.13 256.54 0)
 		(effects
@@ -26761,6 +26841,16 @@
 			(justify left bottom)
 		)
 		(uuid "369678c8-e152-495b-99cf-1fc5dd33b694")
+	)
+	(label "unconnected-(U35-2B10-Pad31)"
+		(at 97.79 204.47 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "36a91ef5-fc50-4d2e-9827-91b9a64e8d57")
 	)
 	(label "PBI_EXT.RAS"
 		(at 485.14 86.36 0)
@@ -26852,6 +26942,16 @@
 		)
 		(uuid "3b9e5b2c-0d3a-4297-b82e-8f9f1c0138f8")
 	)
+	(label "unconnected-(U35-2A6-Pad22)"
+		(at 36.83 194.31 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3bb6e168-40de-4830-b12f-8ae44aab3e18")
+	)
 	(label "PBI_EXT.RST"
 		(at 441.96 179.07 0)
 		(effects
@@ -26892,6 +26992,16 @@
 		)
 		(uuid "3c99fae1-66ec-4a10-bc9d-4c261baa97cd")
 	)
+	(label "Net-(J16A-POTA)"
+		(at 223.52 175.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3cebac29-93ae-4ade-ad08-f423d5fcbd6b")
+	)
 	(label "JOY_EXT.POT2"
 		(at 198.12 100.33 0)
 		(effects
@@ -26911,6 +27021,16 @@
 			(justify left bottom)
 		)
 		(uuid "3d1d2fd1-cba4-4acb-89b2-b1356d098d95")
+	)
+	(label "Net-(J11A-POTB)"
+		(at 223.52 102.87 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3d8cd1e9-75d4-4ef5-b280-b702baced1cf")
 	)
 	(label "SIO_EXT.AUD"
 		(at 107.95 163.83 0)
@@ -26941,6 +27061,26 @@
 			(justify left bottom)
 		)
 		(uuid "3f5f7da2-b6eb-46f6-8b94-fbd9ac5c2c5b")
+	)
+	(label "Net-(J18-Pin_3)"
+		(at 415.29 58.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3f65dac6-bd79-41c6-adb5-1f03f50c93f1")
+	)
+	(label "Net-(J18-Pin_4)"
+		(at 415.29 60.96 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3f85f874-ac6d-47c7-8aed-09f635759e95")
 	)
 	(label "PBI_EXT.D1"
 		(at 485.14 198.12 0)
@@ -27142,6 +27282,16 @@
 		)
 		(uuid "532459f0-e617-4584-8f48-de3851c37f7a")
 	)
+	(label "Net-(J16B-POTA)"
+		(at 223.52 137.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "534c6e8b-1edf-4176-aaa0-2f3a2cd1004b")
+	)
 	(label "JOY_EXT.DIR9"
 		(at 198.12 121.92 0)
 		(effects
@@ -27181,6 +27331,16 @@
 			(justify left bottom)
 		)
 		(uuid "542f7b92-cc3c-4d66-a2d9-4c04de38c062")
+	)
+	(label "Net-(J11A-POTB)"
+		(at 223.52 102.87 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "54aaea31-b1ac-4b8c-b3e8-b9f5e8738161")
 	)
 	(label "JOY_EXT.DIR9"
 		(at 107.95 90.17 0)
@@ -27252,6 +27412,16 @@
 		)
 		(uuid "57e6390d-49e4-4350-9281-5d0cdb9521db")
 	)
+	(label "unconnected-(U32-NC-Pad1)"
+		(at 354.33 53.34 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "580d97bf-943e-401b-aef3-af6315d3f1ef")
+	)
 	(label "PBI.S5_N"
 		(at 328.93 212.09 0)
 		(effects
@@ -27271,6 +27441,16 @@
 			(justify left bottom)
 		)
 		(uuid "595b3421-b027-43af-bb41-05b1876e3ca5")
+	)
+	(label "unconnected-(U37-NC-Pad1)"
+		(at 354.33 146.05 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "596db2f7-75d4-4063-b8bd-162bb1dfd9f0")
 	)
 	(label "PBI_EXT.A12"
 		(at 485.14 190.5 0)
@@ -27352,6 +27532,16 @@
 		)
 		(uuid "5eb7d9fd-4ed3-4cbe-9c74-2f4037b3424d")
 	)
+	(label "Net-(J18-Pin_6)"
+		(at 415.29 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5f4a4f55-9bbb-4be1-8645-0574c82be1c5")
+	)
 	(label "PBI.IRQ"
 		(at 328.93 173.99 0)
 		(effects
@@ -27361,6 +27551,16 @@
 			(justify left bottom)
 		)
 		(uuid "6060249a-06d8-44db-b865-d8b4f8446d6b")
+	)
+	(label "unconnected-(U14-IO1-Pad1)"
+		(at 273.05 320.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "60a8b8a8-ea65-432a-98d6-d6e3abf3d14f")
 	)
 	(label "+5V_JOY"
 		(at 224.79 43.18 0)
@@ -27441,6 +27641,16 @@
 			(justify left bottom)
 		)
 		(uuid "65d07bf4-c879-41d6-a3bb-2d0b958261cf")
+	)
+	(label "unconnected-(U32-1A6-Pad7)"
+		(at 354.33 68.58 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "664ee3ae-899e-4766-a875-0e2c20389e42")
 	)
 	(label "PBI_EXT.RD5"
 		(at 441.96 207.01 0)
@@ -27572,6 +27782,16 @@
 		)
 		(uuid "6dfea5b6-9444-4dde-8c9a-556faf62b0c8")
 	)
+	(label "unconnected-(U35-2B6-Pad35)"
+		(at 97.79 194.31 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6e16cce0-8583-4f0b-accc-bb3de7852827")
+	)
 	(label "PBI_EXT.D7"
 		(at 485.14 76.2 0)
 		(effects
@@ -27681,6 +27901,16 @@
 			(justify left bottom)
 		)
 		(uuid "73b5b32f-0660-4a09-961a-e919c027bb5c")
+	)
+	(label "Net-(J18-Pin_5)"
+		(at 415.29 63.5 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "746ca4c3-825f-4316-b6bc-c325b96add12")
 	)
 	(label "PBI_EXT.RW_N"
 		(at 485.14 218.44 0)
@@ -27792,6 +28022,16 @@
 		)
 		(uuid "77b05707-b4e6-468c-8260-5d03732079fc")
 	)
+	(label "Net-(J18-Pin_7)"
+		(at 415.29 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "78ce04a7-1ffc-4dcf-8da4-43309332423c")
+	)
 	(label "JOY_EXT.POT5"
 		(at 389.89 314.96 0)
 		(effects
@@ -27801,6 +28041,26 @@
 			(justify left bottom)
 		)
 		(uuid "78d7f9e1-0d2b-4a41-bc8f-3a3ad5243209")
+	)
+	(label "unconnected-(U35-2A8-Pad24)"
+		(at 36.83 199.39 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7b2e4e6a-4188-4d81-ad84-c1f92068dff7")
+	)
+	(label "Net-(J16B-POTB)"
+		(at 228.6 139.7 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7b37152f-fd89-4538-8410-ea17749af75f")
 	)
 	(label "PBI_EXT.PHI2"
 		(at 447.04 334.01 0)
@@ -27842,6 +28102,16 @@
 		)
 		(uuid "7c97d3c3-83c2-4433-814d-f95b40ae0d80")
 	)
+	(label "Net-(J18-Pin_7)"
+		(at 415.29 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7d939bcc-9ed3-4790-9512-b0acd09ef3b7")
+	)
 	(label "CONSOL.SELECT"
 		(at 21.59 179.07 0)
 		(effects
@@ -27882,6 +28152,16 @@
 		)
 		(uuid "807d84f6-c255-4cfd-b3d2-fa654507f5e8")
 	)
+	(label "Net-(J18-Pin_5)"
+		(at 415.29 63.5 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "80964d84-ccc0-4e8b-8a1c-d93689fe2373")
+	)
 	(label "PBI.A2"
 		(at 327.66 78.74 0)
 		(effects
@@ -27901,6 +28181,16 @@
 			(justify left bottom)
 		)
 		(uuid "82788b2a-fa94-46e9-bbe7-52d8e67ff383")
+	)
+	(label "unconnected-(U13-IO2-Pad2)"
+		(at 467.36 393.7 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "829855b5-1011-48b2-a19f-a2e2ee1d1e7b")
 	)
 	(label "+5V_PBI_PIN"
 		(at 528.32 129.54 0)
@@ -27952,6 +28242,16 @@
 		)
 		(uuid "84935748-3f5d-4ff5-9d5a-92880218a6d4")
 	)
+	(label "Net-(J18-Pin_4)"
+		(at 415.29 60.96 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8503e31e-3813-4e8f-93a8-16a2e02e35a6")
+	)
 	(label "PBI_EXT.A3"
 		(at 485.14 167.64 0)
 		(effects
@@ -28001,6 +28301,16 @@
 			(justify left bottom)
 		)
 		(uuid "890c4a8c-fd4f-4665-bcb2-df3f755523f0")
+	)
+	(label "unconnected-(U35-2B8-Pad33)"
+		(at 97.79 199.39 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8afa67ec-81fe-47a4-b5d7-bb498a859c10")
 	)
 	(label "PBI.A9"
 		(at 327.66 101.6 0)
@@ -28052,6 +28362,16 @@
 		)
 		(uuid "90373d16-2898-46fc-b226-7ba6d6ee4428")
 	)
+	(label "Net-(J11B-POTB)"
+		(at 223.52 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "908ee6e9-1a15-4e82-bd93-910256f4ee52")
+	)
 	(label "JOY_EXT.POT3"
 		(at 275.59 354.33 0)
 		(effects
@@ -28071,6 +28391,16 @@
 			(justify left bottom)
 		)
 		(uuid "910bf0e5-36cd-432f-b8c0-fd0e4697474f")
+	)
+	(label "Net-(J16B-POTB)"
+		(at 228.6 139.7 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "911bf0f3-0626-44de-be3c-51a7c52450de")
 	)
 	(label "PBI_EXT.EXTSEL"
 		(at 406.4 243.84 0)
@@ -28092,6 +28422,16 @@
 		)
 		(uuid "91916026-4014-4ce8-903b-cacdbf4f4b80")
 	)
+	(label "Net-(J11B-POTB)"
+		(at 223.52 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "91ba52de-4255-4444-9484-4f99162b5574")
+	)
 	(label "SIO.COMMAND"
 		(at 21.59 168.91 0)
 		(effects
@@ -28101,6 +28441,16 @@
 			(justify left bottom)
 		)
 		(uuid "91d2785d-5aa4-4e84-9f82-d12339ef7a6d")
+	)
+	(label "Net-(J16A-POTA)"
+		(at 223.52 175.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9239a17a-1d3d-40f4-98ad-e1f91d9e4dc1")
 	)
 	(label "PBI_EXT.A3"
 		(at 441.96 83.82 0)
@@ -28212,6 +28562,16 @@
 		)
 		(uuid "98173a63-b842-47c8-8b8f-9adbe67fe0a2")
 	)
+	(label "unconnected-(U18-IO1-Pad1)"
+		(at 273.05 356.87 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "98577a6a-8d0b-469b-bb0d-81dabf8bd868")
+	)
 	(label "PBI_EXT.A3"
 		(at 447.04 273.05 0)
 		(effects
@@ -28261,6 +28621,16 @@
 			(justify left bottom)
 		)
 		(uuid "9a08e7ee-af3e-48e6-b492-bd526e40a250")
+	)
+	(label "unconnected-(U35-2B12-Pad29)"
+		(at 97.79 209.55 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9a2b8e9a-204c-4eda-ad9b-ef6b1808dcce")
 	)
 	(label "JOY_EXT.DIR6"
 		(at 198.12 87.63 0)
@@ -28542,6 +28912,16 @@
 		)
 		(uuid "a96d6bbf-b83a-4c4e-91b7-b61fa4737ee4")
 	)
+	(label "unconnected-(U35-2B11-Pad30)"
+		(at 97.79 207.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a9983a60-ed94-41f1-8ede-1fc7ef9c1fb5")
+	)
 	(label "PBI_EXT.EXTENB"
 		(at 447.04 349.25 0)
 		(effects
@@ -28612,6 +28992,16 @@
 		)
 		(uuid "adf984a5-24d3-4929-af5b-cf23ad4a73af")
 	)
+	(label "unconnected-(U35-2B9-Pad32)"
+		(at 97.79 201.93 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ae362a4b-9f2d-43b6-9e04-2bea1eda7c59")
+	)
 	(label "PBI_EXT.MPD"
 		(at 406.4 241.3 0)
 		(effects
@@ -28661,6 +29051,16 @@
 			(justify left bottom)
 		)
 		(uuid "b1f420b2-5ce1-4118-892d-e43cadc97748")
+	)
+	(label "unconnected-(U13-IO6-Pad6)"
+		(at 411.48 388.62 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "b2591e6b-8e4d-41dd-b01b-ce68e09ec26f")
 	)
 	(label "JOY_EXT.POT0"
 		(at 198.12 63.5 0)
@@ -28772,6 +29172,16 @@
 		)
 		(uuid "b67bafb2-c963-4700-91fa-105c36b9444b")
 	)
+	(label "Net-(J16A-POTB)"
+		(at 223.52 177.8 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b67f5315-4567-4356-85f9-88bf0e785c88")
+	)
 	(label "PBI_EXT.RAS"
 		(at 568.96 39.37 0)
 		(effects
@@ -28821,6 +29231,16 @@
 			(justify left bottom)
 		)
 		(uuid "b7a6c5cc-f7a5-4454-bfd5-91a8b242161f")
+	)
+	(label "unconnected-(J3-+12V-Pad12)"
+		(at 203.2 246.38 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "b8302c4e-1214-4ff2-85e0-8bed9f066e33")
 	)
 	(label "PBI_EXT.A13"
 		(at 485.14 48.26 0)
@@ -28961,6 +29381,16 @@
 			(justify left bottom)
 		)
 		(uuid "bf53d272-5d36-4ba9-8bdf-1a4143aae549")
+	)
+	(label "unconnected-(U28-IO1-Pad1)"
+		(at 387.35 356.87 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "bfd612e6-2d6f-4a3f-b1dd-ea1ee3b089d2")
 	)
 	(label "JOY_EXT.DIR5"
 		(at 107.95 69.85 0)
@@ -29162,6 +29592,16 @@
 		)
 		(uuid "c79f2a6c-ffc7-45ee-a96e-beaf3dee7368")
 	)
+	(label "Net-(J16B-POTA)"
+		(at 223.52 137.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c7c17318-4db9-47c8-8ec1-13c2dbdc1bf1")
+	)
 	(label "JOY.POT0"
 		(at 21.59 57.15 0)
 		(effects
@@ -29322,6 +29762,26 @@
 		)
 		(uuid "cf65629c-e851-4b47-929d-17fc6ea73334")
 	)
+	(label "unconnected-(U13-IO7-Pad7)"
+		(at 411.48 391.16 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "cfd393c7-8dd9-4a01-be00-c6076783dacd")
+	)
+	(label "Net-(J11B-POTA)"
+		(at 228.6 63.5 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "cfeaf024-1478-4d77-aa24-e648d6086fb6")
+	)
 	(label "PBI_EXT.A13"
 		(at 525.78 295.91 0)
 		(effects
@@ -29351,6 +29811,16 @@
 			(justify left bottom)
 		)
 		(uuid "d0dc4cca-1dd5-4a00-a8e8-90bfeef8a35f")
+	)
+	(label "unconnected-(U13-IO3-Pad3)"
+		(at 467.36 391.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d142f52a-66d3-4855-ab8a-a661f8595c16")
 	)
 	(label "JOY_EXT.DIR10"
 		(at 308.61 312.42 0)
@@ -29491,6 +29961,26 @@
 			(justify left bottom)
 		)
 		(uuid "dc1b3503-5109-4e96-ab79-b424b01e391b")
+	)
+	(label "Net-(J11A-POTA)"
+		(at 223.52 100.33 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "dcc38029-6cca-43e4-a6c8-f14fe9c61eeb")
+	)
+	(label "Net-(J18-Pin_3)"
+		(at 415.29 58.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "dcd4bcf0-0f00-40a6-a928-5cc720ddf6a4")
 	)
 	(label "JOY_EXT.POT1"
 		(at 107.95 64.77 0)
@@ -29672,6 +30162,16 @@
 		)
 		(uuid "e6d15953-bac8-451c-b255-6e186678a2e1")
 	)
+	(label "unconnected-(U35-2B7-Pad34)"
+		(at 97.79 196.85 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e6ea9268-78b8-4b49-b1bb-818ec708bc01")
+	)
 	(label "CONSOL_EXT{START,SELECT,OPTION,RESET}"
 		(at 99.06 220.98 0)
 		(effects
@@ -29802,6 +30302,16 @@
 		)
 		(uuid "ee45e88a-68e5-4f50-a364-18da3182b20a")
 	)
+	(label "Net-(J18-Pin_6)"
+		(at 415.29 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ee95a8f9-0a0a-4cf3-85e2-b8a22787c611")
+	)
 	(label "JOY_EXT.POT3"
 		(at 107.95 82.55 0)
 		(effects
@@ -29821,6 +30331,16 @@
 			(justify left bottom)
 		)
 		(uuid "ef7d4637-8500-4924-95e6-9cd9e9e7b8d0")
+	)
+	(label "unconnected-(U35-2A9-Pad25)"
+		(at 36.83 201.93 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ef909c66-e17a-4305-8cbc-939a965fda57")
 	)
 	(label "JOY_EXT.TRIG1"
 		(at 275.59 349.25 0)
@@ -29942,6 +30462,16 @@
 		)
 		(uuid "f3e2476f-9e25-4290-8d0d-02ff49dbfd8e")
 	)
+	(label "unconnected-(U35-2A12-Pad28)"
+		(at 36.83 209.55 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f483f986-9a06-4afb-90a7-8818f42f2c12")
+	)
 	(label "PBI_EXT.D2"
 		(at 543.56 80.01 0)
 		(effects
@@ -29971,6 +30501,16 @@
 			(justify left bottom)
 		)
 		(uuid "f5e274fb-26a4-4f7b-b94d-2e40669444a4")
+	)
+	(label "unconnected-(U35-2A11-Pad27)"
+		(at 36.83 207.01 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f6d65e95-3477-4ad0-bec2-a16ff2f7933f")
 	)
 	(label "SIO_EXT.DATA_OUT"
 		(at 132.08 326.39 0)
@@ -30112,6 +30652,36 @@
 		)
 		(uuid "fda9c537-c214-43b4-ae4a-8bf12763286e")
 	)
+	(label "unconnected-(U35-2A7-Pad23)"
+		(at 36.83 196.85 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "fdb25d19-a75f-4bab-a20c-9270d1de0815")
+	)
+	(label "Net-(J11A-POTA)"
+		(at 223.52 100.33 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ff208aeb-68a6-43d8-a027-e8178c1e82bd")
+	)
+	(label "unconnected-(U13-IO1-Pad1)"
+		(at 467.36 396.24 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ff26bcdc-cde3-4821-82b6-32c314fd827d")
+	)
 	(label "SIO_EXT.COMMAND"
 		(at 54.61 323.85 0)
 		(effects
@@ -30221,7 +30791,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "027e00e4-9fcf-418f-9c08-5105bcb5f523")
-		(property "Reference" "C38"
+		(property "Reference" "C39"
 			(at 262.89 101.5999 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30296,7 +30866,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C38")
+					(reference "C39")
 					(unit 1)
 				)
 			)
@@ -30314,7 +30884,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "06599ddf-3ecf-4e47-8b32-ffb872a5d35e")
-		(property "Reference" "U7"
+		(property "Reference" "U8"
 			(at 494.03 316.23 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30410,7 +30980,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U7")
+					(reference "U8")
 					(unit 1)
 				)
 			)
@@ -30427,7 +30997,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "08087cb2-1a24-4f3f-8a10-9d1e7b8d6441")
-		(property "Reference" "R94"
+		(property "Reference" "R89"
 			(at 219.71 172.72 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30500,7 +31070,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R94")
+					(reference "R89")
 					(unit 1)
 				)
 			)
@@ -30517,7 +31087,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "08674f44-e85e-4552-9c29-4326d886e552")
-		(property "Reference" "R67"
+		(property "Reference" "R70"
 			(at 219.71 134.62 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30590,7 +31160,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R67")
+					(reference "R70")
 					(unit 1)
 				)
 			)
@@ -30607,7 +31177,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "09db0201-2ea7-4343-aca6-099cc62bc9c4")
-		(property "Reference" "R50"
+		(property "Reference" "R53"
 			(at 219.71 105.41 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30680,7 +31250,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R50")
+					(reference "R53")
 					(unit 1)
 				)
 			)
@@ -30698,7 +31268,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "10d08ff2-8df9-4c69-a221-f8adf96a80c1")
-		(property "Reference" "U13"
+		(property "Reference" "U14"
 			(at 439.42 375.92 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30794,7 +31364,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U13")
+					(reference "U14")
 					(unit 1)
 				)
 			)
@@ -31272,7 +31842,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1fe0ef4b-69fc-4342-92ad-93c9742e386b")
-		(property "Reference" "C97"
+		(property "Reference" "C98"
 			(at 46.99 384.8099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31347,7 +31917,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C97")
+					(reference "C98")
 					(unit 1)
 				)
 			)
@@ -31711,7 +32281,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "264d5891-bc5b-4ac5-955d-af3da72ee428")
-		(property "Reference" "J16"
+		(property "Reference" "J15"
 			(at 243.84 131.6961 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31834,7 +32404,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J16")
+					(reference "J15")
 					(unit 2)
 				)
 			)
@@ -32099,7 +32669,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "313c8dc0-75c3-4cf0-a93a-897ec4e2df05")
-		(property "Reference" "C56"
+		(property "Reference" "C60"
 			(at 264.16 139.6999 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32174,7 +32744,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C56")
+					(reference "C60")
 					(unit 1)
 				)
 			)
@@ -32348,7 +32918,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "36fcc687-0e24-4297-b1db-b3c2cd6a3af2")
-		(property "Reference" "C71"
+		(property "Reference" "C72"
 			(at 264.16 173.9899 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32423,7 +32993,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C71")
+					(reference "C72")
 					(unit 1)
 				)
 			)
@@ -32441,7 +33011,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "377a8ab5-894a-4ccf-90ac-55195f7c0a9f")
-		(property "Reference" "J11"
+		(property "Reference" "J10"
 			(at 242.57 94.1041 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32564,7 +33134,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J11")
+					(reference "J10")
 					(unit 1)
 				)
 			)
@@ -32582,7 +33152,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "39ce4e93-52d3-4eee-a831-16fc4f162144")
-		(property "Reference" "J16"
+		(property "Reference" "J15"
 			(at 242.57 169.0341 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32705,7 +33275,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J16")
+					(reference "J15")
 					(unit 1)
 				)
 			)
@@ -32800,7 +33370,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3f09dd13-2314-42ba-bc8c-7ff83048e373")
-		(property "Reference" "J11"
+		(property "Reference" "J10"
 			(at 243.84 58.0361 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -32923,7 +33493,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J11")
+					(reference "J10")
 					(unit 2)
 				)
 			)
@@ -33372,7 +33942,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "506fc7d5-280a-4e11-abb0-0fe4682f4dd8")
-		(property "Reference" "U35"
+		(property "Reference" "U36"
 			(at 67.31 130.81 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33609,7 +34179,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U35")
+					(reference "U36")
 					(unit 1)
 				)
 			)
@@ -33627,7 +34197,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "52917e88-b44d-460e-a39f-268ee087ca3a")
-		(property "Reference" "C5"
+		(property "Reference" "C4"
 			(at 199.39 269.2399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33702,7 +34272,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C5")
+					(reference "C4")
 					(unit 1)
 				)
 			)
@@ -33797,7 +34367,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5448fbb5-839d-4d14-8ee5-425476bfdd79")
-		(property "Reference" "R68"
+		(property "Reference" "R72"
 			(at 219.71 142.24 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33870,7 +34440,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R68")
+					(reference "R72")
 					(unit 1)
 				)
 			)
@@ -33888,7 +34458,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "572aab6e-3d9f-4296-b9e9-e2e38aba0049")
-		(property "Reference" "U18"
+		(property "Reference" "U19"
 			(at 245.11 336.55 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33984,7 +34554,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U18")
+					(reference "U19")
 					(unit 1)
 				)
 			)
@@ -34909,7 +35479,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6c23a246-507f-48d5-bf74-2e168ffde1d8")
-		(property "Reference" "J24"
+		(property "Reference" "J23"
 			(at 57.785 219.71 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -34991,7 +35561,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J24")
+					(reference "J23")
 					(unit 1)
 				)
 			)
@@ -35010,7 +35580,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6d520372-fd77-4bf2-8472-984c29c1f402")
-		(property "Reference" "U30"
+		(property "Reference" "U31"
 			(at 67.31 31.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35247,7 +35817,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U30")
+					(reference "U31")
 					(unit 1)
 				)
 			)
@@ -35264,7 +35834,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6fcbc631-17e1-4f54-b816-5503c70426f7")
-		(property "Reference" "R98"
+		(property "Reference" "R93"
 			(at 219.71 180.34 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35337,7 +35907,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R98")
+					(reference "R93")
 					(unit 1)
 				)
 			)
@@ -35433,7 +36003,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "71dd7d4c-ca29-48bc-b011-81fd7f91abcc")
-		(property "Reference" "R72"
+		(property "Reference" "R81"
 			(at 391.16 298.4499 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35508,7 +36078,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R72")
+					(reference "R81")
 					(unit 1)
 				)
 			)
@@ -35525,7 +36095,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "71f887c4-6513-4089-9535-abcfcb85ecef")
-		(property "Reference" "R11"
+		(property "Reference" "R9"
 			(at 370.078 227.838 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35598,7 +36168,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R11")
+					(reference "R9")
 					(unit 1)
 				)
 			)
@@ -35693,7 +36263,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7340d85a-f42e-43db-9ee7-e6928687502f")
-		(property "Reference" "C43"
+		(property "Reference" "C44"
 			(at 245.11 102.362 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -35768,7 +36338,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C43")
+					(reference "C44")
 					(unit 1)
 				)
 			)
@@ -35958,7 +36528,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "774a0450-82ff-4622-888a-98b23565c496")
-		(property "Reference" "U37"
+		(property "Reference" "U38"
 			(at 384.81 135.89 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36195,7 +36765,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U37")
+					(reference "U38")
 					(unit 1)
 				)
 			)
@@ -36212,7 +36782,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "778ea900-6d92-4f8c-95cd-65634ddc1787")
-		(property "Reference" "C58"
+		(property "Reference" "C64"
 			(at 246.38 140.462 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36287,7 +36857,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C58")
+					(reference "C64")
 					(unit 1)
 				)
 			)
@@ -36305,7 +36875,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7a07a920-2222-4f51-b712-f84f34bb5c2b")
-		(property "Reference" "U6"
+		(property "Reference" "U7"
 			(at 104.14 306.07 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36401,7 +36971,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U6")
+					(reference "U7")
 					(unit 1)
 				)
 			)
@@ -36419,7 +36989,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7c0f4059-d7ad-4962-a81a-df06e2edc6df")
-		(property "Reference" "J6"
+		(property "Reference" "J5"
 			(at 561.34 17.78 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36625,7 +37195,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J6")
+					(reference "J5")
 					(unit 1)
 				)
 			)
@@ -36722,7 +37292,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8d09bde4-3f31-4cc6-9738-9f0cf339c171")
-		(property "Reference" "U32"
+		(property "Reference" "U33"
 			(at 384.81 43.18 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36959,7 +37529,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U32")
+					(reference "U33")
 					(unit 1)
 				)
 			)
@@ -37055,7 +37625,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "90f50cc3-8f59-4fce-b41a-50ea7b525ffc")
-		(property "Reference" "U5"
+		(property "Reference" "U6"
 			(at 494.03 336.55 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -37151,7 +37721,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U5")
+					(reference "U6")
 					(unit 1)
 				)
 			)
@@ -37427,7 +37997,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9a86337e-1299-480e-b478-7219cbb78674")
-		(property "Reference" "C11"
+		(property "Reference" "C12"
 			(at 261.62 64.7699 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -37502,7 +38072,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C11")
+					(reference "C12")
 					(unit 1)
 				)
 			)
@@ -37520,7 +38090,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a1a3313a-3d50-4af1-98a9-37ed20e2e97d")
-		(property "Reference" "C92"
+		(property "Reference" "C93"
 			(at 57.15 384.8099 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -37595,7 +38165,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C92")
+					(reference "C93")
 					(unit 1)
 				)
 			)
@@ -37613,7 +38183,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a34ddce6-bb1a-4be8-bef0-107856df85a6")
-		(property "Reference" "U10"
+		(property "Reference" "U11"
 			(at 494.03 255.27 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -37709,7 +38279,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U10")
+					(reference "U11")
 					(unit 1)
 				)
 			)
@@ -38147,7 +38717,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "af6a7858-7582-4c32-8000-c21cd7396092")
-		(property "Reference" "J18"
+		(property "Reference" "J17"
 			(at 441.96 59.6899 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38237,7 +38807,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J18")
+					(reference "J17")
 					(unit 1)
 				)
 			)
@@ -38488,7 +39058,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c155fd55-e8ff-401c-ab32-20c506750981")
-		(property "Reference" "C13"
+		(property "Reference" "C14"
 			(at 243.84 65.532 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38563,7 +39133,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "C13")
+					(reference "C14")
 					(unit 1)
 				)
 			)
@@ -38580,7 +39150,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c34c91ac-04ad-4a06-a3cf-6f3d2e0f245f")
-		(property "Reference" "R49"
+		(property "Reference" "R52"
 			(at 219.71 97.79 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38653,7 +39223,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R49")
+					(reference "R52")
 					(unit 1)
 				)
 			)
@@ -38854,7 +39424,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ca9d4206-fbfb-43cc-8449-75c04b8a11a1")
-		(property "Reference" "U14"
+		(property "Reference" "U15"
 			(at 245.11 299.72 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38950,7 +39520,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U14")
+					(reference "U15")
 					(unit 1)
 				)
 			)
@@ -38968,7 +39538,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cc7fab72-8fe7-4bd6-a27c-fad01363656b")
-		(property "Reference" "J3"
+		(property "Reference" "J1"
 			(at 232.41 226.6949 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39065,7 +39635,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J3")
+					(reference "J1")
 					(unit 1)
 				)
 			)
@@ -39083,7 +39653,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cd9dd1fc-5832-44c5-833f-d5ba658f3e07")
-		(property "Reference" "U24"
+		(property "Reference" "U26"
 			(at 359.41 297.18 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39179,7 +39749,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U24")
+					(reference "U26")
 					(unit 1)
 				)
 			)
@@ -39197,7 +39767,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d06ae7c0-7576-471d-8a7f-6a72de7de41e")
-		(property "Reference" "U8"
+		(property "Reference" "U9"
 			(at 494.03 295.91 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39293,7 +39863,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U8")
+					(reference "U9")
 					(unit 1)
 				)
 			)
@@ -39311,7 +39881,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d374db14-8dbb-40ac-b4be-5283c7670900")
-		(property "Reference" "J7"
+		(property "Reference" "J6"
 			(at 557.53 116.8399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39383,7 +39953,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J7")
+					(reference "J6")
 					(unit 1)
 				)
 			)
@@ -39499,7 +40069,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "da080e61-6ef4-475c-99f9-e28bbdc2c91b")
-		(property "Reference" "R13"
+		(property "Reference" "R11"
 			(at 395.478 227.838 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39572,7 +40142,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R13")
+					(reference "R11")
 					(unit 1)
 				)
 			)
@@ -39761,7 +40331,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e3ac024d-7e08-40d9-af28-0d4e873d48bd")
-		(property "Reference" "R12"
+		(property "Reference" "R10"
 			(at 387.858 227.838 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39834,7 +40404,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R12")
+					(reference "R10")
 					(unit 1)
 				)
 			)
@@ -39852,7 +40422,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e708b8c7-1e9d-47f1-a80e-a3e06752f63d")
-		(property "Reference" "R58"
+		(property "Reference" "R61"
 			(at 276.86 337.8199 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -39927,7 +40497,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R58")
+					(reference "R61")
 					(unit 1)
 				)
 			)
@@ -39945,7 +40515,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ea17c288-3a0d-4261-8088-669369515c05")
-		(property "Reference" "RN11"
+		(property "Reference" "RN19"
 			(at 330.2 336.5499 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40038,7 +40608,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "RN11")
+					(reference "RN19")
 					(unit 1)
 				)
 			)
@@ -40056,7 +40626,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "eae269c4-c056-45c8-a28c-e96829e046f2")
-		(property "Reference" "U9"
+		(property "Reference" "U10"
 			(at 494.03 275.59 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40152,7 +40722,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U9")
+					(reference "U10")
 					(unit 1)
 				)
 			)
@@ -40281,7 +40851,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ec8f2f7c-eef1-4567-81aa-3b9012a3fe7b")
-		(property "Reference" "J13"
+		(property "Reference" "J12"
 			(at 520.7 202.5649 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40429,7 +40999,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J13")
+					(reference "J12")
 					(unit 1)
 				)
 			)
@@ -40447,7 +41017,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "effea86b-90db-4f62-b4ef-9366be72cd4f")
-		(property "Reference" "J8"
+		(property "Reference" "J7"
 			(at 541.02 109.22 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40538,7 +41108,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "J8")
+					(reference "J7")
 					(unit 1)
 				)
 			)
@@ -40634,7 +41204,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f6da3e0c-5d5d-4fd7-8deb-beb90c120b03")
-		(property "Reference" "U28"
+		(property "Reference" "U29"
 			(at 359.41 336.55 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40730,7 +41300,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "U28")
+					(reference "U29")
 					(unit 1)
 				)
 			)
@@ -40904,7 +41474,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fe61d3dd-41d8-46bb-abd0-1543a542754c")
-		(property "Reference" "R100"
+		(property "Reference" "R95"
 			(at 391.16 337.8199 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -40979,7 +41549,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R100")
+					(reference "R95")
 					(unit 1)
 				)
 			)
@@ -40996,7 +41566,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "fece6121-ab0f-42c7-ad29-6d71f0accd21")
-		(property "Reference" "R15"
+		(property "Reference" "R13"
 			(at 378.968 227.838 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -41069,7 +41639,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6b874488-bf3e-487d-8a58-543b482b32aa"
-					(reference "R15")
+					(reference "R13")
 					(unit 1)
 				)
 			)

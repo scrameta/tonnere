@@ -2438,9 +2438,9 @@
 				(justify left)
 			)
 		)
-		(pin "VDAC{R[0..2],G[0..2],B[0..2],HSYNC,VSYNC}" bidirectional
+		(pin "VDAC{R[0..5],G[0..5],B[0..5],HSYNC,VSYNC}" bidirectional
 			(at 134.62 152.4 180)
-			(uuid "24ca7ca2-f4e8-4f45-be61-06b3a38a4771")
+			(uuid "18ca2e9e-5f22-462d-b859-a940b18faabf")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3046,9 +3046,9 @@
 				(justify right)
 			)
 		)
-		(pin "VDAC{R[0..2],G[0..2],B[0..2],HSYNC,VSYNC}" bidirectional
-			(at 119.38 85.09 0)
-			(uuid "3709b3ab-a2ce-4c3c-be37-337de2e01d23")
+		(pin "FPGAAUD{DATA,BCK,LR,SPDIF}" bidirectional
+			(at 29.21 59.69 90)
+			(uuid "0aa1762b-ec83-476f-9b3f-0d723b656e5a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3056,9 +3056,9 @@
 				(justify right)
 			)
 		)
-		(pin "FPGAAUD{DATA,BCK,LR,SPDIF}" bidirectional
-			(at 29.21 59.69 90)
-			(uuid "0aa1762b-ec83-476f-9b3f-0d723b656e5a")
+		(pin "VDAC{R[0..5],G[0..5],B[0..5],HSYNC,VSYNC}" bidirectional
+			(at 119.38 85.09 0)
+			(uuid "526e76f1-4218-44d1-9def-8840a3b81adc")
 			(effects
 				(font
 					(size 1.27 1.27)

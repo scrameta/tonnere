@@ -7006,6 +7006,16 @@
 		)
 		(uuid "060a4fcf-8790-49ed-91a2-7170e29292d9")
 	)
+	(label "unconnected-(U42-NC{slash}RFU-Pad40)"
+		(at 121.92 247.65 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "08c0b395-3351-4861-95f3-6fe74b5f17d8")
+	)
 	(label "SDRAM1.CAS_N"
 		(at 82.55 255.27 0)
 		(effects
@@ -7296,6 +7306,16 @@
 		)
 		(uuid "35e837ba-2a53-4745-8563-5ad5ae5167a8")
 	)
+	(label "unconnected-(U36-NC-PadE3)"
+		(at 341.63 194.31 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "364691bb-c591-4dc2-ad3a-0ef192d41ac0")
+	)
 	(label "SRAM2.A20"
 		(at 345.44 140.97 0)
 		(effects
@@ -7345,6 +7365,16 @@
 			(justify left bottom)
 		)
 		(uuid "3ba218e3-e8fe-4868-aa5a-4ce886c61064")
+	)
+	(label "unconnected-(U31-NC-PadE3)"
+		(at 134.62 104.14 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "45aa6a5c-f88f-4166-8941-82c3c205ea3d")
 	)
 	(label "SRAM1.CE_N"
 		(at 73.66 76.2 0)
@@ -7415,6 +7445,16 @@
 			(justify left bottom)
 		)
 		(uuid "504611b0-7a6a-4c71-9219-16df3c3f793a")
+	)
+	(label "unconnected-(U31-NC-PadA6)"
+		(at 88.9 63.5 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "574ee81b-c0e2-4b92-931b-9930c61ceb05")
 	)
 	(label "SRAM1.D3"
 		(at 73.66 106.68 0)
@@ -7646,6 +7686,16 @@
 		)
 		(uuid "8364f5a7-8ce2-4ef9-9598-d9ce10a60dd3")
 	)
+	(label "Net-(U42-CLK)"
+		(at 99.06 245.11 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "8c51f04c-d37b-44db-8bd2-f093b57e6a3d")
+	)
 	(label "SRAM2.D14"
 		(at 345.44 184.15 0)
 		(effects
@@ -7665,6 +7715,16 @@
 			(justify left bottom)
 		)
 		(uuid "8fe21024-6057-4bde-a8a8-15a10c6c0ab6")
+	)
+	(label "Net-(U42-CLK)"
+		(at 99.06 245.11 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "917439fe-b330-4986-ac78-efb97c322d60")
 	)
 	(label "SDRAM1.DQ14"
 		(at 132.08 232.41 0)
@@ -8045,6 +8105,16 @@
 			(justify left bottom)
 		)
 		(uuid "dbd0bbcc-921b-4dc3-a61f-8403b6eb19a9")
+	)
+	(label "unconnected-(U36-NC-PadA6)"
+		(at 295.91 153.67 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "dcf8d3ee-75ad-44b8-9663-3ecfc0a324eb")
 	)
 	(label "SRAM2.A17"
 		(at 280.67 191.77 0)
@@ -8568,7 +8638,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4f08da2b-fefa-4781-bd7f-71b8cf43b24e")
-		(property "Reference" "C109"
+		(property "Reference" "C110"
 			(at 359.41 43.1799 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8643,7 +8713,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/697ece47-2a2f-49f7-b3cd-8d11bcc6cfcf"
-					(reference "C109")
+					(reference "C110")
 					(unit 1)
 				)
 			)
@@ -8661,7 +8731,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5aa7fa31-e266-44af-bfdc-b74513f67604")
-		(property "Reference" "U42"
+		(property "Reference" "U43"
 			(at 113.9033 189.23 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8893,7 +8963,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/697ece47-2a2f-49f7-b3cd-8d11bcc6cfcf"
-					(reference "U42")
+					(reference "U43")
 					(unit 1)
 				)
 			)
@@ -9067,7 +9137,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9ac0b108-c922-4636-b432-5880604e29a1")
-		(property "Reference" "C108"
+		(property "Reference" "C109"
 			(at 349.25 43.1799 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9142,7 +9212,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/697ece47-2a2f-49f7-b3cd-8d11bcc6cfcf"
-					(reference "C108")
+					(reference "C109")
 					(unit 1)
 				)
 			)
@@ -9315,7 +9385,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b77ddaf0-6b0d-440a-96b9-7660441c3913")
-		(property "Reference" "R112"
+		(property "Reference" "R107"
 			(at 97.282 243.84 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9388,7 +9458,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/697ece47-2a2f-49f7-b3cd-8d11bcc6cfcf"
-					(reference "R112")
+					(reference "R107")
 					(unit 1)
 				)
 			)
@@ -9484,7 +9554,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c7aa07da-5f97-408e-8ffe-0cd0ab017df6")
-		(property "Reference" "C94"
+		(property "Reference" "C95"
 			(at 337.82 43.1799 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9559,7 +9629,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/697ece47-2a2f-49f7-b3cd-8d11bcc6cfcf"
-					(reference "C94")
+					(reference "C95")
 					(unit 1)
 				)
 			)
@@ -9578,7 +9648,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "daaeaa8f-6160-4c83-be70-268b9798527b")
-		(property "Reference" "U36"
+		(property "Reference" "U37"
 			(at 318.77 130.81 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9791,7 +9861,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/697ece47-2a2f-49f7-b3cd-8d11bcc6cfcf"
-					(reference "U36")
+					(reference "U37")
 					(unit 1)
 				)
 			)
@@ -9810,7 +9880,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f80daa63-7896-48fd-955b-eb60a17b4b5f")
-		(property "Reference" "U31"
+		(property "Reference" "U32"
 			(at 111.76 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10023,7 +10093,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/697ece47-2a2f-49f7-b3cd-8d11bcc6cfcf"
-					(reference "U31")
+					(reference "U32")
 					(unit 1)
 				)
 			)

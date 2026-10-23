@@ -4204,6 +4204,16 @@
 		)
 		(uuid "13046990-49dd-419e-8cb0-131a17214f76")
 	)
+	(label "unconnected-(U47-NC-Pad7)"
+		(at 153.67 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3022e6f9-c8f7-4300-9187-22eb714573fa")
+	)
 	(label "SPI.MOSI"
 		(at 101.6 127 0)
 		(effects
@@ -4214,6 +4224,16 @@
 		)
 		(uuid "4214dd29-4fae-4b88-9290-865bdd095d34")
 	)
+	(label "unconnected-(U46-NC-Pad9)"
+		(at 123.19 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "485e20bb-7bff-4550-af7e-68bebe8613f0")
+	)
 	(label "SD.WP"
 		(at 158.75 34.29 0)
 		(effects
@@ -4223,6 +4243,26 @@
 			(justify left bottom)
 		)
 		(uuid "5125b798-faaa-4cce-872d-9032dee0bf93")
+	)
+	(label "unconnected-(U46-NC-Pad6)"
+		(at 110.49 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "53dce3c2-4297-4ee2-8f1c-53659be29cfc")
+	)
+	(label "unconnected-(RN12-R1.2-Pad8)"
+		(at 114.3 27.94 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "576f1091-d548-4859-96ea-98fa8561e002")
 	)
 	(label "SD.D1"
 		(at 102.87 34.29 0)
@@ -4284,6 +4324,46 @@
 		)
 		(uuid "a15630c7-c0cf-429d-89e1-780aa5313e56")
 	)
+	(label "unconnected-(U47-NC-Pad9)"
+		(at 161.29 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c2cc4cd0-b8c3-4e02-922b-afa664820096")
+	)
+	(label "unconnected-(U46-NC-Pad7)"
+		(at 115.57 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c83bcc8a-46bf-4c00-a935-888f38ae138f")
+	)
+	(label "unconnected-(U46-NC-Pad10)"
+		(at 128.27 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "cb121067-e4b2-43a6-a946-6e815bbc3dcf")
+	)
+	(label "unconnected-(U47-NC-Pad6)"
+		(at 148.59 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d26b83f6-3c93-4cda-87f9-a29e855878d3")
+	)
 	(label "SD.D3"
 		(at 102.87 39.37 0)
 		(effects
@@ -4303,6 +4383,16 @@
 			(justify left bottom)
 		)
 		(uuid "de06f6df-29a1-43e9-b00c-8b925201f902")
+	)
+	(label "unconnected-(U47-NC-Pad10)"
+		(at 166.37 77.47 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ebea9bda-bbdc-4dbf-846e-761b856c4758")
 	)
 	(label "SD.CMD"
 		(at 102.87 46.99 0)
@@ -4425,7 +4515,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1cdaffce-5d4d-43ec-ad7c-80450f055997")
-		(property "Reference" "U47"
+		(property "Reference" "U48"
 			(at 172.72 83.8199 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4525,7 +4615,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "U47")
+					(reference "U48")
 					(unit 1)
 				)
 			)
@@ -4620,7 +4710,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "38b0b8dd-b3fe-4977-833b-443dd1d3e8b3")
-		(property "Reference" "U46"
+		(property "Reference" "U47"
 			(at 134.62 83.8199 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4720,7 +4810,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "U46")
+					(reference "U47")
 					(unit 1)
 				)
 			)
@@ -4894,7 +4984,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3d25b455-994a-4e51-a5c8-5a7952a18b2f")
-		(property "Reference" "RN13"
+		(property "Reference" "RN21"
 			(at 163.83 20.3199 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4987,7 +5077,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "RN13")
+					(reference "RN21")
 					(unit 1)
 				)
 			)
@@ -5005,7 +5095,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "463347eb-f72e-4bc1-98b2-075b8ff20fdb")
-		(property "Reference" "C54"
+		(property "Reference" "C57"
 			(at 217.17 35.5599 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5080,7 +5170,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "C54")
+					(reference "C57")
 					(unit 1)
 				)
 			)
@@ -5555,7 +5645,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6cd0278e-10c2-4e64-8e31-dee06a9e7fb1")
-		(property "Reference" "C122"
+		(property "Reference" "C123"
 			(at 201.93 35.5599 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5630,7 +5720,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "C122")
+					(reference "C123")
 					(unit 1)
 				)
 			)
@@ -5915,7 +6005,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e4147981-6946-4d1b-826a-90d716a64974")
-		(property "Reference" "C123"
+		(property "Reference" "C124"
 			(at 246.38 35.5599 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5990,7 +6080,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "C123")
+					(reference "C124")
 					(unit 1)
 				)
 			)
@@ -6008,7 +6098,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "eaffc7c2-f234-42ed-85f0-e57b1b261247")
-		(property "Reference" "C53"
+		(property "Reference" "C56"
 			(at 232.41 35.5599 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6083,7 +6173,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "C53")
+					(reference "C56")
 					(unit 1)
 				)
 			)
@@ -6101,7 +6191,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f6fad5e0-a89d-475c-a54e-33b19f1c5d60")
-		(property "Reference" "RN12"
+		(property "Reference" "RN20"
 			(at 116.84 21.5899 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6194,7 +6284,7 @@
 		(instances
 			(project "tonnere"
 				(path "/eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3/6e470164-ad0d-4d1f-a1f3-2d1a639770a2"
-					(reference "RN12")
+					(reference "RN20")
 					(unit 1)
 				)
 			)

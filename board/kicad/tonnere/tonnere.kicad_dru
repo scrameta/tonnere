@@ -6,4 +6,4 @@
 (rule "BGA neckdown"
   (constraint track_width (min 0.1016mm) (opt 0.1016mm) (max 0.1016mm))
   (constraint clearance   (min 0.09mm) (opt 0.1016mm))
-  (condition "A.intersectsCourtyard('U33') && A.NetName != '+1V2' && A.NetName != '+2V5"))
+  (condition "A.intersectsCourtyard('U34') && A.NetName != '+1V2' && A.NetName != '+2V5"))

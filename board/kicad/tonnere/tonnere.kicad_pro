@@ -62,8 +62,8 @@
           "hatch_thickness": 1.0,
           "min_clearance": 0.2,
           "min_island_area": 10.0,
-          "min_thickness": 0.25,
-          "pad_connection": 1,
+          "min_thickness": 0.15,
+          "pad_connection": 2,
           "remove_islands": 0,
           "thermal_relief_gap": 0.5,
           "thermal_relief_spoke_width": 0.5
@@ -148,7 +148,7 @@
         "max_error": 0.005,
         "min_clearance": 0.0,
         "min_connection": 0.0,
-        "min_copper_edge_clearance": 0.0,
+        "min_copper_edge_clearance": 0.5,
         "min_groove_width": 0.0,
         "min_hole_clearance": 0.127,
         "min_hole_to_hole": 0.254,
@@ -845,7 +845,7 @@
         "uuid": "eb8e239c-f2ec-4b57-8f5c-6c75d6b59ab3"
       }
     ],
-    "used_designators": "USB1-2,#PWR181",
+    "used_designators": "RN14-24,USB1-2,#PWR181-182,C127,R83,R89,R91,R134",
     "variants": []
   },
   "sheets": [
