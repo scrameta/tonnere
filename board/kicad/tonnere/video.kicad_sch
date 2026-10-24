@@ -10311,7 +10311,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "5pF"
+		(property "Value" "1.8pF"
 			(at 76.454 120.142 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10355,7 +10355,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C282071"
+		(property "LCSC" "C318660"
 			(at 77.47 114.3 0)
 			(hide yes)
 			(show_name no)
@@ -11539,7 +11539,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "5pF"
+		(property "Value" "1.8pF"
 			(at 84.074 120.142 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11583,7 +11583,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C282071"
+		(property "LCSC" "C318660"
 			(at 85.09 114.3 0)
 			(hide yes)
 			(show_name no)
@@ -15379,7 +15379,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "5pF"
+		(property "Value" "1.8pF"
 			(at 68.834 120.142 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15423,7 +15423,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C282071"
+		(property "LCSC" "C318660"
 			(at 69.85 114.3 0)
 			(hide yes)
 			(show_name no)
