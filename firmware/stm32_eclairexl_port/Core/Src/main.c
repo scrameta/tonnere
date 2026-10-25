@@ -238,7 +238,11 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  /* SMP 56 for all four audio ranks (sConfig is reused below): 2.7 us settling
+   * per channel, 4*(56+12)=272 of the 477 cycles available in the 22.7 us
+   * TIM2 period.  Kills source-impedance error and most inter-channel S/H
+   * residue.  CubeMX territory — mirror in the .ioc. */
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -511,7 +515,9 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1904;
+  /* Audio ADC trigger: 84 MHz / 1750 = exactly 48.000 kHz (was 1904 = 44.09 kHz).
+   * SMP 56 sweep = 272 of 466 cycles/period.  CubeMX territory — mirror .ioc. */
+  htim2.Init.Period = 1749;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
